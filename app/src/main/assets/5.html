@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>喵伴云养 - 社区论坛</title>
+<script src="js/script_03ba5d9f.js"></script>
+<link href="css/font_style_12.css" rel="stylesheet"/>
+<link href="css/font_style_13.css" rel="stylesheet"/>
+<link href="css/font_style_14.css" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary-container": "#623808",
+              "on-secondary-container": "#3a593f",
+              "surface-container-lowest": "#ffffff",
+              "tertiary-dim": "#355e6a",
+              "error-dim": "#791903",
+              "on-secondary-fixed-variant": "#446349",
+              "background": "#fffcf7",
+              "secondary-container": "#c9ebca",
+              "outline-variant": "#bbb9b2",
+              "surface-container": "#f6f3ed",
+              "inverse-surface": "#0e0e0c",
+              "inverse-on-surface": "#9e9d98",
+              "surface-container-highest": "#eae8e0",
+              "tertiary-fixed-dim": "#b6e1ef",
+              "inverse-primary": "#fdbc82",
+              "primary-dim": "#7d4d1e",
+              "on-primary-fixed": "#482600",
+              "secondary": "#4d6c51",
+              "on-tertiary": "#ffffff",
+              "secondary-fixed-dim": "#bbddbd",
+              "on-tertiary-fixed": "#1d4853",
+              "tertiary-fixed": "#c4effd",
+              "outline": "#81817a",
+              "on-surface": "#383833",
+              "error-container": "#fd795a",
+              "surface-container-low": "#fcf9f3",
+              "on-primary-fixed-variant": "#6d4011",
+              "on-primary": "#ffffff",
+              "on-tertiary-container": "#315b66",
+              "primary": "#8b5928",
+              "tertiary": "#416a76",
+              "surface-dim": "#e4e3da",
+              "primary-fixed-dim": "#eeae76",
+              "on-secondary": "#ffffff",
+              "surface-tint": "#8b5928",
+              "on-background": "#383833",
+              "primary-container": "#fdbc82",
+              "secondary-fixed": "#c9ebca",
+              "tertiary-container": "#c4effd",
+              "error": "#ae4025",
+              "on-error-container": "#6e1400",
+              "primary-fixed": "#fdbc82",
+              "surface-container-high": "#f0eee7",
+              "on-error": "#ffffff",
+              "on-secondary-fixed": "#28462e",
+              "on-tertiary-fixed-variant": "#3c6571",
+              "surface": "#fffcf7",
+              "surface-variant": "#eae8e0",
+              "secondary-dim": "#415f46",
+              "on-surface-variant": "#65655e",
+              "surface-bright": "#fffcf7"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Be Vietnam Pro"],
+              "label": ["Be Vietnam Pro"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        height: 0px;
+        width: 0px;
+      }
+      .asymmetric-card {
+        border-top-left-radius: 2rem;
+        border-bottom-right-radius: 2rem;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background font-body text-on-surface">
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-[#fffcf7]/80 dark:bg-stone-900/80 backdrop-blur-xl shadow-[0_24px_48px_-12px_rgba(56,56,51,0.05)]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="close-up portrait of a friendly young man with short hair smiling warmly in natural soft daylight" src="images/img_b6f89276.png"/>
+</div>
+<h1 class="font-headline font-bold tracking-tight leading-[1.6] text-xl text-[#8b5928]">论坛</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-[#8b5928] hover:bg-[#fdbc82]/10 p-2 rounded-full transition-colors active:scale-95 duration-200">search</button>
+<button class="material-symbols-outlined text-[#8b5928] hover:bg-[#fdbc82]/10 p-2 rounded-full transition-colors active:scale-95 duration-200">notifications</button>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6">
+<!-- School Switching Tier -->
+<div class="flex gap-4 mb-8 custom-scrollbar overflow-x-auto pb-2">
+<button class="px-6 py-2.5 rounded-full bg-primary text-on-primary font-semibold shadow-sm whitespace-nowrap">本校</button>
+<button class="px-6 py-2.5 rounded-full bg-surface-container-high text-on-surface-variant font-medium whitespace-nowrap hover:bg-surface-container-highest transition-colors">周边学校</button>
+<button class="px-6 py-2.5 rounded-full bg-surface-container-high text-on-surface-variant font-medium whitespace-nowrap hover:bg-surface-container-highest transition-colors">社区内容流</button>
+</div>
+<!-- Categorized Navigation (Seed Style Chips) -->
+<nav class="flex flex-wrap gap-2 mb-10">
+<div class="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary-container text-on-secondary-container text-sm font-medium">
+<span class="material-symbols-outlined text-sm">visibility</span>
+<span>目击记录</span>
+</div>
+<div class="flex items-center gap-2 px-4 py-2 rounded-full bg-error-container/20 text-error text-sm font-bold border border-error/20">
+<span class="material-symbols-outlined text-sm">campaign</span>
+<span>求助信息</span>
+</div>
+<div class="flex items-center gap-2 px-4 py-2 rounded-full bg-tertiary-container text-on-tertiary-container text-sm font-medium">
+<span class="material-symbols-outlined text-sm">auto_awesome</span>
+<span>经验分享</span>
+</div>
+<div class="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container-highest text-on-surface-variant text-sm font-medium">
+<span class="material-symbols-outlined text-sm">menu_book</span>
+<span>猫咪日记</span>
+</div>
+<div class="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-container/30 text-primary text-sm font-medium">
+<span class="material-symbols-outlined text-sm">map</span>
+<span>地图发帖</span>
+</div>
+</nav>
+<!-- Content Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- High Priority Emergency Card -->
+<div class="relative bg-surface-container-lowest p-6 rounded-lg asymmetric-card border-2 border-[#DE7D70] shadow-[0_8px_32px_rgba(222,125,112,0.08)]">
+<div class="absolute -top-3 -right-3 px-3 py-1 bg-[#DE7D70] text-white text-[10px] font-bold rounded-full uppercase tracking-wider">紧急 · 医疗求助</div>
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-headline font-bold text-lg text-on-surface leading-snug">教三教学楼后的“大橘”腿部受伤，急需送医</h3>
+<p class="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">schedule</span> 15分钟前发布
+                        </p>
+</div>
+</div>
+<div class="flex gap-3 mb-4">
+<img alt="Injured Cat" class="w-24 h-24 object-cover rounded-xl" data-alt="close-up of a ginger tabby cat with a worried expression sitting on a stone pavement in soft outdoor light" src="images/img_ed8f952d.png"/>
+<div class="flex-1 space-y-2">
+<div class="flex items-center gap-2 text-xs text-secondary font-medium">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span>第三教学楼 · 停车场草坪</span>
+</div>
+<div class="flex items-center gap-2 text-xs text-tertiary font-medium">
+<span class="material-symbols-outlined text-[16px]">pets</span>
+<span>关联：大橘 (Orange)</span>
+</div>
+<div class="flex gap-1 mt-2">
+<span class="px-2 py-0.5 rounded bg-error-container/10 text-error text-[10px] font-bold">高优先级</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant text-[10px]">待响应</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-surface-container-low">
+<div class="flex -space-x-2">
+<div class="w-7 h-7 rounded-full border-2 border-white bg-slate-200"></div>
+<div class="w-7 h-7 rounded-full border-2 border-white bg-slate-300"></div>
+<span class="text-[10px] text-on-surface-variant ml-4 self-center">+12 人正在关注</span>
+</div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-full text-xs font-bold hover:opacity-90 active:scale-95 transition-all">我也能帮忙</button>
+</div>
+</div>
+<!-- Standard Sightings Card (Bento Style) -->
+<div class="bg-surface-container-low p-5 rounded-lg border border-transparent hover:border-primary-container/30 transition-all group">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">pets</span>
+</div>
+<div>
+<span class="block text-sm font-bold text-on-surface">目击：奶牛在操场出没</span>
+<span class="text-[10px] text-on-surface-variant">刚刚 · 综合体育场南侧</span>
+</div>
+</div>
+<div class="relative w-full aspect-[16/9] mb-4 overflow-hidden rounded-xl">
+<img alt="Cat Sighting" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="candid shot of a black and white tuxedo cat sitting alertly on a green lawn with university buildings in the background" src="images/img_9755ae2c.png"/>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/70 backdrop-blur-md rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">sell</span>
+<span class="text-[10px] font-bold text-primary">奶牛 (Tuxedo)</span>
+</div>
+</div>
+<p class="text-sm text-on-surface-variant leading-relaxed mb-4">
+                    奶牛今天看起来心情不错，在南侧看台晒太阳，有人刚投喂了冻干。
+                </p>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">favorite</span>
+<span class="text-xs">24</span>
+</button>
+<button class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+<span class="text-xs">8</span>
+</button>
+<button class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors ml-auto">
+<span class="material-symbols-outlined text-lg">share</span>
+</button>
+</div>
+</div>
+<!-- Diary Card (Memory Polaroid Style) -->
+<div class="bg-surface-container-lowest p-4 pb-8 rounded-md shadow-sm transform -rotate-1 hover:rotate-0 transition-transform duration-300">
+<div class="bg-surface-container-high w-full aspect-square rounded-sm mb-4 overflow-hidden relative">
+<img alt="Diary Photo" class="w-full h-full object-cover grayscale-[0.2] hover:grayscale-0 transition-all" data-alt="artistic soft focus photo of a sleeping calico cat curled up on a library bookshelf among old books" src="images/img_3b0696c5.png"/>
+<div class="absolute top-2 right-2 px-2 py-1 bg-black/30 backdrop-blur-sm text-white text-[9px] rounded">猫咪日记 · 2023.10.24</div>
+</div>
+<h4 class="font-headline font-semibold text-on-surface text-sm mb-1">图书馆的“三花”进入冬眠模式</h4>
+<p class="text-xs text-on-surface-variant font-body">今天去借书发现她在三楼社科区睡得很死，大家轻声点哦...</p>
+<div class="mt-4 flex items-center justify-between">
+<span class="text-[10px] font-medium text-tertiary">#宁静校园 #三花</span>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">person</span>
+<span class="text-[10px]">学号末位07</span>
+</div>
+</div>
+</div>
+<!-- Map Post Insight Card -->
+<div class="bg-surface-container-low p-5 rounded-xl border border-dashed border-outline-variant flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-primary-container/20 rounded-lg">
+<span class="material-symbols-outlined text-primary">map</span>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant bg-surface-container-highest px-2 py-1 rounded">地图动态</span>
+</div>
+<h3 class="font-bold text-on-surface text-md mb-2">更新了 4 处投喂点位置</h3>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+                        根据近期猫咪活动路径，志愿者更新了位于西区礼堂背后的隐蔽投喂点，请知悉。
+                    </p>
+</div>
+<div class="mt-6 flex items-center gap-2">
+<div class="flex-1 h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="w-2/3 h-full bg-secondary"></div>
+</div>
+<span class="text-[10px] font-bold text-secondary">协作完成 68%</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Post Creation Floating Action Button -->
+<button class="fixed bottom-28 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center active:scale-90 transition-all duration-300 z-50">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+<!-- BottomNavBar Shell -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/90 dark:bg-stone-900/90 backdrop-blur-lg rounded-t-[32px] shadow-[0_-8px_32px_rgba(56,56,51,0.04)]">
+<a class="flex flex-col items-center justify-center text-[#383833]/50 dark:text-stone-500 px-5 py-2 hover:text-[#8b5928] transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-['Be_Vietnam_Pro'] text-[11px] font-medium tracking-wide">首页</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#383833]/50 dark:text-stone-500 px-5 py-2 hover:text-[#8b5928] transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined mb-1">pets</span>
+<span class="font-['Be_Vietnam_Pro'] text-[11px] font-medium tracking-wide">校园</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#383833]/50 dark:text-stone-500 px-5 py-2 hover:text-[#8b5928] transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined mb-1">restaurant</span>
+<span class="font-['Be_Vietnam_Pro'] text-[11px] font-medium tracking-wide">投喂</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#fdbc82]/20 dark:bg-[#fdbc82]/10 text-[#8b5928] dark:text-[#fdbc82] rounded-full px-5 py-2 active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">forum</span>
+<span class="font-['Be_Vietnam_Pro'] text-[11px] font-medium tracking-wide">论坛</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#383833]/50 dark:text-stone-500 px-5 py-2 hover:text-[#8b5928] transition-all active:scale-90 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-['Be_Vietnam_Pro'] text-[11px] font-medium tracking-wide">我的</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,130 @@
+﻿> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:processDebugNavigationResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:generateDebugRFile UP-TO-DATE
+
+> Task :app:compileDebugKotlin FAILED
+.\gradlew : e: file:///G:/m
+aomaomao/app/src/main/java/
+com/example/myapplication/u
+i/screens/ForumScreen.kt:13
+7:29 Unresolved reference '
+RemoveRedEye'.
+所在位置 行:1 字符: 1
++ .\gradlew compileDebugKot
+lin --console plain > build
+_out2.txt 2>&1; p ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (e:   
+  file:///G:/m...'Remove   
+ RedEye'.:String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+e: file:///G:/maomaomao/app
+/src/main/java/com/example/
+myapplication/ui/screens/Fo
+rumScreen.kt:140:29 Unresol
+ved reference 'Book'.
+e: file:///G:/maomaomao/app
+/src/main/java/com/example/
+myapplication/ui/screens/Fo
+rumScreen.kt:177:45 Unresol
+ved reference 'AccessTime'.
+e: file:///G:/maomaomao/app
+/src/main/java/com/example/
+myapplication/ui/screens/Fo
+rumScreen.kt:263:45 Unresol
+ved reference 'Label'.
+e: file:///G:/maomaomao/app
+/src/main/java/com/example/
+myapplication/ui/screens/Fo
+rumScreen.kt:275:41 Unresol
+ved reference 'ChatBubble'.
+e: file:///G:/maomaomao/app
+/src/main/java/com/example/
+myapplication/ui/screens/Pr
+ofileScreen.kt:124:33 Unres
+olved reference 'Book'.
+e: file:///G:/maomaomao/app
+/src/main/java/com/example/
+myapplication/ui/screens/Pr
+ofileScreen.kt:131:39 Unres
+olved reference 'Water'.
+e: file:///G:/maomaomao/app
+/src/main/java/com/example/
+myapplication/ui/screens/Pr
+ofileScreen.kt:155:37 Unres
+olved reference 'RemoveRedE
+ye'.
+e: file:///G:/maomaomao/app
+/src/main/java/com/example/
+myapplication/ui/screens/Pr
+ofileScreen.kt:258:36 Unres
+olved reference '澶ф浠婂ぉ鐪嬭捣鏉
+ュ績鎯呬笉閿?.
+e: file:///G:/maomaomao/app
+/src/main/java/com/example/
+myapplication/ui/screens/Pr
+ofileScreen.kt:258:36 Liter
+als must be surrounded by w
+hitespace.
+e: file:///G:/maomaomao/app
+/src/main/java/com/example/
+myapplication/ui/screens/Pr
+ofileScreen.kt:258:47 Synta
+x error: Expecting an eleme
+nt.
+e: file:///G:/maomaomao/app
+/src/main/java/com/example/
+myapplication/ui/screens/Pr
+ofileScreen.kt:258:53 Synta
+x error: Expecting an eleme
+nt.
+e: file:///G:/maomaomao/app
+/src/main/java/com/example/
+myapplication/ui/screens/Pr
+ofileScreen.kt:258:54 Synta
+x error: Expecting ','.
+e: file:///G:/maomaomao/app
+/src/main/java/com/example/
+myapplication/ui/screens/Pr
+ofileScreen.kt:317:41 Unres
+olved reference 'ArrowForwa
+rdIos'.
+
+FAILURE: Build failed with 
+an exception.
+
+* What went wrong:
+Execution failed for task '
+:app:compileDebugKotlin'.
+> A failure occurred while 
+executing org.jetbrains.kot
+lin.compilerRunner.GradleCo
+mpilerRunnerWithWorkers$Gra
+dleKotlinCompilerWorkAction
+   > Compilation error. See
+ log for more details
+
+* Try:
+> Run with --stacktrace opt
+ion to get the stack trace.
+> Run with --info or --debu
+g option to get more log ou
+tput.
+> Run with --scan to get fu
+ll insights from a Build Sc
+an (powered by Develocity).
+> Get more help at https://
+help.gradle.org.
+
+BUILD FAILED in 1s
+6 actionable tasks: 1 executed, 5 up-to-date

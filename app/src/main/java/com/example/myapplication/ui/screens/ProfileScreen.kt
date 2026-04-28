@@ -8,6 +8,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.MenuBook
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,12 +26,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import com.example.myapplication.R
 import com.example.myapplication.ui.theme.*
+import com.example.myapplication.ui.viewmodel.MainViewModel
 
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(viewModel: MainViewModel? = null) {
     val scrollState = rememberScrollState()
+    val uiState by viewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(null) }
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(
             modifier = Modifier
@@ -39,7 +48,9 @@ fun ProfileScreen() {
         ) {
             Spacer(modifier = Modifier.height(80.dp))
             ProfileHeroCard()
+            TokenBalanceSection(tokenBalance = uiState?.tokenBalance ?: 350)
             GoodwillStatsSection()
+            KnowledgeBadgesSection()
             FollowedCatsSection()
             CompanionTimelineSection()
             ProfileSettingsSection()
@@ -104,12 +115,43 @@ fun ProfileHeroCard() {
                 Text("路过图书馆的小王", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = (-0.5).sp)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer, CircleShape).padding(horizontal = 12.dp, vertical = 4.dp)) {
-                        Text("华东师范大学", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSecondaryContainer, fontWeight = FontWeight.SemiBold)
+                        Text("北京交通大学", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSecondaryContainer, fontWeight = FontWeight.SemiBold)
                     }
                     Box(modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), CircleShape).background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f), CircleShape).padding(horizontal = 12.dp, vertical = 4.dp)) {
                         Text("校园观察者", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun TokenBalanceSection(tokenBalance: Int) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(20.dp).fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text("我的小鱼干", fontSize = 14.sp, color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f))
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("🐟", fontSize = 24.sp)
+                    Text("$tokenBalance", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onTertiaryContainer)
+                }
+            }
+            Button(
+                onClick = { },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("兑换奖励", color = MaterialTheme.colorScheme.onTertiary, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -126,18 +168,18 @@ fun GoodwillStatsSection() {
             // Stat 1
             StatBentoCard(
                 modifier = Modifier.weight(1f),
-                icon = Icons.Outlined.Home,
+                icon = Icons.Outlined.CheckCircle,
                 iconColor = MaterialTheme.colorScheme.tertiary,
-                value = "42",
-                label = "累计补水次数"
+                value = "12",
+                label = "连续签到天数"
             )
             // Stat 2
             StatBentoCard(
                 modifier = Modifier.weight(1f),
-                icon = Icons.Outlined.ShoppingCart,
+                icon = Icons.Outlined.MenuBook,
                 iconColor = MaterialTheme.colorScheme.primary,
-                value = "15",
-                label = "投喂记录"
+                value = "5",
+                label = "学习完成数"
             )
         }
         // Highlighted stat
@@ -155,6 +197,33 @@ fun GoodwillStatsSection() {
                 Text("目击报告数", fontSize = 12.sp, color = Color.White.copy(alpha = 0.9f))
             }
         }
+    }
+}
+
+@Composable
+fun KnowledgeBadgesSection() {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Icon(Icons.Outlined.Star, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(20.dp))
+            Text("知识勋章", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+        }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            BadgeCard(icon = "🌱", name = "初级观察员", color = MaterialTheme.colorScheme.primaryContainer, onColor = MaterialTheme.colorScheme.onPrimaryContainer)
+            BadgeCard(icon = "💧", name = "懂水大师", color = MaterialTheme.colorScheme.secondaryContainer, onColor = MaterialTheme.colorScheme.onSecondaryContainer)
+            BadgeCard(icon = "🔒", name = "行为学家", color = SurfaceContainerHigh, onColor = MaterialTheme.colorScheme.outline)
+        }
+    }
+}
+
+@Composable
+fun BadgeCard(icon: String, name: String, color: Color, onColor: Color) {
+    Column(
+        modifier = Modifier.background(color, RoundedCornerShape(12.dp)).padding(16.dp).width(80.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(icon, fontSize = 28.sp)
+        Text(name, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = onColor, textAlign = TextAlign.Center)
     }
 }
 
@@ -276,6 +345,20 @@ fun CompanionTimelineSection() {
                                     Text("草坪东侧\n活跃", fontSize = 10.sp, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
+                        }
+                    }
+                }
+                // Item 3
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("10月21日", fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary, letterSpacing = 2.sp)
+                    Box(modifier = Modifier.fillMaxWidth().background(SurfaceContainerLow, RoundedCornerShape(12.dp)).padding(16.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row {
+                                Text("完成了学习：", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium)
+                                Text("《猫咪行为学入门》", fontSize = 14.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                            }
+                            Text("掌握了识别猫咪安定信号的基本知识。", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
                         }
                     }
                 }

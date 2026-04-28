@@ -1,10 +1,12 @@
 package com.example.myapplication.ui.screens
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.automirrored.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -16,10 +18,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.example.myapplication.R
 import com.example.myapplication.ui.theme.*
+import com.example.myapplication.ui.viewmodel.MainViewModel
 
 @Composable
-fun FeedScreen() {
+fun CompanionScreen(viewModel: MainViewModel? = null) {
     val scrollState = rememberScrollState()
+    val uiState by viewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(null) }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(
@@ -39,7 +43,12 @@ fun FeedScreen() {
             TipCalloutSection()
             Spacer(modifier = Modifier.height(32.dp))
 
-            ScienceConsoleSection()
+            CompanionConsoleSection(onAction = { actionName ->
+                viewModel?.interactWithCat(actionName, "小黑", 5)
+            })
+            Spacer(modifier = Modifier.height(32.dp))
+
+            CompanionRecordSection(records = uiState?.companionRecords ?: emptyList())
             Spacer(modifier = Modifier.height(32.dp))
 
             OfflineLinkageSection()
@@ -47,12 +56,12 @@ fun FeedScreen() {
             Spacer(modifier = Modifier.height(120.dp))
         }
 
-        FeedTopAppBar()
+        CompanionTopAppBar()
     }
 }
 
 @Composable
-fun FeedTopAppBar() {
+fun CompanionTopAppBar() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -70,14 +79,14 @@ fun FeedTopAppBar() {
                     .border(2.dp, MaterialTheme.colorScheme.primaryContainer, CircleShape)
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.img_b422dd3a),
+                    painter = painterResource(id = R.drawable.img_net_b422dd3a07),
                     contentDescription = "User",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
             }
             Text(
-                text = "早安，喵伴守护者",
+                text = "陪伴中心",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.primary,
@@ -95,6 +104,27 @@ fun FeedTopAppBar() {
 
 @Composable
 fun PolaroidStatusSection() {
+    // Breathing animation for cat image
+    val infiniteTransition = rememberInfiniteTransition(label = "breathe")
+    val breatheScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.02f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "breathe_scale"
+    )
+    val breatheAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.95f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "breathe_alpha"
+    )
+
     Box(modifier = Modifier.fillMaxWidth()) {
         Card(
             modifier = Modifier
@@ -105,9 +135,19 @@ fun PolaroidStatusSection() {
             shape = RoundedCornerShape(12.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Box(modifier = Modifier.fillMaxWidth().aspectRatio(4f/3f).clip(RoundedCornerShape(8.dp))) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(4f/3f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .graphicsLayer {
+                            scaleX = breatheScale
+                            scaleY = breatheScale
+                            alpha = breatheAlpha
+                        }
+                ) {
                     Image(
-                        painter = painterResource(id = R.drawable.img_c9e15cf0),
+                        painter = painterResource(id = R.drawable.img_net_c9e15cf0b7),
                         contentDescription = "小黑",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
@@ -216,9 +256,9 @@ fun TipCalloutSection() {
         // Left border trick: Add a Box instead if wanted, but simpler to use internal row
         Icon(Icons.Outlined.Info, contentDescription = "Idea", tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.padding(top = 4.dp))
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("科学投喂建议", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onTertiaryContainer)
+            Text("科学饮食建议", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onTertiaryContainer)
             Text(
-                text = "当前环境湿度较低，建议补水优先。近期小黑已有3次零食记录，为了预防肥胖，不建议高频零食投喂。",
+                text = "当前环境湿度较低，建议补水优先。近期小黑已有3次零食记录，为了预防肥胖，不建议高频喂食零食。",
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f),
                 lineHeight = 18.sp
@@ -227,39 +267,88 @@ fun TipCalloutSection() {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ScienceConsoleSection() {
+fun CompanionConsoleSection(onAction: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            // Button 1
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            maxItemsInEachRow = 3
+        ) {
+            // Button 1: 安抚
             Button(
-                onClick = { },
+                onClick = { onAction("安抚") },
+                modifier = Modifier.weight(1f).aspectRatio(1f).shadow(8.dp, RoundedCornerShape(12.dp)),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.White),
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                    Icon(Icons.Outlined.FavoriteBorder, contentDescription = "Comfort", modifier = Modifier.size(32.dp).padding(bottom = 8.dp))
+                    Text("安抚", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                }
+            }
+            
+            // Button 2: 观察
+            Button(
+                onClick = { onAction("观察") },
+                modifier = Modifier.weight(1f).aspectRatio(1f).shadow(8.dp, RoundedCornerShape(12.dp)),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer),
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                    Icon(Icons.Outlined.Visibility, contentDescription = "Observe", modifier = Modifier.size(32.dp).padding(bottom = 8.dp))
+                    Text("观察", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                }
+            }
+
+            // Button 3: 记录
+            Button(
+                onClick = { onAction("记录") },
+                modifier = Modifier.weight(1f).aspectRatio(1f).shadow(8.dp, RoundedCornerShape(12.dp)),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                    Icon(Icons.Outlined.Edit, contentDescription = "Record", modifier = Modifier.size(32.dp).padding(bottom = 8.dp))
+                    Text("记录", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                }
+            }
+
+            // Button 4: 补水
+            Button(
+                onClick = { onAction("补水") },
                 modifier = Modifier.weight(1f).aspectRatio(1f).shadow(8.dp, RoundedCornerShape(12.dp)),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary, contentColor = Color.White),
                 contentPadding = PaddingValues(0.dp)
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                    Icon(Icons.Outlined.Info, contentDescription = "Water", modifier = Modifier.size(36.dp).padding(bottom = 8.dp))
-                    Text("补水", fontSize = 16.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-                    Text("改善泌尿健康", fontSize = 10.sp, color = Color.White.copy(alpha = 0.7f), modifier = Modifier.padding(top = 4.dp))
+                    Icon(Icons.Outlined.Opacity, contentDescription = "Water", modifier = Modifier.size(32.dp).padding(bottom = 8.dp))
+                    Text("补水", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
                 }
             }
-            
-            // Button 2
+
+            // Button 5: 添粮
             Button(
-                onClick = { },
+                onClick = { onAction("添粮") },
                 modifier = Modifier.weight(1f).aspectRatio(1f).shadow(8.dp, RoundedCornerShape(12.dp)),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer),
                 contentPadding = PaddingValues(0.dp)
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                    Icon(Icons.Outlined.ShoppingCart, contentDescription = "Feed", modifier = Modifier.size(36.dp).padding(bottom = 8.dp))
-                    Text("喂食", fontSize = 16.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-                    Text("维持能量平衡", fontSize = 10.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f), modifier = Modifier.padding(top = 4.dp))
+                    Icon(Icons.Outlined.Restaurant, contentDescription = "Feed", modifier = Modifier.size(32.dp).padding(bottom = 8.dp))
+                    Text("添粮", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
                 }
             }
+
+            // Empty box to balance the grid
+            Box(modifier = Modifier.weight(1f).aspectRatio(1f))
         }
         
         // Feedback
@@ -275,7 +364,40 @@ fun ScienceConsoleSection() {
         ) {
             Icon(Icons.Outlined.CheckCircle, contentDescription = "Done", tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("已完成今日补水关怀", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSecondaryContainer)
+            Text("已完成今日陪伴关怀", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSecondaryContainer)
+        }
+    }
+}
+
+@Composable
+fun CompanionRecordSection(records: List<com.example.myapplication.ui.viewmodel.CompanionRecord>) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Icon(Icons.AutoMirrored.Outlined.List, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(20.dp))
+            Text("今日陪伴记录", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+        }
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = SurfaceContainerLow),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                if (records.isEmpty()) {
+                    Text("今日暂无互动记录", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else {
+                    records.take(5).forEach { record ->
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            val dotColor = when (record.colorType) {
+                                1 -> MaterialTheme.colorScheme.primary
+                                2 -> MaterialTheme.colorScheme.secondary
+                                else -> MaterialTheme.colorScheme.tertiary
+                            }
+                            Box(modifier = Modifier.size(8.dp).background(dotColor, CircleShape))
+                            Text("${record.time.substringAfter(" ")} ${record.description}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -54,14 +54,14 @@ fun CampusScreen(navController: NavController? = null) {
         Box(modifier = Modifier.fillMaxSize()) {
             BuildingCard(
                 name = "图书馆",
-                imageRes = R.drawable.img_e706152f,
+                imageRes = R.drawable.img_net_e706152ff1,
                 rotation = -2f,
                 offsetX = 0.15f,
                 offsetY = 0.22f
             )
             BuildingCard(
                 name = "思源楼",
-                imageRes = R.drawable.img_c8ec049a,
+                imageRes = R.drawable.img_net_c8ec049afe,
                 rotation = 1f,
                 offsetX = 0.7f,
                 offsetY = 0.55f
@@ -70,13 +70,13 @@ fun CampusScreen(navController: NavController? = null) {
             // Cat Hotspots
             CatHotspot(
                 name = "大白在这儿",
-                imageRes = R.drawable.img_cf9a4fdf,
+                imageRes = R.drawable.img_net_cf9a4fdf2a,
                 offsetX = 0.28f,
                 offsetY = 0.35f
             )
             CatHotspot(
                 name = "橘子刚喝过水",
-                imageRes = R.drawable.img_7f99b46c,
+                imageRes = R.drawable.img_net_7f99b46ce0,
                 offsetX = 0.65f,
                 offsetY = 0.42f
             )
@@ -116,9 +116,9 @@ fun MapCanvasLayer() {
         // Lake
         val lakePath = Path().apply {
             moveTo(w * 0.7f, h * 0.3f)
-            quadraticBezierTo(w * 0.75f, h * 0.25f, w * 0.85f, h * 0.35f)
-            quadraticBezierTo(w * 0.95f, h * 0.45f, w * 0.95f, h * 0.55f)
-            quadraticBezierTo(w * 0.85f, h * 0.6f, w * 0.75f, h * 0.5f)
+            quadraticTo(w * 0.75f, h * 0.25f, w * 0.85f, h * 0.35f)
+            quadraticTo(w * 0.95f, h * 0.45f, w * 0.95f, h * 0.55f)
+            quadraticTo(w * 0.85f, h * 0.6f, w * 0.75f, h * 0.5f)
             close()
         }
         drawPath(lakePath, color = blueColor)
@@ -126,9 +126,9 @@ fun MapCanvasLayer() {
         // Green Area 1
         val greenPath = Path().apply {
             moveTo(w * 0.1f, h * 0.1f)
-            quadraticBezierTo(w * 0.3f, h * 0.05f, w * 0.4f, h * 0.2f)
-            quadraticBezierTo(w * 0.6f, h * 0.3f, w * 0.5f, h * 0.5f)
-            quadraticBezierTo(w * 0.2f, h * 0.6f, w * 0.1f, h * 0.4f)
+            quadraticTo(w * 0.3f, h * 0.05f, w * 0.4f, h * 0.2f)
+            quadraticTo(w * 0.6f, h * 0.3f, w * 0.5f, h * 0.5f)
+            quadraticTo(w * 0.2f, h * 0.6f, w * 0.1f, h * 0.4f)
             close()
         }
         drawPath(greenPath, color = greenColor)
@@ -136,16 +136,16 @@ fun MapCanvasLayer() {
         // Main Road Dotted
         val roadPath = Path().apply {
             moveTo(0f, h * 0.5f)
-            quadraticBezierTo(w * 0.25f, h * 0.48f, w * 0.5f, h * 0.5f)
-            quadraticBezierTo(w * 0.75f, h * 0.52f, w, h * 0.52f)
+            quadraticTo(w * 0.25f, h * 0.48f, w * 0.5f, h * 0.5f)
+            quadraticTo(w * 0.75f, h * 0.52f, w, h * 0.52f)
         }
         drawPath(roadPath, color = dottedLineColor, style = Stroke(width = 8f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(24f, 24f), 0f)))
 
         // Route Dotted
         val routePath = Path().apply {
             moveTo(w * 0.15f, h * 0.4f)
-            quadraticBezierTo(w * 0.3f, h * 0.35f, w * 0.45f, h * 0.48f)
-            quadraticBezierTo(w * 0.6f, h * 0.6f, w * 0.8f, h * 0.38f)
+            quadraticTo(w * 0.3f, h * 0.35f, w * 0.45f, h * 0.48f)
+            quadraticTo(w * 0.6f, h * 0.6f, w * 0.8f, h * 0.38f)
         }
         drawPath(routePath, color = routeLineColor, style = Stroke(width = 12f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(16f, 16f), 0f), cap = StrokeCap.Round))
     }
@@ -282,7 +282,7 @@ fun CampusTopAppBar() {
                     .border(2.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f), CircleShape)
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.img_aaf424f0),
+                    painter = painterResource(id = R.drawable.img_net_aaf424f0b6),
                     contentDescription = "User",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -363,27 +363,43 @@ fun CampusBottomSheet(navController: NavController? = null) {
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        // Cards
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            Column(
+        // Approach Guide & Time Advice & DND Alert
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            // "Do Not Disturb" Alert
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .background(SurfaceContainerLow, RoundedCornerShape(12.dp))
-                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f))
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(MaterialTheme.colorScheme.primary))
-                Text("推荐互动", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
-                Text("温和呼唤，保持2米距离", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+                Icon(Icons.Outlined.DoNotDisturbOn, contentDescription = "Do Not Disturb", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                Text("当前时段猫咪多在午休，请勿近距离打扰或强行喂食。", fontSize = 12.sp, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
             }
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .background(SurfaceContainerLow, RoundedCornerShape(12.dp))
-                    .padding(16.dp)
-            ) {
-                Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(MaterialTheme.colorScheme.secondary))
-                Text("环境状态", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
-                Text("静谧，适合小憩", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+            
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(SurfaceContainerLow, RoundedCornerShape(12.dp))
+                        .padding(16.dp)
+                ) {
+                    Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(MaterialTheme.colorScheme.primary))
+                    Text("接近指南 (午后)", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+                    Text("远观记录即可，保持 3 米以上安全社交距离。", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, lineHeight = 18.sp)
+                }
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(SurfaceContainerLow, RoundedCornerShape(12.dp))
+                        .padding(16.dp)
+                ) {
+                    Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(MaterialTheme.colorScheme.secondary))
+                    Text("推荐互动时间", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+                    Text("傍晚 17:00 后活跃，适合温和抚摸与梳毛。", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, lineHeight = 18.sp)
+                }
             }
         }
         
@@ -424,9 +440,9 @@ fun CampusBottomSheet(navController: NavController? = null) {
 
         // Residents
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            CatChip(name = "大白", imageRes = R.drawable.img_e7d3e76b, onClick = { navController?.navigate("catProfile") })
-            CatChip(name = "橘子", imageRes = R.drawable.img_a53f9ce8, onClick = { navController?.navigate("catProfile") })
-            CatChip(name = "小墨", imageRes = R.drawable.img_8c081179, onClick = { navController?.navigate("catProfile") })
+            CatChip(name = "大白", imageRes = R.drawable.img_net_e7d3e76bea, onClick = { navController?.navigate("catProfile") })
+            CatChip(name = "橘子", imageRes = R.drawable.img_net_a53f9ce8f2, onClick = { navController?.navigate("catProfile") })
+            CatChip(name = "小墨", imageRes = R.drawable.img_net_8c081179f2, onClick = { navController?.navigate("catProfile") })
         }
     }
 }

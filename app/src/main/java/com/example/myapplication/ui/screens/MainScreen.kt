@@ -32,17 +32,19 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.ui.navigation.BottomNavItem
+import com.example.myapplication.ui.viewmodel.MainViewModel
 
 @Composable
-fun MainScreen() {
+fun MainScreen(viewModel: MainViewModel = viewModel()) {
     val navController = rememberNavController()
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val showBottomBar = currentRoute in listOf(
         BottomNavItem.Home.route, BottomNavItem.Campus.route,
-        BottomNavItem.Feed.route, BottomNavItem.Forum.route, BottomNavItem.Profile.route
+        BottomNavItem.Companion.route, BottomNavItem.Forum.route, BottomNavItem.Profile.route
     )
 
     Scaffold(
@@ -56,13 +58,19 @@ fun MainScreen() {
                 .fillMaxSize()
                 .padding(bottom = innerPadding.calculateBottomPadding())
         ) {
-            composable(BottomNavItem.Home.route) { HomeScreen(navController = navController) }
+            composable(BottomNavItem.Home.route) { HomeScreen(navController = navController, viewModel = viewModel) }
             composable(BottomNavItem.Campus.route) { CampusScreen(navController = navController) }
-            composable(BottomNavItem.Feed.route) { FeedScreen() }
+            composable(BottomNavItem.Companion.route) { CompanionScreen(viewModel = viewModel) }
             composable(BottomNavItem.Forum.route) { ForumScreen() }
-            composable(BottomNavItem.Profile.route) { ProfileScreen() }
+            composable(BottomNavItem.Profile.route) { ProfileScreen(viewModel = viewModel) }
             composable("catProfile") {
                 CatProfileScreen(onBackClick = { navController.popBackStack() })
+            }
+            composable("tasks") {
+                TaskScreen(onBackClick = { navController.popBackStack() }, viewModel = viewModel)
+            }
+            composable("education") {
+                EducationScreen(onBackClick = { navController.popBackStack() }, viewModel = viewModel)
             }
         }
     }
@@ -73,7 +81,7 @@ fun CustomBottomNavigationBar(navController: NavController) {
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.Campus,
-        BottomNavItem.Feed,
+        BottomNavItem.Companion,
         BottomNavItem.Forum,
         BottomNavItem.Profile
     )
@@ -142,12 +150,3 @@ fun BottomNavItemView(item: BottomNavItem, selected: Boolean, onClick: () -> Uni
     }
 }
 
-@Composable
-fun PlaceholderScreen(title: String) {
-    Box(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = title, style = MaterialTheme.typography.headlineMedium)
-    }
-}

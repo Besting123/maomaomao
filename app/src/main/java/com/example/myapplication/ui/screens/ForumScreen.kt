@@ -8,6 +8,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.Group
+import androidx.compose.material.icons.outlined.MenuBook
+import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -39,6 +42,14 @@ fun ForumScreen() {
             Spacer(modifier = Modifier.height(24.dp))
             CategoryChipsRow()
             Spacer(modifier = Modifier.height(24.dp))
+
+            // Team Event Card
+            TeamEventCard()
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Knowledge Share Card
+            KnowledgeShareCard()
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Emergency Card
             EmergencyForumCard()
@@ -132,6 +143,8 @@ fun CategoryChipsRow() {
     data class Chip(val icon: androidx.compose.ui.graphics.vector.ImageVector, val label: String, val selected: Boolean)
     val chips = listOf(
         Chip(Icons.Outlined.Search, "目击记录", true),
+        Chip(Icons.Outlined.Group, "组队活动", false),
+        Chip(Icons.Outlined.MenuBook, "知识分享", false),
         Chip(Icons.Outlined.Info, "求助信息", false),
         Chip(Icons.Outlined.Star, "经验分享", false),
         Chip(Icons.Outlined.Home, "猫咪日记", false),
@@ -262,7 +275,7 @@ fun SightingForumCard() {
                     }
                 }
             }
-            Text("奶牛今天看起来心情不错，在南侧看台晒太阳，有人刚投喂了冻干。", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 22.sp)
+            Text("奶牛今天看起来心情不错，在南侧看台晒太阳，有人刚提供了冻干小零食。", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 22.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                 Row(modifier = Modifier.clickable { liked = !liked }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Icon(if (liked) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder, contentDescription = "Like", tint = if (liked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
@@ -321,14 +334,88 @@ fun MapPostCard(modifier: Modifier = Modifier) {
                     Text("地图动态", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            Text("更新了 4 处投喂点位置", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-            Text("根据近期猫咪活动路径，志愿者更新了位于西区礼堂背后的隐蔽投喂点，请知悉。", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
+            Text("更新了 4 处能量补给站位置", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text("根据近期猫咪活动路径，志愿者更新了位于西区礼堂背后的隐蔽补给点，请知悉。", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
             Spacer(modifier = Modifier.weight(1f))
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Box(modifier = Modifier.weight(1f).height(4.dp).clip(CircleShape).background(SurfaceContainerHighest)) {
                     Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(0.68f).background(MaterialTheme.colorScheme.secondary, CircleShape))
                 }
                 Text("协作完成 68%", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
+            }
+        }
+    }
+}
+
+@Composable
+fun TeamEventCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primaryContainer)
+    ) {
+        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(modifier = Modifier.size(32.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Outlined.Group, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                }
+                Column {
+                    Text("组队：周末自制猫窝换新活动", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("1小时前 · 志愿者协会", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Box(modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 2.dp)) {
+                    Text("招募中", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
+                }
+            }
+            Text("天气渐冷，本周末(10.28)下午1点在学生活动中心集合，利用回收旧衣物制作保暖猫窝，预计需要 5-8 人参与，欢迎报名！", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Icon(Icons.Outlined.Event, contentDescription = null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(14.dp))
+                    Text("10月28日 13:00", fontSize = 12.sp, color = MaterialTheme.colorScheme.outline)
+                }
+                Button(
+                    onClick = {},
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                    modifier = Modifier.height(32.dp)
+                ) {
+                    Text("立即报名", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun KnowledgeShareCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = SurfaceContainerLow),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(modifier = Modifier.size(32.dp).clip(CircleShape).background(MaterialTheme.colorScheme.tertiaryContainer), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Outlined.MenuBook, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(16.dp))
+                }
+                Column {
+                    Text("科普：秋季猫咪易发疾病及预防", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("3小时前 · 知识分享", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            Text("秋季气温变化大，校园流浪猫极易感染猫鼻支等上呼吸道疾病。在此向大家科普如何通过观察猫咪眼鼻分泌物进行初步判断...", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("#医疗科普", fontSize = 11.sp, color = MaterialTheme.colorScheme.tertiary)
+                    Text("#秋季护理", fontSize = 11.sp, color = MaterialTheme.colorScheme.tertiary)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Icon(Icons.Outlined.Star, contentDescription = null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(16.dp))
+                    Text("收藏 34", fontSize = 12.sp, color = MaterialTheme.colorScheme.outline)
+                }
             }
         }
     }

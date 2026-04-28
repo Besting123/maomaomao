@@ -3,11 +3,13 @@ package com.example.myapplication.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -24,22 +26,34 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.Block
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Mood
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Psychology
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.TheaterComedy
 import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -82,6 +96,12 @@ fun CatProfileScreen(onBackClick: () -> Unit) {
 
             CatProfileHeroSection()
             Spacer(modifier = Modifier.height(24.dp))
+            
+            CatMoodIndicatorSection()
+            Spacer(modifier = Modifier.height(24.dp))
+
+            CatInteractionBoundarySection()
+            Spacer(modifier = Modifier.height(24.dp))
 
             CatPersonalitySection()
             Spacer(modifier = Modifier.height(24.dp))
@@ -96,6 +116,9 @@ fun CatProfileScreen(onBackClick: () -> Unit) {
             Spacer(modifier = Modifier.height(24.dp))
 
             CatTimelineSection()
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            CatMyCompanionRecordsSection()
             Spacer(modifier = Modifier.height(24.dp))
 
             CatPersonalityTheater()
@@ -119,7 +142,7 @@ private fun CatProfileTopBar(onBackClick: () -> Unit) {
     ) {
         IconButton(onClick = onBackClick) {
             Icon(
-                Icons.Outlined.ArrowBack,
+                Icons.AutoMirrored.Outlined.ArrowBack,
                 contentDescription = "返回",
                 tint = MaterialTheme.colorScheme.onSurface
             )
@@ -152,6 +175,8 @@ private fun CatProfileTopBar(onBackClick: () -> Unit) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CatProfileHeroSection() {
+    var isFollowed by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -160,7 +185,7 @@ private fun CatProfileHeroSection() {
             .clip(RoundedCornerShape(24.dp))
     ) {
         Image(
-            painter = painterResource(id = R.drawable.img_31854930),
+            painter = painterResource(id = R.drawable.img_net_cf9a4fdf2a),
             contentDescription = "大橘照片",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
@@ -212,23 +237,106 @@ private fun CatProfileHeroSection() {
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(
-                modifier = Modifier
-                    .background(
-                        Color.White.copy(alpha = 0.2f),
-                        RoundedCornerShape(50)
-                    )
-                    .border(1.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(50))
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
             ) {
-                Box(
+                Row(
                     modifier = Modifier
-                        .size(8.dp)
-                        .background(Color(0xFF4CAF50), CircleShape)
-                )
-                Text("健康", fontSize = 13.sp, color = Color.White, fontWeight = FontWeight.Medium)
-                Text("A+", fontSize = 13.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                        .background(
+                            Color.White.copy(alpha = 0.2f),
+                            RoundedCornerShape(50)
+                        )
+                        .border(1.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(50))
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .background(Color(0xFF4CAF50), CircleShape)
+                    )
+                    Text("健康", fontSize = 13.sp, color = Color.White, fontWeight = FontWeight.Medium)
+                    Text("A+", fontSize = 13.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                }
+
+                Button(
+                    onClick = { isFollowed = !isFollowed },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isFollowed) Color.White.copy(alpha = 0.3f) else MaterialTheme.colorScheme.primary,
+                        contentColor = if (isFollowed) Color.White else MaterialTheme.colorScheme.onPrimary
+                    ),
+                    shape = RoundedCornerShape(50),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier.height(36.dp)
+                ) {
+                    Icon(
+                        if (isFollowed) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(if (isFollowed) "已关注" else "关注此猫", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CatMoodIndicatorSection() {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        SectionHeader(icon = Icons.Outlined.Mood, title = "今日心情与防备心")
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            // Mood
+            Column(
+                modifier = Modifier.weight(1f).background(SurfaceContainerLow, RoundedCornerShape(16.dp)).padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text("☀️", fontSize = 32.sp)
+                Text("心情愉悦", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text("适合互动", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+            }
+            // Defense Level
+            Column(
+                modifier = Modifier.weight(1f).background(SurfaceContainerLow, RoundedCornerShape(16.dp)).padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text("🛡️", fontSize = 32.sp)
+                Text("防备心：低", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text("可尝试轻抚", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+            }
+        }
+    }
+}
+
+@Composable
+private fun CatInteractionBoundarySection() {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        SectionHeader(icon = Icons.Outlined.Block, title = "互动边界指南")
+        Spacer(modifier = Modifier.height(16.dp))
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(modifier = Modifier.size(8.dp).background(Color(0xFF4CAF50), CircleShape))
+                    Text("🟢 绿灯区：下巴、额头、耳根（非常享受）", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(modifier = Modifier.size(8.dp).background(Color(0xFFFF9800), CircleShape))
+                    Text("🟡 黄灯区：背部（视心情而定，不可长摸）", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(modifier = Modifier.size(8.dp).background(MaterialTheme.colorScheme.error, CircleShape))
+                    Text("🔴 红灯区：肚子、尾巴、爪子（绝对禁区！）", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                }
             }
         }
     }
@@ -351,7 +459,7 @@ private fun CatMemoryPolaroid() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(id = R.drawable.img_ec43d2ec),
+            painter = painterResource(id = R.drawable.img_net_ec43d2eca7),
             contentDescription = "记忆照片",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -521,7 +629,7 @@ private fun CatHealthAdviceSection() {
                 modifier = Modifier.size(24.dp)
             )
             Text(
-                text = "健康与投喂建议",
+                text = "健康与饮食建议",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -531,7 +639,7 @@ private fun CatHealthAdviceSection() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "严禁投喂",
+            text = "严禁喂食",
             fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.error
@@ -572,7 +680,7 @@ private fun CatHealthAdviceSection() {
                 .padding(16.dp)
         ) {
             Text(
-                text = "如发现大橘出现精神萎靡、食欲下降、毛发异常脱落等情况，请立即联系校园流浪猫志愿者团队。日常投喂请使用指定猫粮，放置于艺术楼南侧喂食点。",
+                text = "如发现大橘出现精神萎靡、食欲下降、毛发异常脱落等情况，请立即联系校园流浪猫志愿者团队。日常加餐请使用指定猫粮，放置于艺术楼南侧补给点。",
                 fontSize = 13.sp,
                 lineHeight = 22.sp,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -604,7 +712,7 @@ private fun ProhibitedItem(text: String) {
 @Composable
 private fun CatTimelineSection() {
     Column(modifier = Modifier.fillMaxWidth()) {
-        SectionHeader(icon = Icons.Outlined.AutoStories, title = "生命记录时间轴")
+        SectionHeader(icon = Icons.Outlined.AutoStories, title = "成长与生命轨迹")
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -636,7 +744,7 @@ private fun CatTimelineSection() {
                     dotColor = MaterialTheme.colorScheme.tertiary,
                     time = "3天前 · 档案更新",
                     title = "更新了冬季换毛写真",
-                    images = listOf(R.drawable.img_e7d3e76b, R.drawable.img_a53f9ce8, R.drawable.img_8c081179)
+                    images = listOf(R.drawable.img_net_e7d3e76bea, R.drawable.img_net_a53f9ce8f2, R.drawable.img_net_8c081179f2)
                 )
             }
         }
@@ -747,6 +855,50 @@ private fun TimelineItemWithImages(
 }
 
 @Composable
+private fun CatMyCompanionRecordsSection() {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        SectionHeader(icon = Icons.Outlined.History, title = "我的陪伴记录")
+        Spacer(modifier = Modifier.height(16.dp))
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+            colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
+            shape = RoundedCornerShape(16.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+        ) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                // Record 1
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(modifier = Modifier.size(36.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape), contentAlignment = Alignment.Center) {
+                        Text("💧", fontSize = 16.sp)
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("为大橘补水", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                            Text("10月24日", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Text("大橘今天看起来心情不错，喝了不少水。", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                
+                // Record 2
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(modifier = Modifier.size(36.dp).background(MaterialTheme.colorScheme.secondaryContainer, CircleShape), contentAlignment = Alignment.Center) {
+                        Text("📷", fontSize = 16.sp)
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("记录了观察日志", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                            Text("10月20日", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Text("发现大橘在图书馆后门睡午觉。", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun CatPersonalityTheater() {
     Column(
         modifier = Modifier
@@ -810,7 +962,7 @@ private fun CatPersonalityTheater() {
                     )
             )
             Image(
-                painter = painterResource(id = R.drawable.img_a53f9ce8),
+                painter = painterResource(id = R.drawable.img_net_a53f9ce8f2),
                 contentDescription = "大橘个性照",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

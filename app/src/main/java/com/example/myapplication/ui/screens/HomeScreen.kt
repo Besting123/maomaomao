@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screens
 
+import android.widget.Toast
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -50,6 +51,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.remember
 import androidx.navigation.NavController
 import com.example.myapplication.ui.theme.*
@@ -101,6 +103,7 @@ fun HomeScreen(navController: NavController? = null, viewModel: MainViewModel? =
 
 @Composable
 fun TopAppBarSection(tokenBalance: Int) {
+    val context = LocalContext.current
     val animatedToken by animateIntAsState(
         targetValue = tokenBalance,
         animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
@@ -170,7 +173,7 @@ fun TopAppBarSection(tokenBalance: Int) {
                 }
             }
             IconButton(
-                onClick = { },
+                onClick = { Toast.makeText(context, "今日提醒：傍晚适合远观猫咪并记录状态", Toast.LENGTH_SHORT).show() },
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
@@ -362,7 +365,10 @@ fun ActivityCard(
 fun CoreFunctionsBento(navController: NavController? = null) {
     Column(modifier = Modifier.padding(24.dp).fillMaxWidth()) {
         Card(
-            modifier = Modifier.fillMaxWidth().height(100.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .clickable { navController?.navigate("campus") },
             colors = CardDefaults.cardColors(containerColor = SurfaceContainerLow),
             shape = RoundedCornerShape(16.dp)
         ) {
@@ -373,7 +379,7 @@ fun CoreFunctionsBento(navController: NavController? = null) {
             ) {
                 Column {
                     Text("校园猫咪地图", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    Text("实时掌握它们都在哪里", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                    Text("查看区域热点与接近指南", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                 }
                 Box(modifier = Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) {
                     Icon(Icons.Outlined.LocationOn, contentDescription = "Map", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))

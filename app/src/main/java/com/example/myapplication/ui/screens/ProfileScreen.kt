@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -30,6 +32,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.example.myapplication.R
 import com.example.myapplication.ui.theme.*
 import com.example.myapplication.ui.viewmodel.MainViewModel
@@ -62,6 +65,7 @@ fun ProfileScreen(viewModel: MainViewModel? = null) {
 
 @Composable
 fun ProfileTopBar() {
+    val context = LocalContext.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -71,11 +75,11 @@ fun ProfileTopBar() {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = {}, modifier = Modifier.size(40.dp)) {
+        IconButton(onClick = { Toast.makeText(context, "设置页将在前端闭环阶段补充", Toast.LENGTH_SHORT).show() }, modifier = Modifier.size(40.dp)) {
             Icon(Icons.Outlined.Settings, contentDescription = "Settings", tint = MaterialTheme.colorScheme.primary)
         }
         Text("我的", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-        IconButton(onClick = {}, modifier = Modifier.size(40.dp)) {
+        IconButton(onClick = { Toast.makeText(context, "暂无新的喵伴提醒", Toast.LENGTH_SHORT).show() }, modifier = Modifier.size(40.dp)) {
             Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = MaterialTheme.colorScheme.primary)
         }
     }
@@ -128,6 +132,8 @@ fun ProfileHeroCard() {
 
 @Composable
 fun TokenBalanceSection(tokenBalance: Int) {
+    val context = LocalContext.current
+    var exchangeSubmitted by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
@@ -147,11 +153,15 @@ fun TokenBalanceSection(tokenBalance: Int) {
                 }
             }
             Button(
-                onClick = { },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
+                onClick = {
+                    val nextSubmitted = !exchangeSubmitted
+                    exchangeSubmitted = nextSubmitted
+                    Toast.makeText(context, if (nextSubmitted) "已提交兑换演示" else "已取消兑换演示", Toast.LENGTH_SHORT).show()
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = if (exchangeSubmitted) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.tertiary),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text("兑换奖励", color = MaterialTheme.colorScheme.onTertiary, fontWeight = FontWeight.Bold)
+                Text(if (exchangeSubmitted) "已提交" else "兑换奖励", color = if (exchangeSubmitted) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onTertiary, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -246,6 +256,7 @@ data class FollowedCat(val name: String, val imageRes: Int)
 
 @Composable
 fun FollowedCatsSection() {
+    var selectedCat by remember { mutableStateOf("大橘") }
     val cats = listOf(
         FollowedCat("大橘", R.drawable.img_net_2af44102d5),
         FollowedCat("小黑", R.drawable.img_net_5bd5bb21ca),
@@ -259,6 +270,7 @@ fun FollowedCatsSection() {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             items(cats) { cat ->
                 Card(
+                    modifier = Modifier.clickable { selectedCat = cat.name },
                     colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -271,6 +283,11 @@ fun FollowedCatsSection() {
                             Image(painter = painterResource(cat.imageRes), contentDescription = cat.name, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
                         }
                         Text(cat.name, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                        if (selectedCat == cat.name) {
+                            Box(modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer, CircleShape).padding(horizontal = 8.dp, vertical = 2.dp)) {
+                                Text("今日已看过", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                            }
+                        }
                     }
                 }
             }
@@ -369,6 +386,7 @@ fun CompanionTimelineSection() {
 
 @Composable
 fun ProfileSettingsSection() {
+    val context = LocalContext.current
     val items = listOf(
         Triple(Icons.Outlined.Place, MaterialTheme.colorScheme.primary, "收藏的地点"),
         Triple(Icons.Outlined.DateRange, MaterialTheme.colorScheme.secondary, "线下活动报名"),
@@ -384,7 +402,7 @@ fun ProfileSettingsSection() {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable {}
+                        .clickable { Toast.makeText(context, "$label 将在后续前端页补充", Toast.LENGTH_SHORT).show() }
                         .padding(20.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically

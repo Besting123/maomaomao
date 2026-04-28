@@ -24,6 +24,10 @@ import com.example.myapplication.ui.viewmodel.MainViewModel
 fun CompanionScreen(viewModel: MainViewModel? = null) {
     val scrollState = rememberScrollState()
     val uiState by viewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(null) }
+    var catMood by remember { mutableStateOf("活泼") }
+    var catFeedback by remember { mutableStateOf("小黑正在轻轻呼吸，适合远距离陪伴。") }
+    var actionPulse by remember { mutableStateOf(0) }
+    var offlineClaimed by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(
@@ -34,7 +38,11 @@ fun CompanionScreen(viewModel: MainViewModel? = null) {
         ) {
             Spacer(modifier = Modifier.height(96.dp)) 
 
-            PolaroidStatusSection()
+            PolaroidStatusSection(
+                mood = catMood,
+                feedback = catFeedback,
+                actionPulse = actionPulse
+            )
             Spacer(modifier = Modifier.height(32.dp))
 
             StatsGridSection()
@@ -45,23 +53,44 @@ fun CompanionScreen(viewModel: MainViewModel? = null) {
 
             CompanionConsoleSection(onAction = { actionName ->
                 viewModel?.interactWithCat(actionName, "小黑", 5)
+                catMood = when (actionName) {
+                    "安抚" -> "放松"
+                    "观察" -> "安心"
+                    "记录" -> "被看见"
+                    "补水" -> "满足"
+                    else -> "期待"
+                }
+                catFeedback = when (actionName) {
+                    "安抚" -> "小黑眯起眼睛，尾巴放松地摆了一下。"
+                    "观察" -> "你保持了安全距离，小黑没有出现应激反应。"
+                    "记录" -> "这次陪伴已写入今日观察记录。"
+                    "补水" -> "补水提醒已点亮，优先关注泌尿健康。"
+                    else -> "已记录一次轻量添粮，注意不要过度投喂。"
+                }
+                actionPulse++
             })
             Spacer(modifier = Modifier.height(32.dp))
 
             CompanionRecordSection(records = uiState?.companionRecords ?: emptyList())
             Spacer(modifier = Modifier.height(32.dp))
 
-            OfflineLinkageSection()
+            OfflineLinkageSection(
+                claimed = offlineClaimed,
+                onClaimClick = { offlineClaimed = !offlineClaimed }
+            )
             
             Spacer(modifier = Modifier.height(120.dp))
         }
 
-        CompanionTopAppBar()
+        CompanionTopAppBar(onNotificationClick = {
+            catFeedback = "今日提醒：傍晚 17:00 后更适合远观记录。"
+            actionPulse++
+        })
     }
 }
 
 @Composable
-fun CompanionTopAppBar() {
+fun CompanionTopAppBar(onNotificationClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -94,7 +123,7 @@ fun CompanionTopAppBar() {
             )
         }
         IconButton(
-            onClick = { },
+            onClick = onNotificationClick,
             modifier = Modifier.size(40.dp).clip(CircleShape)
         ) {
             Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = MaterialTheme.colorScheme.primary)
@@ -103,7 +132,7 @@ fun CompanionTopAppBar() {
 }
 
 @Composable
-fun PolaroidStatusSection() {
+fun PolaroidStatusSection(mood: String, feedback: String, actionPulse: Int) {
     // Breathing animation for cat image
     val infiniteTransition = rememberInfiniteTransition(label = "breathe")
     val breatheScale by infiniteTransition.animateFloat(
@@ -124,6 +153,23 @@ fun PolaroidStatusSection() {
         ),
         label = "breathe_alpha"
     )
+    val interactionScale by animateFloatAsState(
+        targetValue = if (actionPulse % 2 == 0) 1f else 1.04f,
+        animationSpec = tween(260, easing = FastOutSlowInEasing),
+        label = "interaction_scale"
+    )
+    val moodColor = when (mood) {
+        "放松", "安心" -> MaterialTheme.colorScheme.secondaryContainer
+        "满足" -> MaterialTheme.colorScheme.tertiaryContainer
+        else -> MaterialTheme.colorScheme.primaryContainer
+    }
+    val moodEmoji = when (mood) {
+        "放松" -> "😌"
+        "安心" -> "👀"
+        "满足" -> "💧"
+        "被看见" -> "📝"
+        else -> "🐾"
+    }
 
     Box(modifier = Modifier.fillMaxWidth()) {
         Card(
@@ -141,8 +187,8 @@ fun PolaroidStatusSection() {
                         .aspectRatio(4f/3f)
                         .clip(RoundedCornerShape(8.dp))
                         .graphicsLayer {
-                            scaleX = breatheScale
-                            scaleY = breatheScale
+                            scaleX = breatheScale * interactionScale
+                            scaleY = breatheScale * interactionScale
                             alpha = breatheAlpha
                         }
                 ) {
@@ -152,6 +198,24 @@ fun PolaroidStatusSection() {
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(12.dp)
+                            .background(Color.White.copy(alpha = 0.82f), CircleShape)
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text("2D 动态形象演示", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    }
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(12.dp)
+                            .background(moodColor, CircleShape)
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text("$moodEmoji $mood", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(
@@ -162,7 +226,7 @@ fun PolaroidStatusSection() {
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text("小黑", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("今日状态：活泼", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                        Text("今日状态：$mood", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                     }
                     Box(
                         modifier = Modifier
@@ -175,7 +239,7 @@ fun PolaroidStatusSection() {
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "小黑最近活动量较大，建议增加优质蛋白质摄入。目前空气干燥，急需补充水分以维持泌尿系统健康。",
+                    text = feedback,
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 20.sp
@@ -403,7 +467,7 @@ fun CompanionRecordSection(records: List<com.example.myapplication.ui.viewmodel.
 }
 
 @Composable
-fun OfflineLinkageSection() {
+fun OfflineLinkageSection(claimed: Boolean = false, onClaimClick: () -> Unit = {}) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -427,13 +491,16 @@ fun OfflineLinkageSection() {
                 Text("认领一次线下补水提醒，让校园志愿者精准关怀。", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(200.dp))
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = { },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface, contentColor = MaterialTheme.colorScheme.surface),
+                    onClick = onClaimClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (claimed) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface,
+                        contentColor = if (claimed) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.surface
+                    ),
                     shape = CircleShape,
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                     modifier = Modifier.height(36.dp)
                 ) {
-                    Text("认领提醒", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(if (claimed) "已认领" else "认领提醒", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
             Box(

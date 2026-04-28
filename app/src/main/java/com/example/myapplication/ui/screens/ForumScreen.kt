@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -20,6 +21,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -30,6 +32,7 @@ import com.example.myapplication.ui.theme.*
 @Composable
 fun ForumScreen() {
     val scrollState = rememberScrollState()
+    var showPostDialog by remember { mutableStateOf(false) }
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(
             modifier = Modifier
@@ -77,10 +80,23 @@ fun ForumScreen() {
                 .size(56.dp)
                 .shadow(8.dp, CircleShape)
                 .background(MaterialTheme.colorScheme.primary, CircleShape)
-                .clickable {},
+                .clickable { showPostDialog = true },
             contentAlignment = Alignment.Center
         ) {
             Icon(Icons.Outlined.Add, contentDescription = "Post", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(28.dp))
+        }
+        if (showPostDialog) {
+            AlertDialog(
+                onDismissRequest = { showPostDialog = false },
+                confirmButton = {
+                    TextButton(onClick = { showPostDialog = false }) {
+                        Text("知道了")
+                    }
+                },
+                icon = { Icon(Icons.Outlined.Add, contentDescription = null) },
+                title = { Text("模拟发布") },
+                text = { Text("前端演示阶段：这里将用于发布目击记录、知识分享或组队活动。") }
+            )
         }
     }
 }
@@ -140,30 +156,33 @@ fun SchoolSwitcherRow() {
 
 @Composable
 fun CategoryChipsRow() {
-    data class Chip(val icon: androidx.compose.ui.graphics.vector.ImageVector, val label: String, val selected: Boolean)
+    var selectedLabel by remember { mutableStateOf("目击记录") }
+    data class Chip(val icon: androidx.compose.ui.graphics.vector.ImageVector, val label: String)
     val chips = listOf(
-        Chip(Icons.Outlined.Search, "目击记录", true),
-        Chip(Icons.Outlined.Group, "组队活动", false),
-        Chip(Icons.Outlined.MenuBook, "知识分享", false),
-        Chip(Icons.Outlined.Info, "求助信息", false),
-        Chip(Icons.Outlined.Star, "经验分享", false),
-        Chip(Icons.Outlined.Home, "猫咪日记", false),
-        Chip(Icons.Outlined.Place, "地图发帖", false)
+        Chip(Icons.Outlined.Search, "目击记录"),
+        Chip(Icons.Outlined.Group, "组队活动"),
+        Chip(Icons.Outlined.MenuBook, "知识分享"),
+        Chip(Icons.Outlined.Info, "求助信息"),
+        Chip(Icons.Outlined.Star, "经验分享"),
+        Chip(Icons.Outlined.Home, "猫咪日记"),
+        Chip(Icons.Outlined.Place, "地图发帖")
     )
     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         items(chips) { chip ->
+            val selected = selectedLabel == chip.label
             Row(
                 modifier = Modifier
                     .clip(CircleShape)
                     .background(
-                        if (chip.selected) MaterialTheme.colorScheme.secondaryContainer else SurfaceContainerHighest
+                        if (selected) MaterialTheme.colorScheme.secondaryContainer else SurfaceContainerHighest
                     )
+                    .clickable { selectedLabel = chip.label }
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Icon(chip.icon, contentDescription = chip.label, tint = if (chip.selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
-                Text(chip.label, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = if (chip.selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(chip.icon, contentDescription = chip.label, tint = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                Text(chip.label, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -171,6 +190,8 @@ fun CategoryChipsRow() {
 
 @Composable
 fun EmergencyForumCard() {
+    val context = LocalContext.current
+    var responded by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -206,7 +227,7 @@ fun EmergencyForumCard() {
                                 Text("高优先级", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
                             }
                             Box(modifier = Modifier.background(SurfaceContainerHigh, RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 2.dp)) {
-                                Text("待响应", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(if (responded) "已响应" else "待响应", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
@@ -219,13 +240,16 @@ fun EmergencyForumCard() {
                         Text("+12 人正在关注", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Button(
-                        onClick = {},
+                        onClick = {
+                            responded = true
+                            Toast.makeText(context, "已模拟加入协助队列，请等待志愿者确认", Toast.LENGTH_SHORT).show()
+                        },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary),
                         shape = CircleShape,
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                         modifier = Modifier.height(36.dp)
                     ) {
-                        Text("我也能帮忙", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(if (responded) "已加入" else "我也能帮忙", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -244,9 +268,10 @@ fun EmergencyForumCard() {
 
 @Composable
 fun SightingForumCard() {
+    val context = LocalContext.current
     var liked by remember { mutableStateOf(false) }
     Card(
-        modifier = Modifier.fillMaxWidth().clickable {},
+        modifier = Modifier.fillMaxWidth().clickable { Toast.makeText(context, "目击详情页将在前端闭环阶段补充", Toast.LENGTH_SHORT).show() },
         colors = CardDefaults.cardColors(containerColor = SurfaceContainerLow),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -279,9 +304,9 @@ fun SightingForumCard() {
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                 Row(modifier = Modifier.clickable { liked = !liked }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Icon(if (liked) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder, contentDescription = "Like", tint = if (liked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
-                    Text("24", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(if (liked) "25" else "24", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Row(modifier = Modifier.clickable {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(modifier = Modifier.clickable { Toast.makeText(context, "评论面板将在前端闭环阶段补充", Toast.LENGTH_SHORT).show() }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Icon(Icons.Outlined.Send, contentDescription = "Comment", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                     Text("8", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -319,8 +344,9 @@ fun DiaryPolaroidCard(modifier: Modifier = Modifier) {
 
 @Composable
 fun MapPostCard(modifier: Modifier = Modifier) {
+    var synced by remember { mutableStateOf(false) }
     Card(
-        modifier = modifier,
+        modifier = modifier.clickable { synced = !synced },
         colors = CardDefaults.cardColors(containerColor = SurfaceContainerLow),
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -334,14 +360,14 @@ fun MapPostCard(modifier: Modifier = Modifier) {
                     Text("地图动态", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            Text("更新了 4 处能量补给站位置", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-            Text("根据近期猫咪活动路径，志愿者更新了位于西区礼堂背后的隐蔽补给点，请知悉。", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
+            Text(if (synced) "补给站同步完成" else "更新了 4 处能量补给站位置", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(if (synced) "地图动态已标记为已读，后续可接入真实志愿者数据。" else "根据近期猫咪活动路径，志愿者更新了位于西区礼堂背后的隐蔽补给点，请知悉。", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
             Spacer(modifier = Modifier.weight(1f))
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Box(modifier = Modifier.weight(1f).height(4.dp).clip(CircleShape).background(SurfaceContainerHighest)) {
-                    Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(0.68f).background(MaterialTheme.colorScheme.secondary, CircleShape))
+                    Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(if (synced) 1f else 0.68f).background(MaterialTheme.colorScheme.secondary, CircleShape))
                 }
-                Text("协作完成 68%", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
+                Text(if (synced) "已同步" else "协作完成 68%", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
             }
         }
     }
@@ -349,6 +375,7 @@ fun MapPostCard(modifier: Modifier = Modifier) {
 
 @Composable
 fun TeamEventCard() {
+    var joined by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
@@ -366,7 +393,7 @@ fun TeamEventCard() {
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Box(modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 2.dp)) {
-                    Text("招募中", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
+                    Text(if (joined) "已报名" else "招募中", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
                 }
             }
             Text("天气渐冷，本周末(10.28)下午1点在学生活动中心集合，利用回收旧衣物制作保暖猫窝，预计需要 5-8 人参与，欢迎报名！", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
@@ -376,13 +403,13 @@ fun TeamEventCard() {
                     Text("10月28日 13:00", fontSize = 12.sp, color = MaterialTheme.colorScheme.outline)
                 }
                 Button(
-                    onClick = {},
+                    onClick = { joined = !joined },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
                     modifier = Modifier.height(32.dp)
                 ) {
-                    Text("立即报名", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(if (joined) "取消报名" else "立即报名", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -391,6 +418,7 @@ fun TeamEventCard() {
 
 @Composable
 fun KnowledgeShareCard() {
+    var collected by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = SurfaceContainerLow),
@@ -412,9 +440,13 @@ fun KnowledgeShareCard() {
                     Text("#医疗科普", fontSize = 11.sp, color = MaterialTheme.colorScheme.tertiary)
                     Text("#秋季护理", fontSize = 11.sp, color = MaterialTheme.colorScheme.tertiary)
                 }
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Icon(Icons.Outlined.Star, contentDescription = null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(16.dp))
-                    Text("收藏 34", fontSize = 12.sp, color = MaterialTheme.colorScheme.outline)
+                Row(
+                    modifier = Modifier.clickable { collected = !collected },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(Icons.Outlined.Star, contentDescription = null, tint = if (collected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.outline, modifier = Modifier.size(16.dp))
+                    Text(if (collected) "已收藏 35" else "收藏 34", fontSize = 12.sp, color = if (collected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.outline)
                 }
             }
         }

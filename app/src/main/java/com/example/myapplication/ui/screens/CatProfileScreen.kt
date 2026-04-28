@@ -1,5 +1,13 @@
 package com.example.myapplication.ui.screens
 
+import android.widget.Toast
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -39,7 +47,6 @@ import androidx.compose.material.icons.outlined.Psychology
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.TheaterComedy
 import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -47,7 +54,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -59,12 +65,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -131,6 +139,7 @@ fun CatProfileScreen(onBackClick: () -> Unit) {
 
 @Composable
 private fun CatProfileTopBar(onBackClick: () -> Unit) {
+    val context = LocalContext.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -154,14 +163,14 @@ private fun CatProfileTopBar(onBackClick: () -> Unit) {
             color = MaterialTheme.colorScheme.primary
         )
         Row {
-            IconButton(onClick = { }) {
+            IconButton(onClick = { Toast.makeText(context, "档案分享卡片生成中", Toast.LENGTH_SHORT).show() }) {
                 Icon(
                     Icons.Outlined.Share,
                     contentDescription = "分享",
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
-            IconButton(onClick = { }) {
+            IconButton(onClick = { Toast.makeText(context, "更多档案功能将在前端演示中补充", Toast.LENGTH_SHORT).show() }) {
                 Icon(
                     Icons.Outlined.MoreVert,
                     contentDescription = "更多",
@@ -176,6 +185,23 @@ private fun CatProfileTopBar(onBackClick: () -> Unit) {
 @Composable
 private fun CatProfileHeroSection() {
     var isFollowed by remember { mutableStateOf(false) }
+    var interactionPulse by remember { mutableStateOf(0) }
+    val infiniteTransition = rememberInfiniteTransition(label = "cat_profile_breathe")
+    val breatheScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.025f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "profile_breathe_scale"
+    )
+    val followScale by animateFloatAsState(
+        targetValue = if (interactionPulse % 2 == 0) 1f else 1.045f,
+        animationSpec = tween(260, easing = FastOutSlowInEasing),
+        label = "profile_follow_scale"
+    )
+    val moodLabel = if (isFollowed) "亲近中" else "保持观察"
 
     Box(
         modifier = Modifier
@@ -188,8 +214,33 @@ private fun CatProfileHeroSection() {
             painter = painterResource(id = R.drawable.img_net_cf9a4fdf2a),
             contentDescription = "大橘照片",
             contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    scaleX = breatheScale * followScale
+                    scaleY = breatheScale * followScale
+                }
         )
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(20.dp)
+                .background(Color.White.copy(alpha = 0.84f), CircleShape)
+                .padding(horizontal = 14.dp, vertical = 7.dp)
+        ) {
+            Text("2D 动态形象演示", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(20.dp)
+                .background(MaterialTheme.colorScheme.tertiaryContainer, CircleShape)
+                .padding(horizontal = 14.dp, vertical = 7.dp)
+        ) {
+            Text("🐾 $moodLabel", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onTertiaryContainer)
+        }
 
         Box(
             modifier = Modifier
@@ -262,7 +313,10 @@ private fun CatProfileHeroSection() {
                 }
 
                 Button(
-                    onClick = { isFollowed = !isFollowed },
+                    onClick = {
+                        isFollowed = !isFollowed
+                        interactionPulse++
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isFollowed) Color.White.copy(alpha = 0.3f) else MaterialTheme.colorScheme.primary,
                         contentColor = if (isFollowed) Color.White else MaterialTheme.colorScheme.onPrimary

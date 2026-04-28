@@ -30,8 +30,56 @@ import com.example.myapplication.R
 import com.example.myapplication.ui.theme.*
 import androidx.navigation.NavController
 
+data class CampusHotspotInfo(
+    val name: String,
+    val safetyTag: String,
+    val areaTitle: String,
+    val summary: String,
+    val status: String,
+    val imageRes: Int,
+    val offsetX: Float,
+    val offsetY: Float
+)
+
 @Composable
 fun CampusScreen(navController: NavController? = null) {
+    var selectedTime by remember { mutableStateOf("清晨") }
+    val hotspots = remember {
+        listOf(
+            CampusHotspotInfo(
+                name = "大白在这儿",
+                safetyTag = "适合远观",
+                areaTitle = "图书馆东侧草坪",
+                summary = "此区域通常有 3 只猫咪出没",
+                status = "远观优先",
+                imageRes = R.drawable.img_net_cf9a4fdf2a,
+                offsetX = 0.28f,
+                offsetY = 0.35f
+            ),
+            CampusHotspotInfo(
+                name = "橘子刚喝过水",
+                safetyTag = "补水正常",
+                areaTitle = "思源楼北侧补水点",
+                summary = "补水点刚维护，适合记录状态",
+                status = "补水点充足",
+                imageRes = R.drawable.img_net_7f99b46ce0,
+                offsetX = 0.65f,
+                offsetY = 0.42f
+            ),
+            CampusHotspotInfo(
+                name = "奶油在树荫休息",
+                safetyTag = "请勿打扰",
+                areaTitle = "林荫道休息区",
+                summary = "猫咪正在休息，建议只做远距离观察",
+                status = "不打扰",
+                imageRes = R.drawable.img_net_27ce5092c2,
+                offsetX = 0.48f,
+                offsetY = 0.62f
+            )
+        )
+    }
+    var selectedHotspot by remember { mutableStateOf(hotspots.first()) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -48,7 +96,7 @@ fun CampusScreen(navController: NavController? = null) {
         )
 
         // SVG Map Canvas Replacement
-        MapCanvasLayer()
+        MapCanvasLayer(selectedTime = selectedTime)
 
         // Buildings
         Box(modifier = Modifier.fillMaxSize()) {
@@ -67,19 +115,13 @@ fun CampusScreen(navController: NavController? = null) {
                 offsetY = 0.55f
             )
 
-            // Cat Hotspots
-            CatHotspot(
-                name = "大白在这儿",
-                imageRes = R.drawable.img_net_cf9a4fdf2a,
-                offsetX = 0.28f,
-                offsetY = 0.35f
-            )
-            CatHotspot(
-                name = "橘子刚喝过水",
-                imageRes = R.drawable.img_net_7f99b46ce0,
-                offsetX = 0.65f,
-                offsetY = 0.42f
-            )
+            hotspots.forEach { hotspot ->
+                CatHotspot(
+                    hotspot = hotspot,
+                    selected = selectedHotspot.name == hotspot.name,
+                    onClick = { selectedHotspot = hotspot }
+                )
+            }
         }
 
         // Overlays
@@ -91,23 +133,28 @@ fun CampusScreen(navController: NavController? = null) {
                 .padding(top = 100.dp, start = 24.dp, end = 24.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            TimeSelectorOverlay()
+            TimeSelectorOverlay(selectedTime = selectedTime, onTimeSelected = { selectedTime = it })
             RouteBadgeOverlay()
         }
 
         // Bottom Sheet (Location Drawer)
         Box(modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp)) {
-CampusBottomSheet(navController)
+            CampusBottomSheet(navController, selectedTime, selectedHotspot)
         }
     }
 }
 
 @Composable
-fun MapCanvasLayer() {
+fun MapCanvasLayer(selectedTime: String) {
     val greenColor = Color(0xFFC9EBCA).copy(alpha = 0.4f)
     val blueColor = Color(0xFFC4EFFD).copy(alpha = 0.4f)
     val dottedLineColor = Color(0xFF81817A).copy(alpha = 0.4f)
-    val routeLineColor = Color(0xFF8B5928).copy(alpha = 0.6f)
+    val routeLineColor = when (selectedTime) {
+        "午后" -> Color(0xFF416A76)
+        "傍晚" -> Color(0xFF8B5928)
+        "夜间" -> Color(0xFF4D6C51)
+        else -> Color(0xFF8B5928)
+    }.copy(alpha = 0.68f)
 
     Canvas(modifier = Modifier.fillMaxSize()) {
         val w = size.width
@@ -148,6 +195,9 @@ fun MapCanvasLayer() {
             quadraticTo(w * 0.6f, h * 0.6f, w * 0.8f, h * 0.38f)
         }
         drawPath(routePath, color = routeLineColor, style = Stroke(width = 12f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(16f, 16f), 0f), cap = StrokeCap.Round))
+
+        drawCircle(color = Color(0xFFFFE8CC).copy(alpha = 0.38f), radius = w * 0.18f, center = Offset(w * 0.34f, h * 0.38f))
+        drawCircle(color = Color(0xFFC9EBCA).copy(alpha = 0.34f), radius = w * 0.16f, center = Offset(w * 0.65f, h * 0.52f))
     }
 }
 
@@ -187,10 +237,10 @@ fun BuildingCard(name: String, imageRes: Int, rotation: Float, offsetX: Float, o
 }
 
 @Composable
-fun CatHotspot(name: String, imageRes: Int, offsetX: Float, offsetY: Float) {
+fun CatHotspot(hotspot: CampusHotspotInfo, selected: Boolean, onClick: () -> Unit) {
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val x = maxWidth * offsetX
-        val y = maxHeight * offsetY
+        val x = maxWidth * hotspot.offsetX
+        val y = maxHeight * hotspot.offsetY
 
         // Infinite pulsing animation
         val infiniteTransition = rememberInfiniteTransition(label = "pulse")
@@ -218,8 +268,11 @@ fun CatHotspot(name: String, imageRes: Int, offsetX: Float, offsetY: Float) {
         Box(
             modifier = Modifier
                 .offset(x = x, y = y)
-                .size(48.dp)
-                .clickable { showTooltip = !showTooltip },
+                .size(if (selected) 56.dp else 48.dp)
+                .clickable {
+                    showTooltip = !showTooltip
+                    onClick()
+                },
             contentAlignment = Alignment.Center
         ) {
             // Pulse circle
@@ -238,24 +291,30 @@ fun CatHotspot(name: String, imageRes: Int, offsetX: Float, offsetY: Float) {
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(CircleShape)
-                    .border(3.dp, Color.White, CircleShape)
+                    .border(
+                        width = if (selected) 4.dp else 3.dp,
+                        color = if (selected) MaterialTheme.colorScheme.primary else Color.White,
+                        shape = CircleShape
+                    )
             ) {
                 Image(
-                    painter = painterResource(id = imageRes),
-                    contentDescription = name,
+                    painter = painterResource(id = hotspot.imageRes),
+                    contentDescription = hotspot.name,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
             }
 
-            if (showTooltip) {
-                Box(
+            if (showTooltip || selected) {
+                Column(
                     modifier = Modifier
                         .offset(y = 40.dp)
-                        .background(MaterialTheme.colorScheme.primary, CircleShape)
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(name, color = Color.White, fontSize = 10.sp)
+                    Text(hotspot.name, color = Color.White, fontSize = 10.sp)
+                    Text(hotspot.safetyTag, color = Color.White.copy(alpha = 0.82f), fontSize = 9.sp)
                 }
             }
         }
@@ -298,7 +357,8 @@ fun CampusTopAppBar() {
 }
 
 @Composable
-fun TimeSelectorOverlay() {
+fun TimeSelectorOverlay(selectedTime: String, onTimeSelected: (String) -> Unit) {
+    val times = listOf("清晨", "午后", "傍晚", "夜间")
     Row(
         modifier = Modifier
             .background(Color.White.copy(alpha = 0.6f), RoundedCornerShape(50))
@@ -306,11 +366,22 @@ fun TimeSelectorOverlay() {
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Box(modifier = Modifier.background(MaterialTheme.colorScheme.primary, RoundedCornerShape(50)).padding(horizontal = 16.dp, vertical = 6.dp)) {
-            Text("早晨", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
-        }
-        Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
-            Text("午后", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+        times.forEach { time ->
+            val selected = time == selectedTime
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(if (selected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                    .clickable { onTimeSelected(time) }
+                    .padding(horizontal = 10.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    time,
+                    fontSize = 12.sp,
+                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+                    color = if (selected) Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+            }
         }
     }
 }
@@ -331,7 +402,19 @@ fun RouteBadgeOverlay() {
 }
 
 @Composable
-fun CampusBottomSheet(navController: NavController? = null) {
+fun CampusBottomSheet(navController: NavController? = null, selectedTime: String = "清晨", hotspot: CampusHotspotInfo) {
+    val guideText = when (selectedTime) {
+        "清晨" -> "可远距离观察，先看尾巴和耳朵状态，保持 2 米以上距离。"
+        "午后" -> "远观记录即可，保持 3 米以上安全社交距离。"
+        "傍晚" -> "猫咪较活跃，可慢速靠近，不要突然伸手或围堵。"
+        else -> "夜间不建议寻找或打扰猫咪，优先查看历史记录。"
+    }
+    val activeAdvice = when (selectedTime) {
+        "清晨" -> "清晨 7:00-9:00 适合安静观察。"
+        "午后" -> "午后多在休息，建议只做远观。"
+        "傍晚" -> "傍晚 17:00 后活跃，适合温和互动。"
+        else -> "夜间降低打扰，避免使用闪光灯。"
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -349,13 +432,13 @@ fun CampusBottomSheet(navController: NavController? = null) {
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Icon(Icons.Outlined.LocationOn, contentDescription = "Location", tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(20.dp))
-                    Text("图书馆东侧草坪", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text(hotspot.areaTitle, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 }
-                Text("此区域通常有 3 只猫咪出没", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.padding(top = 4.dp))
+                Text(hotspot.summary, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.padding(top = 4.dp))
             }
             Column(horizontalAlignment = Alignment.End) {
                 Box(modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer, CircleShape).padding(horizontal = 12.dp, vertical = 4.dp)) {
-                    Text("补水点充足", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onTertiaryContainer)
+                    Text(hotspot.status, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onTertiaryContainer)
                 }
                 Text("更新于 10分钟前", fontSize = 10.sp, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 4.dp))
             }
@@ -376,7 +459,7 @@ fun CampusBottomSheet(navController: NavController? = null) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(Icons.Outlined.DoNotDisturbOn, contentDescription = "Do Not Disturb", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
-                Text("当前时段猫咪多在午休，请勿近距离打扰或强行喂食。", fontSize = 12.sp, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                    Text("$selectedTime 时段请优先观察状态，不追逐、不围堵、不强行喂食。", fontSize = 12.sp, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
             }
             
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -387,8 +470,8 @@ fun CampusBottomSheet(navController: NavController? = null) {
                         .padding(16.dp)
                 ) {
                     Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(MaterialTheme.colorScheme.primary))
-                    Text("接近指南 (午后)", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
-                    Text("远观记录即可，保持 3 米以上安全社交距离。", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, lineHeight = 18.sp)
+                    Text("接近指南 ($selectedTime)", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+                    Text(guideText, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, lineHeight = 18.sp)
                 }
                 Column(
                     modifier = Modifier
@@ -398,7 +481,7 @@ fun CampusBottomSheet(navController: NavController? = null) {
                 ) {
                     Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(MaterialTheme.colorScheme.secondary))
                     Text("推荐互动时间", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
-                    Text("傍晚 17:00 后活跃，适合温和抚摸与梳毛。", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, lineHeight = 18.sp)
+                    Text(activeAdvice, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, lineHeight = 18.sp)
                 }
             }
         }

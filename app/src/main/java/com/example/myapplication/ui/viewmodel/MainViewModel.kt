@@ -5,8 +5,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 data class TaskState(
     val id: String,
@@ -95,9 +96,7 @@ class MainViewModel : ViewModel() {
     fun interactWithCat(actionName: String, catName: String = "橘子", cost: Int = 0) {
         _uiState.update { currentState ->
             if (currentState.tokenBalance >= cost) {
-                val currentDateTime = LocalDateTime.now()
-                val formatter = DateTimeFormatter.ofPattern("MM月dd日 HH:mm")
-                val formattedTime = currentDateTime.format(formatter)
+                val formattedTime = SimpleDateFormat("MM月dd日 HH:mm", Locale.CHINA).format(Date())
                 
                 val newRecord = CompanionRecord(
                     time = formattedTime,

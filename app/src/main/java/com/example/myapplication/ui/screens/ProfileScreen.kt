@@ -53,6 +53,11 @@ fun ProfileScreen(viewModel: MainViewModel? = null) {
             ProfileHeroCard()
             TokenBalanceSection(tokenBalance = uiState?.tokenBalance ?: 350)
             GoodwillStatsSection()
+            DemoSummarySection(
+                completedTasks = uiState?.tasks?.count { it.isCompleted } ?: 0,
+                totalTasks = uiState?.tasks?.size ?: 4,
+                recordsCount = uiState?.companionRecords?.size ?: 2
+            )
             KnowledgeBadgesSection()
             FollowedCatsSection()
             CompanionTimelineSection()
@@ -164,6 +169,47 @@ fun TokenBalanceSection(tokenBalance: Int) {
                 Text(if (exchangeSubmitted) "已提交" else "兑换奖励", color = if (exchangeSubmitted) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onTertiary, fontWeight = FontWeight.Bold)
             }
         }
+    }
+}
+
+@Composable
+fun DemoSummarySection(completedTasks: Int, totalTasks: Int, recordsCount: Int) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)),
+        shape = RoundedCornerShape(18.dp)
+    ) {
+        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Icon(Icons.Outlined.Route, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Text("演示进度总览", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                DemoSummaryChip("任务", "$completedTasks/$totalTasks", Modifier.weight(1f))
+                DemoSummaryChip("陪伴记录", recordsCount.toString(), Modifier.weight(1f))
+                DemoSummaryChip("3D模型", "待放入", Modifier.weight(1f))
+            }
+            Text(
+                "建议演示顺序：学堂 → 任务 → 地图 → 档案 → 云陪伴。当前后端仍后置，所有数据为前端模拟状态。",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
+                lineHeight = 18.sp
+            )
+        }
+    }
+}
+
+@Composable
+fun DemoSummaryChip(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.72f), RoundedCornerShape(12.dp))
+            .padding(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(value, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+        Text(label, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
     }
 }
 

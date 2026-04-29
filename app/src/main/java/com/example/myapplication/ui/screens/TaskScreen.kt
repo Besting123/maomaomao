@@ -13,6 +13,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +33,9 @@ import com.example.myapplication.ui.viewmodel.TaskType
 fun TaskScreen(onBackClick: () -> Unit, viewModel: MainViewModel? = null) {
     val scrollState = rememberScrollState()
     val uiState by viewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(null) }
+    var feedbackMessage by remember { mutableStateOf<String?>(null) }
+    val allTasks = uiState?.tasks ?: emptyList()
+    val completedCount = allTasks.count { it.isCompleted }
 
     Scaffold(
         topBar = {
@@ -60,34 +64,66 @@ fun TaskScreen(onBackClick: () -> Unit, viewModel: MainViewModel? = null) {
             SignInSection(
                 signInDays = uiState?.signInDays ?: 3,
                 hasSignedInToday = uiState?.hasSignedInToday ?: false,
-                onSignIn = { viewModel?.signIn() }
+                onSignIn = {
+                    viewModel?.signIn()
+                    feedbackMessage = "签到成功：获得 10 小鱼干，连续参与会提升陪伴等级。"
+                }
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            TaskOverviewSection(
+                tokenBalance = uiState?.tokenBalance ?: 350,
+                completedCount = completedCount,
+                totalCount = allTasks.size
             )
             Spacer(modifier = Modifier.height(32.dp))
-            val allTasks = uiState?.tasks ?: emptyList()
             TaskCategorySection(
                 title = "日常陪伴任务",
                 tasks = allTasks.filter { it.type == TaskType.DAILY },
-                onTaskClick = { viewModel?.completeTask(it) }
+                onTaskClick = { task ->
+                    viewModel?.completeTask(task.id)
+                    feedbackMessage = "已完成「${task.title}」：+${task.reward} 小鱼干。"
+                }
             )
             Spacer(modifier = Modifier.height(24.dp))
             TaskCategorySection(
                 title = "学习任务",
                 tasks = allTasks.filter { it.type == TaskType.LEARNING },
-                onTaskClick = { viewModel?.completeTask(it) }
+                onTaskClick = { task ->
+                    viewModel?.completeTask(task.id)
+                    feedbackMessage = "已完成「${task.title}」：+${task.reward} 小鱼干。"
+                }
             )
             Spacer(modifier = Modifier.height(24.dp))
             TaskCategorySection(
                 title = "特殊成就",
                 tasks = allTasks.filter { it.type == TaskType.SPECIAL },
-                onTaskClick = { viewModel?.completeTask(it) }
+                onTaskClick = { task ->
+                    viewModel?.completeTask(task.id)
+                    feedbackMessage = "已完成「${task.title}」：+${task.reward} 小鱼干。"
+                }
             )
             Spacer(modifier = Modifier.height(48.dp))
         }
+    }
+
+    feedbackMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { feedbackMessage = null },
+            confirmButton = {
+                TextButton(onClick = { feedbackMessage = null }) {
+                    Text("知道了")
+                }
+            },
+            icon = { Icon(Icons.Outlined.CheckCircle, contentDescription = null) },
+            title = { Text("任务反馈", fontWeight = FontWeight.Bold) },
+            text = { Text(message, lineHeight = 22.sp) }
+        )
     }
 }
 
 @Composable
 fun SignInSection(signInDays: Int, hasSignedInToday: Boolean, onSignIn: () -> Unit) {
+    val remainingDays = if (signInDays >= 7) 0 else 7 - signInDays
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
@@ -97,7 +133,7 @@ fun SignInSection(signInDays: Int, hasSignedInToday: Boolean, onSignIn: () -> Un
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
                     Text("本周已连续签到 $signInDays 天", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                    Text("再签到 ${7 - signInDays} 天可额外获得 50 小鱼干", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
+                    Text(if (remainingDays == 0) "本周连续签到奖励已达成" else "再签到 $remainingDays 天可额外获得 50 小鱼干", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
                 }
                 Box(
                     modifier = Modifier
@@ -138,7 +174,44 @@ fun SignInSection(signInDays: Int, hasSignedInToday: Boolean, onSignIn: () -> Un
 }
 
 @Composable
-fun TaskCategorySection(title: String, tasks: List<TaskState>, onTaskClick: (String) -> Unit) {
+fun TaskOverviewSection(tokenBalance: Int, completedCount: Int, totalCount: Int) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        TaskStatCard(
+            title = "小鱼干余额",
+            value = tokenBalance.toString(),
+            subtitle = "可用于云陪伴互动",
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.weight(1f)
+        )
+        TaskStatCard(
+            title = "任务进度",
+            value = "$completedCount/$totalCount",
+            subtitle = "今日前端模拟状态",
+            color = MaterialTheme.colorScheme.tertiary,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+fun TaskStatCard(title: String, value: String, subtitle: String, color: Color, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(title, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(value, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = color)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(subtitle, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+        }
+    }
+}
+
+@Composable
+fun TaskCategorySection(title: String, tasks: List<TaskState>, onTaskClick: (TaskState) -> Unit) {
     if (tasks.isEmpty()) return
     Column {
         Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
@@ -147,7 +220,9 @@ fun TaskCategorySection(title: String, tasks: List<TaskState>, onTaskClick: (Str
             tasks.forEach { task ->
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (task.isCompleted) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
@@ -170,10 +245,12 @@ fun TaskCategorySection(title: String, tasks: List<TaskState>, onTaskClick: (Str
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         if (task.isCompleted) {
-                            Text("已领取", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), fontWeight = FontWeight.Medium)
+                            Box(modifier = Modifier.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), CircleShape).padding(horizontal = 12.dp, vertical = 6.dp)) {
+                                Text("已领取", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                            }
                         } else {
                             Button(
-                                onClick = { onTaskClick(task.id) },
+                                onClick = { onTaskClick(task) },
                                 shape = CircleShape,
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),

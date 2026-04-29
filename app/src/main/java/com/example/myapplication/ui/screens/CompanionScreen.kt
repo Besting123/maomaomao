@@ -17,6 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.example.myapplication.R
+import com.example.myapplication.ui.components.CatModel3DViewer
 import com.example.myapplication.ui.theme.*
 import com.example.myapplication.ui.viewmodel.MainViewModel
 
@@ -26,8 +27,8 @@ fun CompanionScreen(viewModel: MainViewModel? = null) {
     val uiState by viewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(null) }
     var catMood by remember { mutableStateOf("活泼") }
     var catFeedback by remember { mutableStateOf("小黑正在轻轻呼吸，适合远距离陪伴。") }
-    var actionPulse by remember { mutableStateOf(0) }
     var offlineClaimed by remember { mutableStateOf(false) }
+    var catAnimationIndex by remember { mutableStateOf(0) }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(
@@ -41,7 +42,7 @@ fun CompanionScreen(viewModel: MainViewModel? = null) {
             PolaroidStatusSection(
                 mood = catMood,
                 feedback = catFeedback,
-                actionPulse = actionPulse
+                animationIndex = catAnimationIndex
             )
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -67,7 +68,11 @@ fun CompanionScreen(viewModel: MainViewModel? = null) {
                     "补水" -> "补水提醒已点亮，优先关注泌尿健康。"
                     else -> "已记录一次轻量添粮，注意不要过度投喂。"
                 }
-                actionPulse++
+                catAnimationIndex = when (actionName) {
+                    "安抚" -> 1
+                    "添粮", "补水" -> 2
+                    else -> 0
+                }
             })
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -84,7 +89,6 @@ fun CompanionScreen(viewModel: MainViewModel? = null) {
 
         CompanionTopAppBar(onNotificationClick = {
             catFeedback = "今日提醒：傍晚 17:00 后更适合远观记录。"
-            actionPulse++
         })
     }
 }
@@ -132,18 +136,9 @@ fun CompanionTopAppBar(onNotificationClick: () -> Unit = {}) {
 }
 
 @Composable
-fun PolaroidStatusSection(mood: String, feedback: String, actionPulse: Int) {
+fun PolaroidStatusSection(mood: String, feedback: String, animationIndex: Int = 0) {
     // Breathing animation for cat image
     val infiniteTransition = rememberInfiniteTransition(label = "breathe")
-    val breatheScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.02f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "breathe_scale"
-    )
     val breatheAlpha by infiniteTransition.animateFloat(
         initialValue = 0.95f,
         targetValue = 1f,
@@ -152,11 +147,6 @@ fun PolaroidStatusSection(mood: String, feedback: String, actionPulse: Int) {
             repeatMode = RepeatMode.Reverse
         ),
         label = "breathe_alpha"
-    )
-    val interactionScale by animateFloatAsState(
-        targetValue = if (actionPulse % 2 == 0) 1f else 1.04f,
-        animationSpec = tween(260, easing = FastOutSlowInEasing),
-        label = "interaction_scale"
     )
     val moodColor = when (mood) {
         "放松", "安心" -> MaterialTheme.colorScheme.secondaryContainer
@@ -186,31 +176,18 @@ fun PolaroidStatusSection(mood: String, feedback: String, actionPulse: Int) {
                         .fillMaxWidth()
                         .aspectRatio(4f/3f)
                         .clip(RoundedCornerShape(8.dp))
-                        .graphicsLayer {
-                            scaleX = breatheScale * interactionScale
-                            scaleY = breatheScale * interactionScale
-                            alpha = breatheAlpha
-                        }
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.img_net_c9e15cf0b7),
-                        contentDescription = "小黑",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
+                    CatModel3DViewer(
+                        modifier = Modifier.fillMaxSize(),
+                        modelAssetPath = "models/cat.glb",
+                        label = "3D 立体猫咪模型",
+                        animationIndex = animationIndex
                     )
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(12.dp)
-                            .background(Color.White.copy(alpha = 0.82f), CircleShape)
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Text("2D 动态形象演示", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                    }
                     Box(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .padding(12.dp)
+                            .graphicsLayer { alpha = breatheAlpha }
                             .background(moodColor, CircleShape)
                             .padding(horizontal = 12.dp, vertical = 6.dp)
                     ) {
@@ -331,88 +308,92 @@ fun TipCalloutSection() {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CompanionConsoleSection(onAction: (String) -> Unit) {
+    var lastActionAt by remember { mutableStateOf(0L) }
+    fun submitAction(actionName: String) {
+        val now = System.currentTimeMillis()
+        if (now - lastActionAt >= 450L) {
+            lastActionAt = now
+            onAction(actionName)
+        }
+    }
+
     Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
-        FlowRow(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            maxItemsInEachRow = 3
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Button 1: 安抚
-            Button(
-                onClick = { onAction("安抚") },
-                modifier = Modifier.weight(1f).aspectRatio(1f).shadow(8.dp, RoundedCornerShape(12.dp)),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.White),
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                    Icon(Icons.Outlined.FavoriteBorder, contentDescription = "Comfort", modifier = Modifier.size(32.dp).padding(bottom = 8.dp))
-                    Text("安抚", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Button(
+                    onClick = { submitAction("安抚") },
+                    modifier = Modifier.weight(1f).aspectRatio(1f).shadow(8.dp, RoundedCornerShape(12.dp)),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.White),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                        Icon(Icons.Outlined.FavoriteBorder, contentDescription = "Comfort", modifier = Modifier.size(32.dp).padding(bottom = 8.dp))
+                        Text("安抚", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                    }
                 }
-            }
-            
-            // Button 2: 观察
-            Button(
-                onClick = { onAction("观察") },
-                modifier = Modifier.weight(1f).aspectRatio(1f).shadow(8.dp, RoundedCornerShape(12.dp)),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer),
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                    Icon(Icons.Outlined.Visibility, contentDescription = "Observe", modifier = Modifier.size(32.dp).padding(bottom = 8.dp))
-                    Text("观察", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+
+                Button(
+                    onClick = { submitAction("观察") },
+                    modifier = Modifier.weight(1f).aspectRatio(1f).shadow(8.dp, RoundedCornerShape(12.dp)),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                        Icon(Icons.Outlined.Visibility, contentDescription = "Observe", modifier = Modifier.size(32.dp).padding(bottom = 8.dp))
+                        Text("观察", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                    }
+                }
+
+                Button(
+                    onClick = { submitAction("记录") },
+                    modifier = Modifier.weight(1f).aspectRatio(1f).shadow(8.dp, RoundedCornerShape(12.dp)),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                        Icon(Icons.Outlined.Edit, contentDescription = "Record", modifier = Modifier.size(32.dp).padding(bottom = 8.dp))
+                        Text("记录", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                    }
                 }
             }
 
-            // Button 3: 记录
-            Button(
-                onClick = { onAction("记录") },
-                modifier = Modifier.weight(1f).aspectRatio(1f).shadow(8.dp, RoundedCornerShape(12.dp)),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                    Icon(Icons.Outlined.Edit, contentDescription = "Record", modifier = Modifier.size(32.dp).padding(bottom = 8.dp))
-                    Text("记录", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Button(
+                    onClick = { submitAction("补水") },
+                    modifier = Modifier.weight(1f).aspectRatio(1f).shadow(8.dp, RoundedCornerShape(12.dp)),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary, contentColor = Color.White),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                        Icon(Icons.Outlined.Opacity, contentDescription = "Water", modifier = Modifier.size(32.dp).padding(bottom = 8.dp))
+                        Text("补水", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                    }
                 }
-            }
 
-            // Button 4: 补水
-            Button(
-                onClick = { onAction("补水") },
-                modifier = Modifier.weight(1f).aspectRatio(1f).shadow(8.dp, RoundedCornerShape(12.dp)),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary, contentColor = Color.White),
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                    Icon(Icons.Outlined.Opacity, contentDescription = "Water", modifier = Modifier.size(32.dp).padding(bottom = 8.dp))
-                    Text("补水", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                Button(
+                    onClick = { submitAction("添粮") },
+                    modifier = Modifier.weight(1f).aspectRatio(1f).shadow(8.dp, RoundedCornerShape(12.dp)),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                        Icon(Icons.Outlined.Restaurant, contentDescription = "Feed", modifier = Modifier.size(32.dp).padding(bottom = 8.dp))
+                        Text("添粮", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                    }
                 }
-            }
 
-            // Button 5: 添粮
-            Button(
-                onClick = { onAction("添粮") },
-                modifier = Modifier.weight(1f).aspectRatio(1f).shadow(8.dp, RoundedCornerShape(12.dp)),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer),
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                    Icon(Icons.Outlined.Restaurant, contentDescription = "Feed", modifier = Modifier.size(32.dp).padding(bottom = 8.dp))
-                    Text("添粮", fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-                }
+                Box(modifier = Modifier.weight(1f).aspectRatio(1f))
             }
-
-            // Empty box to balance the grid
-            Box(modifier = Modifier.weight(1f).aspectRatio(1f))
         }
         
         // Feedback

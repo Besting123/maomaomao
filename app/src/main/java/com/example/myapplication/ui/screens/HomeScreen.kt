@@ -77,6 +77,8 @@ fun HomeScreen(navController: NavController? = null, viewModel: MainViewModel? =
             // NEW: Daily Tasks and Sign-in Section
             DailyMissionSection(navController, uiState?.signInDays ?: 3, uiState?.hasSignedInToday ?: false)
 
+            DemoPathSection(navController)
+
             // Scientific Feeding Alert
             FeedingAlertSection()
 
@@ -182,6 +184,69 @@ fun TopAppBarSection(tokenBalance: Int) {
                 Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = MaterialTheme.colorScheme.primary)
             }
         }
+    }
+}
+
+@Composable
+fun DemoPathSection(navController: NavController? = null) {
+    Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
+            shape = RoundedCornerShape(18.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text("今日演示路径", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                        Text("按步骤体验完整前端闭环", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Box(modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                        Text("5 步", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    }
+                }
+                DemoPathStep("01", "新手学堂", "先学习正确接近猫咪", Icons.Outlined.School) { navController?.navigate("education") }
+                DemoPathStep("02", "任务中心", "签到并领取前端模拟奖励", Icons.AutoMirrored.Outlined.Assignment) { navController?.navigate("tasks") }
+                DemoPathStep("03", "校园地图", "查看 BJTU 区域热点与安全标签", Icons.Outlined.LocationOn) { navController?.navigate("campus") }
+                DemoPathStep("04", "猫咪档案", "查看 3D 猫咪模型与互动边界", Icons.Outlined.Pets) { navController?.navigate("catProfile") }
+                DemoPathStep("05", "云陪伴", "完成安抚、观察、补水等互动", Icons.Outlined.FavoriteBorder) { navController?.navigate("companion") }
+            }
+        }
+    }
+}
+
+@Composable
+fun DemoPathStep(
+    step: String,
+    title: String,
+    subtitle: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f))
+            .clickable { onClick() }
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Box(modifier = Modifier.size(34.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), CircleShape), contentAlignment = Alignment.Center) {
+            Text(step, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+        }
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Icon(Icons.Outlined.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.outlineVariant)
     }
 }
 

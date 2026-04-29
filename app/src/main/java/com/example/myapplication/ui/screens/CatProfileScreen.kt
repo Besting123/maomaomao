@@ -1,13 +1,6 @@
 package com.example.myapplication.ui.screens
 
 import android.widget.Toast
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,8 +8,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -65,7 +56,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
@@ -80,12 +70,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.R
+import com.example.myapplication.ui.components.CatModel3DViewer
 import com.example.myapplication.ui.theme.SurfaceContainerHigh
 import com.example.myapplication.ui.theme.SurfaceContainerHighest
 import com.example.myapplication.ui.theme.SurfaceContainerLow
 import com.example.myapplication.ui.theme.SurfaceContainerLowest
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CatProfileScreen(onBackClick: () -> Unit) {
     val scrollState = rememberScrollState()
@@ -181,26 +171,9 @@ private fun CatProfileTopBar(onBackClick: () -> Unit) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CatProfileHeroSection() {
     var isFollowed by remember { mutableStateOf(false) }
-    var interactionPulse by remember { mutableStateOf(0) }
-    val infiniteTransition = rememberInfiniteTransition(label = "cat_profile_breathe")
-    val breatheScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.025f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(3200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "profile_breathe_scale"
-    )
-    val followScale by animateFloatAsState(
-        targetValue = if (interactionPulse % 2 == 0) 1f else 1.045f,
-        animationSpec = tween(260, easing = FastOutSlowInEasing),
-        label = "profile_follow_scale"
-    )
     val moodLabel = if (isFollowed) "亲近中" else "保持观察"
 
     Box(
@@ -210,27 +183,11 @@ private fun CatProfileHeroSection() {
             .height(480.dp)
             .clip(RoundedCornerShape(24.dp))
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.img_net_cf9a4fdf2a),
-            contentDescription = "大橘照片",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer {
-                    scaleX = breatheScale * followScale
-                    scaleY = breatheScale * followScale
-                }
+        CatModel3DViewer(
+            modelAssetPath = "models/cat.glb",
+            label = "3D 立体猫咪模型",
+            modifier = Modifier.fillMaxSize()
         )
-
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(20.dp)
-                .background(Color.White.copy(alpha = 0.84f), CircleShape)
-                .padding(horizontal = 14.dp, vertical = 7.dp)
-        ) {
-            Text("2D 动态形象演示", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-        }
 
         Box(
             modifier = Modifier
@@ -258,10 +215,7 @@ private fun CatProfileHeroSection() {
                 .align(Alignment.BottomStart)
                 .padding(24.dp)
         ) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 CatTag("橘子", MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer)
                 CatTag("警惕型", MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer)
                 CatTag("爱晒太阳", MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer)
@@ -315,7 +269,6 @@ private fun CatProfileHeroSection() {
                 Button(
                     onClick = {
                         isFollowed = !isFollowed
-                        interactionPulse++
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isFollowed) Color.White.copy(alpha = 0.3f) else MaterialTheme.colorScheme.primary,

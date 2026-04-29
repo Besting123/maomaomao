@@ -2,6 +2,7 @@ package com.example.myapplication.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -31,6 +32,7 @@ import com.example.myapplication.ui.viewmodel.MainViewModel
 @Composable
 fun EducationScreen(onBackClick: () -> Unit, viewModel: MainViewModel? = null) {
     val scrollState = rememberScrollState()
+    var selectedCourse by remember { mutableStateOf<KnowledgeCard?>(null) }
 
     Scaffold(
         topBar = {
@@ -57,11 +59,31 @@ fun EducationScreen(onBackClick: () -> Unit, viewModel: MainViewModel? = null) {
             Spacer(modifier = Modifier.height(16.dp))
             ProgressTrackerSection()
             Spacer(modifier = Modifier.height(32.dp))
-            KnowledgeGallerySection()
+            KnowledgeGallerySection(onCourseClick = { selectedCourse = it })
             Spacer(modifier = Modifier.height(32.dp))
             QuizSection(onCorrectAnswer = { viewModel?.completeQuiz() })
             Spacer(modifier = Modifier.height(48.dp))
         }
+    }
+
+    selectedCourse?.let { course ->
+        AlertDialog(
+            onDismissRequest = { selectedCourse = null },
+            confirmButton = {
+                TextButton(onClick = { selectedCourse = null }) {
+                    Text("完成学习")
+                }
+            },
+            icon = { Icon(Icons.Outlined.School, contentDescription = null) },
+            title = { Text(course.title, fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(course.subtitle, fontWeight = FontWeight.Medium)
+                    Text(course.detail, fontSize = 14.sp, lineHeight = 22.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("预计阅读 ${course.readTime} · 前端演示课程", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                }
+            }
+        )
     }
 }
 
@@ -100,14 +122,14 @@ fun ProgressTrackerSection() {
     }
 }
 
-data class KnowledgeCard(val title: String, val subtitle: String, val imageRes: Int, val readTime: String)
+data class KnowledgeCard(val title: String, val subtitle: String, val imageRes: Int, val readTime: String, val detail: String)
 
 @Composable
-fun KnowledgeGallerySection() {
+fun KnowledgeGallerySection(onCourseClick: (KnowledgeCard) -> Unit = {}) {
     val cards = listOf(
-        KnowledgeCard("边界与安全", "不要强行抚摸流浪猫", R.drawable.img_net_c9e15cf0b7, "3分钟"),
-        KnowledgeCard("情绪识别", "读懂猫咪的尾巴语言", R.drawable.img_net_27ce5092c2, "5分钟"),
-        KnowledgeCard("科学补水", "为何补水比喂零食更重要", R.drawable.img_net_e10e6b9fb1, "4分钟")
+        KnowledgeCard("边界与安全", "不要强行抚摸流浪猫", R.drawable.img_net_c9e15cf0b7, "3分钟", "先观察尾巴、耳朵、瞳孔和身体姿态。猫咪主动靠近前，不要伸手追摸；如果它后退、低吼或飞机耳，应立刻停止接近。"),
+        KnowledgeCard("情绪识别", "读懂猫咪的尾巴语言", R.drawable.img_net_27ce5092c2, "5分钟", "快速甩尾、耳朵后贴、身体压低通常代表紧张或警告。慢眨眼、尾巴自然竖起、身体放松才更适合温和互动。"),
+        KnowledgeCard("科学补水", "为何补水比喂零食更重要", R.drawable.img_net_e10e6b9fb1, "4分钟", "校园猫常见问题之一是饮水不足。补水点维护、湿粮比例和避免高盐零食，比单次投喂更有长期健康价值。")
     )
 
     Column {
@@ -125,7 +147,9 @@ fun KnowledgeGallerySection() {
         ) {
             items(cards) { card ->
                 Card(
-                    modifier = Modifier.width(220.dp),
+                    modifier = Modifier
+                        .width(220.dp)
+                        .clickable { onCourseClick(card) },
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                 ) {
@@ -161,6 +185,10 @@ fun KnowledgeGallerySection() {
 
 @Composable
 fun QuizSection(onCorrectAnswer: () -> Unit) {
+    var selectedAnswer by remember { mutableStateOf<String?>(null) }
+    var rewarded by remember { mutableStateOf(false) }
+    val correctAnswer = "烦躁、警告，不要靠近"
+
     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
         Text("每日实战测验", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         Spacer(modifier = Modifier.height(16.dp))
@@ -182,9 +210,31 @@ fun QuizSection(onCorrectAnswer: () -> Unit) {
                 Text("当流浪猫快速摇晃尾巴，耳朵向后平贴时，它表达的情绪是？", fontSize = 16.sp, fontWeight = FontWeight.Medium, lineHeight = 24.sp)
                 Spacer(modifier = Modifier.height(20.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    QuizOptionButton("开心，想互动", false, onCorrectAnswer)
-                    QuizOptionButton("烦躁、警告，不要靠近", true, onCorrectAnswer) // Assume this is correct
-                    QuizOptionButton("饿了，要吃的", false, onCorrectAnswer)
+                    listOf("开心，想互动", correctAnswer, "饿了，要吃的").forEach { option ->
+                        QuizOptionButton(
+                            text = option,
+                            isCorrect = option == correctAnswer,
+                            selectedAnswer = selectedAnswer,
+                            onSelect = {
+                                if (selectedAnswer == null) {
+                                    selectedAnswer = option
+                                    if (option == correctAnswer && !rewarded) {
+                                        rewarded = true
+                                        onCorrectAnswer()
+                                    }
+                                }
+                            }
+                        )
+                    }
+                    selectedAnswer?.let { answer ->
+                        val correct = answer == correctAnswer
+                        Text(
+                            text = if (correct) "回答正确：保持距离、不刺激，是最安全的选择。已获得 20 小鱼干。" else "回答错误：快速甩尾和飞机耳通常代表警告，不建议靠近。",
+                            fontSize = 13.sp,
+                            color = if (correct) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                            lineHeight = 20.sp
+                        )
+                    }
                 }
             }
         }
@@ -192,9 +242,9 @@ fun QuizSection(onCorrectAnswer: () -> Unit) {
 }
 
 @Composable
-fun QuizOptionButton(text: String, isCorrect: Boolean, onCorrectAnswer: () -> Unit) {
-    // Basic state for demo purposes
-    var selected by remember { mutableStateOf(false) }
+fun QuizOptionButton(text: String, isCorrect: Boolean, selectedAnswer: String?, onSelect: () -> Unit) {
+    val selected = selectedAnswer == text
+    val answered = selectedAnswer != null
     
     val bgColor = if (selected && isCorrect) MaterialTheme.colorScheme.primaryContainer 
                   else if (selected && !isCorrect) MaterialTheme.colorScheme.errorContainer
@@ -205,12 +255,8 @@ fun QuizOptionButton(text: String, isCorrect: Boolean, onCorrectAnswer: () -> Un
                   else MaterialTheme.colorScheme.onSurface
 
     Button(
-        onClick = { 
-            if (!selected && isCorrect) {
-                onCorrectAnswer()
-            }
-            selected = true 
-        },
+        onClick = onSelect,
+        enabled = !answered || selected,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
         colors = ButtonDefaults.buttonColors(containerColor = bgColor, contentColor = textColor),

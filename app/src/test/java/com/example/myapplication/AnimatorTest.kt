@@ -6,11 +6,15 @@ import java.lang.reflect.Method
 class AnimatorTest {
     @Test
     fun testAnimatorMethods() {
-        val animatableModelClass = Class.forName("io.github.sceneview.animation.AnimatableModel")
-        val modelInstanceClass = Class.forName("io.github.sceneview.model.ModelInstance")
-        val modelNodeClass = Class.forName("io.github.sceneview.node.ModelNode")
+        try {
+            // SceneView usually uses filament's Manipulator or wraps it
+            val clazz = Class.forName("io.github.sceneview.collision.CameraManipulator")
+            clazz.methods.forEach { println("Method: ${it.name}") }
+        } catch(e: Exception) { println("CameraManipulator not found in collision") }
         
-        println("ModelInstance is AnimatableModel: ${animatableModelClass.isAssignableFrom(modelInstanceClass)}")
-        println("ModelNode is AnimatableModel: ${animatableModelClass.isAssignableFrom(modelNodeClass)}")
+        try {
+            val clazz = Class.forName("io.github.sceneview.node.CameraNode")
+            clazz.methods.forEach { println("CameraNode Method: ${it.name}") }
+        } catch(e: Exception) { println("CameraNode not found") }
     }
 }

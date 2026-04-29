@@ -22,20 +22,38 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.exponentialDecay
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.input.pointer.pointerInput
+import kotlinx.coroutines.launch
+import dev.romainguy.kotlin.math.Float3
 import io.github.sceneview.SceneView
-import io.github.sceneview.rememberCameraManipulator
 import io.github.sceneview.rememberEngine
 import io.github.sceneview.rememberModelInstance
 import io.github.sceneview.rememberModelLoader
+import io.github.sceneview.rememberEnvironmentLoader
+import io.github.sceneview.node.ModelNode
+import io.github.sceneview.environment.Environment
 
 @Composable
 fun CatModel3DViewer(
     modifier: Modifier = Modifier,
     modelAssetPath: String = "models/cat.glb",
     label: String = "3D 立体猫咪模型",
-    animationIndex: Int = 0
+    animationIndex: Int = 0,
+    isFullScreen: Boolean = false,
+    onDoubleTap: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val hasModelAsset = remember(modelAssetPath) {
         val folder = modelAssetPath.substringBeforeLast('/', missingDelimiterValue = "")
         val fileName = modelAssetPath.substringAfterLast('/')
@@ -44,23 +62,63 @@ fun CatModel3DViewer(
 
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
+            .then(
+                if (isFullScreen) Modifier 
+                else Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
+            )
     ) {
         if (hasModelAsset) {
             val engine = rememberEngine()
             val modelLoader = rememberModelLoader(engine)
+            val environmentLoader = rememberEnvironmentLoader(engine)
+            
+            // 加载环境光照 HDR，以提供真实的 PBR 材质反射和光影
+            val environment = remember(environmentLoader) {
+                environmentLoader.createHDREnvironment("environments/studio.hdr")
+            }
+            
+            val rotationY = remember { Animatable(0f) }
+            val decaySpec = remember { exponentialDecay<Float>() }
+
+            val draggableState = rememberDraggableState { delta ->
+                coroutineScope.launch {
+                    rotationY.snapTo(rotationY.value + delta * 0.5f)
+                }
+            }
 
             SceneView(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(Unit) {
+                        detectTapGestures(onDoubleTap = { onDoubleTap() })
+                    }
+                    .draggable(
+                        state = draggableState,
+                        orientation = Orientation.Horizontal,
+                        onDragStopped = { velocity ->
+                            coroutineScope.launch {
+                                rotationY.animateDecay(
+                                    initialVelocity = velocity * 0.05f,
+                                    animationSpec = decaySpec
+                                )
+                            }
+                        }
+                    ),
                 engine = engine,
                 modelLoader = modelLoader,
-                cameraManipulator = rememberCameraManipulator()
+                environmentLoader = environmentLoader,
+                environment = environment!!,
+                cameraManipulator = null
             ) {
                 rememberModelInstance(modelLoader, modelAssetPath)?.let { modelInstance ->
                     ModelNode(
                         modelInstance = modelInstance,
                         scaleToUnits = 1.6f,
+                        // 将模型下沉 -0.5f 保证头部正好处于黄金视觉中心
+                        position = Float3(0f, -0.5f, 0f), 
+                        rotation = Float3(0f, rotationY.value, 0f),
                         autoAnimate = false
                     )
                 }
@@ -84,25 +142,27 @@ fun CatModel3DViewer(
             }
         }
 
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(12.dp)
-                .background(Color.White.copy(alpha = 0.88f), CircleShape)
-                .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.22f), CircleShape)
-                .padding(horizontal = 12.dp, vertical = 6.dp)
-        ) {
-            Text(label, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-        }
+        if (!isFullScreen) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(12.dp)
+                    .background(Color.White.copy(alpha = 0.88f), CircleShape)
+                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.22f), CircleShape)
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Text(label, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            }
 
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(12.dp)
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.82f), RoundedCornerShape(50))
-                .padding(horizontal = 12.dp, vertical = 6.dp)
-        ) {
-            Text(modelAssetPath, fontSize = 10.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(12.dp)
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.82f), RoundedCornerShape(50))
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Text(modelAssetPath, fontSize = 10.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
     }
 }

@@ -46,7 +46,14 @@ data class MainAppState(
     ),
     val learningProgress: Float = 0.3f,
     val completedCoursesCount: Int = 3,
-    val totalCoursesCount: Int = 10
+    val totalCoursesCount: Int = 10,
+    // 游戏化状态
+    val petLevel: Int = 5,
+    val petExp: Int = 320,
+    val petExpToNext: Int = 500,
+    val hungerValue: Float = 0.7f,
+    val happinessValue: Float = 0.85f,
+    val healthValue: Float = 0.92f
 )
 
 class MainViewModel : ViewModel() {
@@ -105,10 +112,33 @@ class MainViewModel : ViewModel() {
                     description = "进行了一次${actionName}互动。",
                     colorType = (1..3).random()
                 )
+
+                // 根据动作类型更新游戏属性
+                val hungerDelta = when (actionName) {
+                    "添粮" -> 0.15f; "补水" -> 0.05f; else -> -0.02f
+                }
+                val happinessDelta = when (actionName) {
+                    "安抚" -> 0.12f; "观察" -> 0.05f; else -> 0.03f
+                }
+                val healthDelta = when (actionName) {
+                    "补水" -> 0.08f; "观察" -> 0.03f; else -> 0.01f
+                }
+                val expGain = when (actionName) {
+                    "安抚" -> 15; "观察" -> 10; "补水" -> 12; "添粮" -> 12; else -> 5
+                }
+
+                val newExp = currentState.petExp + expGain
+                val levelUp = newExp >= currentState.petExpToNext
                 
                 currentState.copy(
                     tokenBalance = currentState.tokenBalance - cost,
-                    companionRecords = listOf(newRecord) + currentState.companionRecords
+                    companionRecords = listOf(newRecord) + currentState.companionRecords,
+                    hungerValue = (currentState.hungerValue + hungerDelta).coerceIn(0f, 1f),
+                    happinessValue = (currentState.happinessValue + happinessDelta).coerceIn(0f, 1f),
+                    healthValue = (currentState.healthValue + healthDelta).coerceIn(0f, 1f),
+                    petExp = if (levelUp) newExp - currentState.petExpToNext else newExp,
+                    petLevel = if (levelUp) currentState.petLevel + 1 else currentState.petLevel,
+                    petExpToNext = if (levelUp) currentState.petExpToNext + 100 else currentState.petExpToNext
                 )
             } else {
                 currentState // Not enough tokens

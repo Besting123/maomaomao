@@ -29,6 +29,13 @@ import androidx.compose.ui.unit.sp
 import com.example.myapplication.R
 import com.example.myapplication.ui.theme.*
 import androidx.navigation.NavController
+import androidx.compose.ui.viewinterop.AndroidView
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polyline
 
 data class CampusHotspotInfo(
     val name: String,
@@ -79,68 +86,161 @@ fun CampusScreen(navController: NavController? = null) {
         )
     }
     var selectedHotspot by remember { mutableStateOf(hotspots.first()) }
+    var sheetExpanded by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(SurfaceContainerLow)
     ) {
-        // Map Texture Background
-        Image(
-            painter = painterResource(id = R.drawable.img_31854930),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize(),
-            alpha = 0.5f,
-            colorFilter = ColorFilter.tint(Color.White.copy(alpha = 0.5f), blendMode = BlendMode.Multiply)
+        // ══ 真实校园地图 (osmdroid + 高德瓦片) ══
+        val context = androidx.compose.ui.platform.LocalContext.current
+        DisposableEffect(Unit) {
+            Configuration.getInstance().userAgentValue = context.packageName
+            onDispose { }
+        }
+        AndroidView(
+            factory = { ctx ->
+                MapView(ctx).apply {
+                    // 使用高德地图瓦片（国内极速）
+                    val amapSource = object : org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase(
+                        "Amap", 3, 19, 256, ".png",
+                        arrayOf("https://webrd01.is.autonavi.com", "https://webrd02.is.autonavi.com", "https://webrd03.is.autonavi.com", "https://webrd04.is.autonavi.com")
+                    ) {
+                        override fun getTileURLString(pMapTileIndex: Long): String {
+                            val z = org.osmdroid.util.MapTileIndex.getZoom(pMapTileIndex)
+                            val x = org.osmdroid.util.MapTileIndex.getX(pMapTileIndex)
+                            val y = org.osmdroid.util.MapTileIndex.getY(pMapTileIndex)
+                            return "https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x=$x&y=$y&z=$z"
+                        }
+                    }
+                    setTileSource(amapSource)
+                    setMultiTouchControls(true)
+                    isHorizontalMapRepetitionEnabled = false
+                    isVerticalMapRepetitionEnabled = false
+                    minZoomLevel = 15.0
+                    maxZoomLevel = 19.0
+
+                    // GCJ-02 坐标（高德地图使用的坐标系）
+                    // BJTU 中心点
+                    val bjtuCenter = GeoPoint(39.9562, 116.3555)
+
+                    // 猫咪热点标记（GCJ-02 坐标）
+                    val catData = listOf(
+                        Triple("🐱 大白在这儿", "图书馆东侧草坪·适合远观", GeoPoint(39.9577, 116.3557)),
+                        Triple("🐈 橘子刚喝过水", "思源楼北侧补水点·补水正常", GeoPoint(39.9560, 116.3575)),
+                        Triple("😺 奶油在树荫休息", "林荫道休息区·请勿打扰", GeoPoint(39.9550, 116.3543)),
+                        Triple("🐈‍⬛ 小墨在觅食", "食堂后方灌木丛·可远观", GeoPoint(39.9543, 116.3545))
+                    )
+                    catData.forEach { (title, snippet, pos) ->
+                        val m = Marker(this)
+                        m.position = pos
+                        m.title = title
+                        m.snippet = snippet
+                        m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                        overlays.add(m)
+                    }
+
+                    // 建筑标注（GCJ-02 坐标）
+                    listOf(
+                        Pair("📚 图书馆", GeoPoint(39.9580, 116.3545)),
+                        Pair("🏛 思源楼", GeoPoint(39.9555, 116.3575)),
+                        Pair("🏫 逸夫楼", GeoPoint(39.9565, 116.3525)),
+                        Pair("🍽 学生食堂", GeoPoint(39.9545, 116.3535)),
+                        Pair("🏟 体育馆", GeoPoint(39.9535, 116.3565))
+                    ).forEach { (title, pos) ->
+                        val m = Marker(this)
+                        m.position = pos
+                        m.title = title
+                        m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                        overlays.add(m)
+                    }
+
+                    // 关怀路径
+                    val route = Polyline()
+                    route.addPoint(GeoPoint(39.9580, 116.3545))
+                    route.addPoint(GeoPoint(39.9577, 116.3557))
+                    route.addPoint(GeoPoint(39.9560, 116.3575))
+                    route.addPoint(GeoPoint(39.9550, 116.3543))
+                    route.addPoint(GeoPoint(39.9543, 116.3545))
+                    route.outlinePaint.color = android.graphics.Color.parseColor("#8B5928")
+                    route.outlinePaint.strokeWidth = 5f
+                    route.outlinePaint.pathEffect = android.graphics.DashPathEffect(floatArrayOf(20f, 15f), 0f)
+                    overlays.add(route)
+
+                    // 延迟到布局完成后再设置中心和缩放
+                    post {
+                        controller.setZoom(17.0)
+                        controller.setCenter(bjtuCenter)
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxSize()
         )
 
-        // SVG Map Canvas Replacement
-        MapCanvasLayer(selectedTime = selectedTime)
-
-        // Buildings
-        Box(modifier = Modifier.fillMaxSize()) {
-            BuildingCard(
-                name = "图书馆",
-                imageRes = R.drawable.img_net_e706152ff1,
-                rotation = -2f,
-                offsetX = 0.15f,
-                offsetY = 0.22f
-            )
-            BuildingCard(
-                name = "思源楼",
-                imageRes = R.drawable.img_net_c8ec049afe,
-                rotation = 1f,
-                offsetX = 0.7f,
-                offsetY = 0.55f
-            )
-
-            hotspots.forEach { hotspot ->
-                CatHotspot(
-                    hotspot = hotspot,
-                    selected = selectedHotspot.name == hotspot.name,
-                    onClick = { selectedHotspot = hotspot }
-                )
-            }
-        }
-
-        // Overlays
+        // 顶部浮层 — 半透明
         CampusTopAppBar()
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 100.dp, start = 24.dp, end = 24.dp),
+                .padding(top = 90.dp, start = 16.dp, end = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             TimeSelectorOverlay(selectedTime = selectedTime, onTimeSelected = { selectedTime = it })
             RouteBadgeOverlay()
         }
 
-        // Bottom Sheet (Location Drawer)
-        Box(modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp)) {
-            CampusBottomSheet(navController, selectedTime, selectedHotspot)
+        // 底部卡片 — 可折叠，默认只显示摘要行
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 72.dp, start = 12.dp, end = 12.dp)
+        ) {
+            if (sheetExpanded) {
+                CampusBottomSheet(
+                    navController = navController,
+                    selectedTime = selectedTime,
+                    hotspot = selectedHotspot,
+                    onCollapse = { sheetExpanded = false }
+                )
+            } else {
+                // 折叠态：只显示一行摘要
+                CampusBottomSheetCollapsed(
+                    hotspot = selectedHotspot,
+                    onClick = { sheetExpanded = true }
+                )
+            }
         }
+    }
+}
+
+// ── 折叠态底部卡片 ──
+@Composable
+fun CampusBottomSheetCollapsed(hotspot: CampusHotspotInfo, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(8.dp, RoundedCornerShape(20.dp))
+            .background(SurfaceContainerLowest, RoundedCornerShape(20.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Image(
+                painter = painterResource(id = hotspot.imageRes),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(36.dp).clip(CircleShape)
+            )
+            Column {
+                Text(hotspot.areaTitle, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text(hotspot.summary, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        Icon(Icons.Outlined.KeyboardArrowUp, "展开", tint = MaterialTheme.colorScheme.primary)
     }
 }
 
@@ -211,15 +311,15 @@ fun BuildingCard(name: String, imageRes: Int, rotation: Float, offsetX: Float, o
             modifier = Modifier
                 .offset(x = x, y = y)
                 .rotate(rotation)
-                .shadow(2.dp, RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp, bottomEnd = 16.dp, bottomStart = 16.dp))
-                .background(SurfaceContainerLowest, RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp, bottomEnd = 16.dp, bottomStart = 16.dp))
-                .padding(12.dp)
+                .shadow(2.dp, RoundedCornerShape(12.dp))
+                .background(SurfaceContainerLowest.copy(alpha = 0.9f), RoundedCornerShape(12.dp))
+                .padding(6.dp)
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Box(
                     modifier = Modifier
-                        .size(96.dp)
-                        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomEnd = 8.dp, bottomStart = 8.dp))
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(8.dp))
                 ) {
                     Image(
                         painter = painterResource(id = imageRes),
@@ -229,8 +329,8 @@ fun BuildingCard(name: String, imageRes: Int, rotation: Float, offsetX: Float, o
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(name, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(name, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             }
         }
     }
@@ -326,19 +426,19 @@ fun CampusTopAppBar() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f))
+            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.55f))
             .statusBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(horizontal = 20.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(34.dp)
                     .clip(CircleShape)
                     .background(SurfaceContainerHighest)
-                    .border(2.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f), CircleShape)
+                    .border(1.5.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f), CircleShape)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.img_net_aaf424f0b6),
@@ -347,11 +447,11 @@ fun CampusTopAppBar() {
                     modifier = Modifier.fillMaxSize()
                 )
             }
-            Text("校园地图", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text("校园地图", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            Icon(Icons.Outlined.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.primary)
-            Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = MaterialTheme.colorScheme.primary)
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Icon(Icons.Outlined.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+            Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
         }
     }
 }
@@ -402,7 +502,7 @@ fun RouteBadgeOverlay() {
 }
 
 @Composable
-fun CampusBottomSheet(navController: NavController? = null, selectedTime: String = "清晨", hotspot: CampusHotspotInfo) {
+fun CampusBottomSheet(navController: NavController? = null, selectedTime: String = "清晨", hotspot: CampusHotspotInfo, onCollapse: () -> Unit = {}) {
     val guideText = when (selectedTime) {
         "清晨" -> "可远距离观察，先看尾巴和耳朵状态，保持 2 米以上距离。"
         "午后" -> "远观记录即可，保持 3 米以上安全社交距离。"
@@ -423,9 +523,14 @@ fun CampusBottomSheet(navController: NavController? = null, selectedTime: String
             .background(SurfaceContainerLowest, RoundedCornerShape(32.dp))
             .padding(24.dp)
     ) {
-        // Handle bar
-        Box(modifier = Modifier.width(48.dp).height(6.dp).clip(RoundedCornerShape(50)).background(SurfaceContainerHighest).align(Alignment.CenterHorizontally))
-        Spacer(modifier = Modifier.height(24.dp))
+        // Handle bar — 点击可折叠
+        Box(
+            modifier = Modifier.fillMaxWidth().clickable { onCollapse() }.padding(vertical = 8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Outlined.KeyboardArrowDown, "收起", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+        }
+        Spacer(modifier = Modifier.height(8.dp))
         
         // Title
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {

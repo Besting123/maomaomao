@@ -71,6 +71,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.R
 import com.example.myapplication.ui.components.CatModel3DViewer
+import com.example.myapplication.ui.components.CatViewerMode
 import com.example.myapplication.ui.theme.SurfaceContainerHigh
 import com.example.myapplication.ui.theme.SurfaceContainerHighest
 import com.example.myapplication.ui.theme.SurfaceContainerLow
@@ -186,6 +187,7 @@ private fun CatProfileHeroSection() {
         CatModel3DViewer(
             modelAssetPath = "models/cat.glb",
             label = "3D 立体猫咪模型",
+            mode = CatViewerMode.PROFILE,
             modifier = Modifier.fillMaxSize()
         )
 

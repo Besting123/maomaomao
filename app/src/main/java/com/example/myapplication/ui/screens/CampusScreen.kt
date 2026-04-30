@@ -1,10 +1,7 @@
 package com.example.myapplication.ui.screens
 
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -16,11 +13,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -31,11 +25,15 @@ import com.example.myapplication.ui.theme.*
 import androidx.navigation.NavController
 import androidx.compose.ui.viewinterop.AndroidView
 import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
-import org.osmdroid.views.overlay.Polyline
+
+data class CampusResidentCat(
+    val name: String,
+    val imageRes: Int
+)
 
 data class CampusHotspotInfo(
     val name: String,
@@ -44,8 +42,8 @@ data class CampusHotspotInfo(
     val summary: String,
     val status: String,
     val imageRes: Int,
-    val offsetX: Float,
-    val offsetY: Float
+    val geoPoint: GeoPoint,
+    val residents: List<CampusResidentCat>
 )
 
 @Composable
@@ -60,8 +58,12 @@ fun CampusScreen(navController: NavController? = null) {
                 summary = "此区域通常有 3 只猫咪出没",
                 status = "远观优先",
                 imageRes = R.drawable.img_net_cf9a4fdf2a,
-                offsetX = 0.28f,
-                offsetY = 0.35f
+                geoPoint = GeoPoint(39.9518, 116.3433),
+                residents = listOf(
+                    CampusResidentCat("大白", R.drawable.img_net_e7d3e76bea),
+                    CampusResidentCat("橘子", R.drawable.img_net_a53f9ce8f2),
+                    CampusResidentCat("奶油", R.drawable.img_net_27ce5092c2)
+                )
             ),
             CampusHotspotInfo(
                 name = "橘子刚喝过水",
@@ -70,8 +72,11 @@ fun CampusScreen(navController: NavController? = null) {
                 summary = "补水点刚维护，适合记录状态",
                 status = "补水点充足",
                 imageRes = R.drawable.img_net_7f99b46ce0,
-                offsetX = 0.65f,
-                offsetY = 0.42f
+                geoPoint = GeoPoint(39.9511, 116.3421),
+                residents = listOf(
+                    CampusResidentCat("橘子", R.drawable.img_net_a53f9ce8f2),
+                    CampusResidentCat("小黑", R.drawable.img_net_8c081179f2)
+                )
             ),
             CampusHotspotInfo(
                 name = "奶油在树荫休息",
@@ -80,8 +85,22 @@ fun CampusScreen(navController: NavController? = null) {
                 summary = "猫咪正在休息，建议只做远距离观察",
                 status = "不打扰",
                 imageRes = R.drawable.img_net_27ce5092c2,
-                offsetX = 0.48f,
-                offsetY = 0.62f
+                geoPoint = GeoPoint(39.9505, 116.3430),
+                residents = listOf(
+                    CampusResidentCat("奶油", R.drawable.img_net_27ce5092c2)
+                )
+            ),
+            CampusHotspotInfo(
+                name = "小墨在觅食",
+                safetyTag = "可远观",
+                areaTitle = "食堂后方灌木丛",
+                summary = "傍晚偶尔出现，建议不要靠近食物残渣区",
+                status = "远观记录",
+                imageRes = R.drawable.img_net_8c081179f2,
+                geoPoint = GeoPoint(39.9497, 116.3422),
+                residents = listOf(
+                    CampusResidentCat("小墨", R.drawable.img_net_8c081179f2)
+                )
             )
         )
     }
@@ -118,36 +137,38 @@ fun CampusScreen(navController: NavController? = null) {
                     setMultiTouchControls(true)
                     isHorizontalMapRepetitionEnabled = false
                     isVerticalMapRepetitionEnabled = false
-                    minZoomLevel = 15.0
+                    minZoomLevel = 16.5
                     maxZoomLevel = 19.0
 
                     // GCJ-02 坐标（高德地图使用的坐标系）
                     // BJTU 中心点
-                    val bjtuCenter = GeoPoint(39.9562, 116.3555)
+                    val bjtuCenter = GeoPoint(39.9510, 116.3427)
+                    val bjtuBounds = BoundingBox(39.9530, 116.3450, 39.9490, 116.3407)
+                    setScrollableAreaLimitDouble(bjtuBounds)
+                    controller.setZoom(18.0)
+                    controller.setCenter(bjtuCenter)
 
-                    // 猫咪热点标记（GCJ-02 坐标）
-                    val catData = listOf(
-                        Triple("🐱 大白在这儿", "图书馆东侧草坪·适合远观", GeoPoint(39.9577, 116.3557)),
-                        Triple("🐈 橘子刚喝过水", "思源楼北侧补水点·补水正常", GeoPoint(39.9560, 116.3575)),
-                        Triple("😺 奶油在树荫休息", "林荫道休息区·请勿打扰", GeoPoint(39.9550, 116.3543)),
-                        Triple("🐈‍⬛ 小墨在觅食", "食堂后方灌木丛·可远观", GeoPoint(39.9543, 116.3545))
-                    )
-                    catData.forEach { (title, snippet, pos) ->
+                    hotspots.forEach { hotspot ->
                         val m = Marker(this)
-                        m.position = pos
-                        m.title = title
-                        m.snippet = snippet
+                        m.position = hotspot.geoPoint
+                        m.title = "🐱 ${hotspot.name}"
+                        m.snippet = "${hotspot.areaTitle}·${hotspot.safetyTag}"
                         m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                        m.setOnMarkerClickListener { _, _ ->
+                            selectedHotspot = hotspot
+                            sheetExpanded = true
+                            true
+                        }
                         overlays.add(m)
                     }
 
                     // 建筑标注（GCJ-02 坐标）
                     listOf(
-                        Pair("📚 图书馆", GeoPoint(39.9580, 116.3545)),
-                        Pair("🏛 思源楼", GeoPoint(39.9555, 116.3575)),
-                        Pair("🏫 逸夫楼", GeoPoint(39.9565, 116.3525)),
-                        Pair("🍽 学生食堂", GeoPoint(39.9545, 116.3535)),
-                        Pair("🏟 体育馆", GeoPoint(39.9535, 116.3565))
+                        Pair("📚 图书馆", GeoPoint(39.9519, 116.3430)),
+                        Pair("🏛 思源楼", GeoPoint(39.9512, 116.3418)),
+                        Pair("🏫 逸夫楼", GeoPoint(39.9508, 116.3440)),
+                        Pair("🍽 学生食堂", GeoPoint(39.9496, 116.3424)),
+                        Pair("🏟 体育馆", GeoPoint(39.9493, 116.3436))
                     ).forEach { (title, pos) ->
                         val m = Marker(this)
                         m.position = pos
@@ -156,22 +177,11 @@ fun CampusScreen(navController: NavController? = null) {
                         overlays.add(m)
                     }
 
-                    // 关怀路径
-                    val route = Polyline()
-                    route.addPoint(GeoPoint(39.9580, 116.3545))
-                    route.addPoint(GeoPoint(39.9577, 116.3557))
-                    route.addPoint(GeoPoint(39.9560, 116.3575))
-                    route.addPoint(GeoPoint(39.9550, 116.3543))
-                    route.addPoint(GeoPoint(39.9543, 116.3545))
-                    route.outlinePaint.color = android.graphics.Color.parseColor("#8B5928")
-                    route.outlinePaint.strokeWidth = 5f
-                    route.outlinePaint.pathEffect = android.graphics.DashPathEffect(floatArrayOf(20f, 15f), 0f)
-                    overlays.add(route)
-
                     // 延迟到布局完成后再设置中心和缩放
                     post {
-                        controller.setZoom(17.0)
+                        controller.setZoom(18.0)
                         controller.setCenter(bjtuCenter)
+                        invalidate()
                     }
                 }
             },
@@ -188,7 +198,6 @@ fun CampusScreen(navController: NavController? = null) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             TimeSelectorOverlay(selectedTime = selectedTime, onTimeSelected = { selectedTime = it })
-            RouteBadgeOverlay()
         }
 
         // 底部卡片 — 可折叠，默认只显示摘要行
@@ -241,183 +250,6 @@ fun CampusBottomSheetCollapsed(hotspot: CampusHotspotInfo, onClick: () -> Unit) 
             }
         }
         Icon(Icons.Outlined.KeyboardArrowUp, "展开", tint = MaterialTheme.colorScheme.primary)
-    }
-}
-
-@Composable
-fun MapCanvasLayer(selectedTime: String) {
-    val greenColor = Color(0xFFC9EBCA).copy(alpha = 0.4f)
-    val blueColor = Color(0xFFC4EFFD).copy(alpha = 0.4f)
-    val dottedLineColor = Color(0xFF81817A).copy(alpha = 0.4f)
-    val routeLineColor = when (selectedTime) {
-        "午后" -> Color(0xFF416A76)
-        "傍晚" -> Color(0xFF8B5928)
-        "夜间" -> Color(0xFF4D6C51)
-        else -> Color(0xFF8B5928)
-    }.copy(alpha = 0.68f)
-
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        val w = size.width
-        val h = size.height
-
-        // Lake
-        val lakePath = Path().apply {
-            moveTo(w * 0.7f, h * 0.3f)
-            quadraticTo(w * 0.75f, h * 0.25f, w * 0.85f, h * 0.35f)
-            quadraticTo(w * 0.95f, h * 0.45f, w * 0.95f, h * 0.55f)
-            quadraticTo(w * 0.85f, h * 0.6f, w * 0.75f, h * 0.5f)
-            close()
-        }
-        drawPath(lakePath, color = blueColor)
-
-        // Green Area 1
-        val greenPath = Path().apply {
-            moveTo(w * 0.1f, h * 0.1f)
-            quadraticTo(w * 0.3f, h * 0.05f, w * 0.4f, h * 0.2f)
-            quadraticTo(w * 0.6f, h * 0.3f, w * 0.5f, h * 0.5f)
-            quadraticTo(w * 0.2f, h * 0.6f, w * 0.1f, h * 0.4f)
-            close()
-        }
-        drawPath(greenPath, color = greenColor)
-
-        // Main Road Dotted
-        val roadPath = Path().apply {
-            moveTo(0f, h * 0.5f)
-            quadraticTo(w * 0.25f, h * 0.48f, w * 0.5f, h * 0.5f)
-            quadraticTo(w * 0.75f, h * 0.52f, w, h * 0.52f)
-        }
-        drawPath(roadPath, color = dottedLineColor, style = Stroke(width = 8f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(24f, 24f), 0f)))
-
-        // Route Dotted
-        val routePath = Path().apply {
-            moveTo(w * 0.15f, h * 0.4f)
-            quadraticTo(w * 0.3f, h * 0.35f, w * 0.45f, h * 0.48f)
-            quadraticTo(w * 0.6f, h * 0.6f, w * 0.8f, h * 0.38f)
-        }
-        drawPath(routePath, color = routeLineColor, style = Stroke(width = 12f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(16f, 16f), 0f), cap = StrokeCap.Round))
-
-        drawCircle(color = Color(0xFFFFE8CC).copy(alpha = 0.38f), radius = w * 0.18f, center = Offset(w * 0.34f, h * 0.38f))
-        drawCircle(color = Color(0xFFC9EBCA).copy(alpha = 0.34f), radius = w * 0.16f, center = Offset(w * 0.65f, h * 0.52f))
-    }
-}
-
-@Composable
-fun BuildingCard(name: String, imageRes: Int, rotation: Float, offsetX: Float, offsetY: Float) {
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val x = maxWidth * offsetX
-        val y = maxHeight * offsetY
-        
-        Box(
-            modifier = Modifier
-                .offset(x = x, y = y)
-                .rotate(rotation)
-                .shadow(2.dp, RoundedCornerShape(12.dp))
-                .background(SurfaceContainerLowest.copy(alpha = 0.9f), RoundedCornerShape(12.dp))
-                .padding(6.dp)
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                ) {
-                    Image(
-                        painter = painterResource(id = imageRes),
-                        contentDescription = name,
-                        contentScale = ContentScale.Crop,
-                        colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0.7f) }),
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(name, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-            }
-        }
-    }
-}
-
-@Composable
-fun CatHotspot(hotspot: CampusHotspotInfo, selected: Boolean, onClick: () -> Unit) {
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val x = maxWidth * hotspot.offsetX
-        val y = maxHeight * hotspot.offsetY
-
-        // Infinite pulsing animation
-        val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-        val scale by infiniteTransition.animateFloat(
-            initialValue = 1f,
-            targetValue = 1.8f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(2000, easing = LinearOutSlowInEasing),
-                repeatMode = RepeatMode.Restart
-            ),
-            label = "pulse_scale"
-        )
-        val alpha by infiniteTransition.animateFloat(
-            initialValue = 0.8f,
-            targetValue = 0f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(2000, easing = LinearOutSlowInEasing),
-                repeatMode = RepeatMode.Restart
-            ),
-            label = "pulse_alpha"
-        )
-
-        var showTooltip by remember { mutableStateOf(false) }
-
-        Box(
-            modifier = Modifier
-                .offset(x = x, y = y)
-                .size(if (selected) 56.dp else 48.dp)
-                .clickable {
-                    showTooltip = !showTooltip
-                    onClick()
-                },
-            contentAlignment = Alignment.Center
-        ) {
-            // Pulse circle
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer {
-                        scaleX = scale
-                        scaleY = scale
-                        this.alpha = alpha
-                    }
-                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
-            )
-            // Cat avatar
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(CircleShape)
-                    .border(
-                        width = if (selected) 4.dp else 3.dp,
-                        color = if (selected) MaterialTheme.colorScheme.primary else Color.White,
-                        shape = CircleShape
-                    )
-            ) {
-                Image(
-                    painter = painterResource(id = hotspot.imageRes),
-                    contentDescription = hotspot.name,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-
-            if (showTooltip || selected) {
-                Column(
-                    modifier = Modifier
-                        .offset(y = 40.dp)
-                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
-                        .padding(horizontal = 10.dp, vertical = 6.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(hotspot.name, color = Color.White, fontSize = 10.sp)
-                    Text(hotspot.safetyTag, color = Color.White.copy(alpha = 0.82f), fontSize = 9.sp)
-                }
-            }
-        }
     }
 }
 
@@ -483,21 +315,6 @@ fun TimeSelectorOverlay(selectedTime: String, onTimeSelected: (String) -> Unit) 
                 )
             }
         }
-    }
-}
-
-@Composable
-fun RouteBadgeOverlay() {
-    Row(
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(50))
-            .border(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f), RoundedCornerShape(50))
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Icon(Icons.Outlined.Place, contentDescription = "Route", tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(18.dp))
-        Text("今日关怀路径", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer)
     }
 }
 
@@ -626,11 +443,10 @@ fun CampusBottomSheet(navController: NavController? = null, selectedTime: String
             }
         }
 
-        // Residents
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            CatChip(name = "大白", imageRes = R.drawable.img_net_e7d3e76bea, onClick = { navController?.navigate("catProfile") })
-            CatChip(name = "橘子", imageRes = R.drawable.img_net_a53f9ce8f2, onClick = { navController?.navigate("catProfile") })
-            CatChip(name = "小墨", imageRes = R.drawable.img_net_8c081179f2, onClick = { navController?.navigate("catProfile") })
+            hotspot.residents.forEach { resident ->
+                CatChip(name = resident.name, imageRes = resident.imageRes, onClick = { navController?.navigate("catProfile") })
+            }
         }
     }
 }

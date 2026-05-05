@@ -8,8 +8,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Canvas
@@ -88,7 +86,11 @@ data class CompanionActionUi(
     val emoji: String,
     val label: String,
     val subtitle: String,
-    val color: Color
+    val color: Color,
+    val lessonTitle: String,
+    val lesson: String,
+    val doTip: String,
+    val avoidTip: String
 )
 
 data class Particle(
@@ -102,12 +104,37 @@ data class Particle(
 @Composable
 fun CompanionScreen(viewModel: MainViewModel? = null) {
     val uiState by viewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(null) }
-    val actions = remember {
+    val colorScheme = MaterialTheme.colorScheme
+    val actions = remember(colorScheme) {
         listOf(
-            CompanionActionUi("🤚", "安抚", "慢慢靠近，降低紧张", Color(0xFFF48FB1)),
-            CompanionActionUi("👀", "观察", "保持距离，记录状态", Color(0xFF81D4FA)),
-            CompanionActionUi("💧", "补水", "优先关注饮水健康", Color(0xFF4DD0E1)),
-            CompanionActionUi("🐟", "添粮", "少量记录，避免过喂", Color(0xFFFFCC80))
+            CompanionActionUi(
+                "🤚", "安抚", "慢慢靠近，降低紧张", colorScheme.primary,
+                "什么时候可以安抚？",
+                "只有猫咪主动靠近、尾巴放松、没有后退时，才适合短时间轻柔安抚。",
+                "先伸手停住，让猫自己决定是否靠近。",
+                "不要追、抱、摸肚子或强行贴近。"
+            ),
+            CompanionActionUi(
+                "👀", "观察", "保持距离，记录状态", colorScheme.secondary,
+                "观察比接触更安全",
+                "耳朵、尾巴、瞳孔和身体姿态能判断猫咪是否紧张；多数校园猫更适合远距离记录。",
+                "保持 2 米以上距离，记录精神、步态和食欲。",
+                "不要围堵、闪光拍照或多人聚集。"
+            ),
+            CompanionActionUi(
+                "💧", "补水", "优先关注饮水健康", colorScheme.tertiary,
+                "补水通常优先于投喂",
+                "流浪猫常见风险是饮水不足。补水点清洁、稳定，比临时零食更有帮助。",
+                "确认水碗干净，优先补充清水。",
+                "不要倒牛奶、饮料或不明液体。"
+            ),
+            CompanionActionUi(
+                "🐟", "添粮", "少量记录，避免过喂", colorScheme.primaryContainer,
+                "为什么不能随便投喂？",
+                "重复投喂会导致肥胖、挑食和区域聚集。添粮应少量、定点、记录频率。",
+                "只做轻量补充，并观察是否已有食物。",
+                "不要喂高盐零食、骨头、剩饭或大量猫条。"
+            )
         )
     }
     var selectedAction by remember { mutableStateOf(actions[1]) }
@@ -160,6 +187,11 @@ fun CompanionScreen(viewModel: MainViewModel? = null) {
             CompanionHeroCard(
                 feedback = catFeedback,
                 selectedAction = selectedAction,
+                actions = actions,
+                hunger = uiState?.hungerValue ?: 0.7f,
+                happiness = uiState?.happinessValue ?: 0.85f,
+                health = uiState?.healthValue ?: 0.92f,
+                onAction = ::handleAction,
                 onDoubleTap = { handleAction(actions.first { it.label == "安抚" }) }
             )
             CareVitalsCard(
@@ -169,12 +201,12 @@ fun CompanionScreen(viewModel: MainViewModel? = null) {
                 exp = uiState?.petExp ?: 320,
                 expToNext = uiState?.petExpToNext ?: 500
             )
-            CareActionPanel(
-                actions = actions,
+            TodayCompanionInsight(
                 selectedAction = selectedAction,
-                onAction = ::handleAction
+                hunger = uiState?.hungerValue ?: 0.7f,
+                happiness = uiState?.happinessValue ?: 0.85f,
+                health = uiState?.healthValue ?: 0.92f
             )
-            TodayCompanionInsight(selectedAction = selectedAction)
             RecentCompanionRecords(records = uiState?.companionRecords ?: emptyList())
             Spacer(modifier = Modifier.height(24.dp))
         }
@@ -197,28 +229,33 @@ fun CompanionScreen(viewModel: MainViewModel? = null) {
 
 @Composable
 fun CompanionAtmosphereBackground() {
+    val colorScheme = MaterialTheme.colorScheme
     Canvas(modifier = Modifier.fillMaxSize()) {
         val w = size.width
         val h = size.height
         drawRect(
             brush = Brush.verticalGradient(
-                listOf(Color(0xFF151827), Color(0xFF283447), Color(0xFF5A3A2B)),
+                listOf(
+                    colorScheme.background,
+                    SurfaceContainerLow,
+                    colorScheme.primaryContainer.copy(alpha = 0.38f)
+                ),
                 startY = 0f,
                 endY = h
             )
         )
         drawCircle(
-            brush = Brush.radialGradient(listOf(Color(0x55FFB74D), Color.Transparent)),
+            brush = Brush.radialGradient(listOf(colorScheme.primaryContainer.copy(alpha = 0.6f), Color.Transparent)),
             radius = w * 0.56f,
             center = Offset(w * 0.74f, h * 0.18f)
         )
         drawCircle(
-            brush = Brush.radialGradient(listOf(Color(0x5538BDF8), Color.Transparent)),
+            brush = Brush.radialGradient(listOf(colorScheme.tertiaryContainer.copy(alpha = 0.5f), Color.Transparent)),
             radius = w * 0.48f,
             center = Offset(w * 0.15f, h * 0.54f)
         )
         drawRect(
-            brush = Brush.verticalGradient(listOf(Color.Transparent, Color(0xAA160F16))),
+            brush = Brush.verticalGradient(listOf(Color.Transparent, SurfaceContainer.copy(alpha = 0.7f))),
             topLeft = Offset.Zero,
             size = size
         )
@@ -235,12 +272,12 @@ fun CompanionTopBar(tokens: Int, level: Int, onOpenData: () -> Unit) {
         Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
             Text(
                 text = "云陪伴 · 安静模式",
-                color = Color.White,
+                color = MaterialTheme.colorScheme.primary,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
-                style = androidx.compose.ui.text.TextStyle(shadow = Shadow(Color.Black.copy(alpha = 0.45f), blurRadius = 8f))
+                style = androidx.compose.ui.text.TextStyle(shadow = Shadow(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f), blurRadius = 8f))
             )
-            Text("Lv.$level 小黑 · 今日建议补水优先", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp)
+            Text("Lv.$level 小黑 · 今日建议补水优先", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -250,10 +287,10 @@ fun CompanionTopBar(tokens: Int, level: Int, onOpenData: () -> Unit) {
                 modifier = Modifier
                     .size(42.dp)
                     .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.14f))
-                    .border(1.dp, Color.White.copy(alpha = 0.18f), CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f))
+                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), CircleShape)
             ) {
-                Icon(Icons.Outlined.Analytics, contentDescription = "数据中心", tint = Color.White)
+                Icon(Icons.Outlined.Analytics, contentDescription = "数据中心", tint = MaterialTheme.colorScheme.primary)
             }
         }
     }
@@ -264,24 +301,33 @@ fun GlassPill(text: String) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(50))
-            .background(Color.Black.copy(alpha = 0.28f))
-            .border(1.dp, Color.White.copy(alpha = 0.16f), RoundedCornerShape(50))
+            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.58f))
+            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.18f), RoundedCornerShape(50))
             .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
-        Text(text, color = Color(0xFFFFE082), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        Text(text, color = MaterialTheme.colorScheme.onPrimaryContainer, fontSize = 13.sp, fontWeight = FontWeight.Bold)
     }
 }
 
 @Composable
-fun CompanionHeroCard(feedback: String, selectedAction: CompanionActionUi, onDoubleTap: () -> Unit) {
+fun CompanionHeroCard(
+    feedback: String,
+    selectedAction: CompanionActionUi,
+    actions: List<CompanionActionUi>,
+    hunger: Float,
+    happiness: Float,
+    health: Float,
+    onAction: (CompanionActionUi) -> Unit,
+    onDoubleTap: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(430.dp)
-            .shadow(28.dp, RoundedCornerShape(36.dp), spotColor = Color.Black.copy(alpha = 0.35f))
+            .height(610.dp)
+            .shadow(22.dp, RoundedCornerShape(36.dp), spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f))
             .clip(RoundedCornerShape(36.dp))
-            .background(Color.White.copy(alpha = 0.08f))
-            .border(1.dp, Color.White.copy(alpha = 0.16f), RoundedCornerShape(36.dp))
+            .background(SurfaceContainerLowest.copy(alpha = 0.96f))
+            .border(1.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f), RoundedCornerShape(36.dp))
     ) {
         CatModel3DViewer(
             modifier = Modifier.fillMaxSize(),
@@ -297,32 +343,138 @@ fun CompanionHeroCard(feedback: String, selectedAction: CompanionActionUi, onDou
                 .align(Alignment.TopStart)
                 .padding(18.dp)
                 .clip(RoundedCornerShape(18.dp))
-                .background(Color.Black.copy(alpha = 0.32f))
+                .background(SurfaceContainerLowest.copy(alpha = 0.92f))
                 .border(1.dp, selectedAction.color.copy(alpha = 0.45f), RoundedCornerShape(18.dp))
                 .padding(horizontal = 13.dp, vertical = 9.dp)
         ) {
-            Text("${selectedAction.emoji} ${selectedAction.label}反馈", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text("${selectedAction.emoji} ${selectedAction.label}反馈", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        }
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.End
+        ) {
+            HeroStatusPill("饱食", hunger, MaterialTheme.colorScheme.primary)
+            HeroStatusPill("心情", happiness, MaterialTheme.colorScheme.secondary)
+            HeroStatusPill("健康", health, MaterialTheme.colorScheme.tertiary)
         }
 
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(horizontal = 18.dp, vertical = 18.dp)
+                .padding(horizontal = 16.dp, vertical = 132.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(24.dp))
-                .background(Color.White.copy(alpha = 0.92f))
-                .padding(16.dp)
+                .background(SurfaceContainerLow.copy(alpha = 0.96f))
+                .border(1.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f), RoundedCornerShape(24.dp))
+                .padding(horizontal = 14.dp, vertical = 12.dp)
         ) {
-            Text(
-                text = feedback,
-                color = Color(0xFF35241C),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                lineHeight = 20.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    text = feedback,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    lineHeight = 19.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text(
+                    text = "学习点：${selectedAction.lessonTitle}",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
+
+        HeroActionDock(
+            actions = actions,
+            selectedAction = selectedAction,
+            onAction = onAction,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 14.dp, vertical = 16.dp)
+        )
+    }
+}
+
+@Composable
+fun HeroStatusPill(label: String, value: Float, color: Color) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(SurfaceContainerLowest.copy(alpha = 0.88f))
+            .border(1.dp, color.copy(alpha = 0.28f), RoundedCornerShape(50))
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Box(modifier = Modifier.size(8.dp).background(color, CircleShape))
+        Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+        Text("${(value * 100).toInt()}%", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = color)
+    }
+}
+
+@Composable
+fun HeroActionDock(actions: List<CompanionActionUi>, selectedAction: CompanionActionUi, onAction: (CompanionActionUi) -> Unit, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(28.dp))
+            .background(SurfaceContainer.copy(alpha = 0.96f))
+            .border(1.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f), RoundedCornerShape(28.dp))
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Column {
+                Text("陪伴操作台", fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+                Text("按钮与小猫同屏，边互动边学习", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Text("-5 🐾", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            actions.forEach { action ->
+                HeroActionButton(
+                    action = action,
+                    selected = action.label == selectedAction.label,
+                    onClick = { onAction(action) },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun HeroActionButton(action: CompanionActionUi, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    var pressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(targetValue = if (pressed) 0.95f else 1f, animationSpec = spring(dampingRatio = 0.55f, stiffness = 650f), label = "hero-${action.label}")
+    LaunchedEffect(pressed) {
+        if (pressed) {
+            delay(120L)
+            pressed = false
+        }
+    }
+    Column(
+        modifier = modifier
+            .graphicsLayer(scaleX = scale, scaleY = scale)
+            .clip(RoundedCornerShape(18.dp))
+            .background(if (selected) action.color.copy(alpha = 0.18f) else SurfaceContainerLowest)
+            .border(1.dp, if (selected) action.color.copy(alpha = 0.55f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), RoundedCornerShape(18.dp))
+            .clickable { pressed = true; onClick() }
+            .padding(vertical = 10.dp, horizontal = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        Text(action.emoji, fontSize = 20.sp)
+        Text(action.label, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
@@ -331,19 +483,19 @@ fun CareVitalsCard(hunger: Float, happiness: Float, health: Float, exp: Int, exp
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.92f))
+        colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest.copy(alpha = 0.96f))
     ) {
         Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
-                    Text("陪伴状态", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF2F241F))
-                    Text("轻量照护，不打扰真实猫咪", fontSize = 12.sp, color = Color(0xFF7A675E))
+                    Text("陪伴状态", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("轻量照护，不打扰真实猫咪", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Text("EXP $exp/$expToNext", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
             }
-            VitalMeter("🍖", "饱食", hunger, Color(0xFFFFA726))
-            VitalMeter("💗", "心情", happiness, Color(0xFFF06292))
-            VitalMeter("🌿", "健康", health, Color(0xFF66BB6A))
+            VitalMeter("🍖", "饱食", hunger, MaterialTheme.colorScheme.primary)
+            VitalMeter("💗", "心情", happiness, MaterialTheme.colorScheme.secondary)
+            VitalMeter("🌿", "健康", health, MaterialTheme.colorScheme.tertiary)
         }
     }
 }
@@ -353,13 +505,13 @@ fun VitalMeter(icon: String, label: String, value: Float, color: Color) {
     val animatedValue by animateFloatAsState(targetValue = value, animationSpec = tween(600), label = label)
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(icon, fontSize = 16.sp)
-        Text(label, modifier = Modifier.width(38.dp), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF4B3A31))
+        Text(label, modifier = Modifier.width(38.dp), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         Box(
             modifier = Modifier
                 .weight(1f)
                 .height(10.dp)
                 .clip(RoundedCornerShape(50))
-                .background(Color(0xFFE8DDD2))
+                .background(SurfaceContainerHighest)
         ) {
             Box(
                 modifier = Modifier
@@ -374,96 +526,50 @@ fun VitalMeter(icon: String, label: String, value: Float, color: Color) {
 }
 
 @Composable
-fun CareActionPanel(actions: List<CompanionActionUi>, selectedAction: CompanionActionUi, onAction: (CompanionActionUi) -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(30.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.3f))
-    ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Column {
-                    Text("选择陪伴方式", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
-                    Text("每次消耗 5 小鱼干", color = Color.White.copy(alpha = 0.62f), fontSize = 12.sp)
-                }
-                GlassPill(text = selectedAction.label)
-            }
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                actions.chunked(2).forEach { rowActions ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                        rowActions.forEach { action ->
-                            CareActionButton(
-                                action = action,
-                                selected = action.label == selectedAction.label,
-                                onClick = { onAction(action) },
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun CareActionButton(action: CompanionActionUi, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    var pressed by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(targetValue = if (pressed) 0.96f else 1f, animationSpec = spring(dampingRatio = 0.55f, stiffness = 650f), label = action.label)
-    LaunchedEffect(pressed) {
-        if (pressed) {
-            delay(120L)
-            pressed = false
-        }
+fun TodayCompanionInsight(selectedAction: CompanionActionUi, hunger: Float, happiness: Float, health: Float) {
+    val statusHint = when {
+        selectedAction.label == "添粮" && hunger > 0.82f -> "当前饱食度较高，更适合观察或补水，避免重复投喂。"
+        selectedAction.label == "安抚" && happiness < 0.68f -> "心情较低时先观察距离和应激信号，不要急于触碰。"
+        selectedAction.label == "补水" && health < 0.85f -> "健康值偏低时，补水提醒和异常记录比临时投喂更有意义。"
+        selectedAction.label == "观察" -> "观察是最低压力的陪伴方式，适合作为所有互动前的第一步。"
+        else -> selectedAction.lesson
     }
 
-    Row(
-        modifier = modifier
-            .graphicsLayer(scaleX = scale, scaleY = scale)
-            .clip(RoundedCornerShape(22.dp))
-            .background(if (selected) action.color.copy(alpha = 0.32f) else Color.White.copy(alpha = 0.1f))
-            .border(1.dp, if (selected) action.color.copy(alpha = 0.72f) else Color.White.copy(alpha = 0.1f), RoundedCornerShape(22.dp))
-            .clickable {
-                pressed = true
-                onClick()
-            }
-            .padding(14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(Brush.radialGradient(listOf(action.color.copy(alpha = 0.55f), Color.White.copy(alpha = 0.06f))))
-                .border(1.dp, action.color.copy(alpha = 0.4f), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(action.emoji, fontSize = 22.sp)
-        }
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(action.label, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
-            Text(action.subtitle, color = Color.White.copy(alpha = 0.62f), fontSize = 10.sp, lineHeight = 14.sp)
-        }
-    }
-}
-
-@Composable
-fun TodayCompanionInsight(selectedAction: CompanionActionUi) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(26.dp),
         colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest.copy(alpha = 0.94f))
     ) {
-        Row(modifier = Modifier.padding(18.dp), horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Top) {
-            Box(modifier = Modifier.size(42.dp).clip(CircleShape).background(selectedAction.color.copy(alpha = 0.22f)), contentAlignment = Alignment.Center) {
-                Text(selectedAction.emoji, fontSize = 20.sp)
+        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Top) {
+                Box(modifier = Modifier.size(42.dp).clip(CircleShape).background(selectedAction.color.copy(alpha = 0.22f)), contentAlignment = Alignment.Center) {
+                    Text(selectedAction.emoji, fontSize = 20.sp)
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Text(selectedAction.lessonTitle, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+                    Text(statusHint, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
+                }
             }
-            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Text("今日陪伴建议", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
-                Text("以观察和补水为主，安抚只在猫咪主动靠近时进行。添粮保持少量记录，避免把云陪伴变成重复投喂。", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                WelfareTipCard(title = "建议这样做", text = selectedAction.doTip, color = MaterialTheme.colorScheme.secondary, modifier = Modifier.weight(1f))
+                WelfareTipCard(title = "避免这样做", text = selectedAction.avoidTip, color = MaterialTheme.colorScheme.error, modifier = Modifier.weight(1f))
             }
         }
+    }
+}
+
+@Composable
+fun WelfareTipCard(title: String, text: String, color: Color, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(18.dp))
+            .background(color.copy(alpha = 0.08f))
+            .border(1.dp, color.copy(alpha = 0.18f), RoundedCornerShape(18.dp))
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Text(title, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = color)
+        Text(text, fontSize = 11.sp, lineHeight = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -538,7 +644,7 @@ fun DataPanelOverlay(onClose: () -> Unit, uiState: MainAppState?) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.55f))
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.24f))
             .clickable(onClick = onClose)
     ) {
         Column(

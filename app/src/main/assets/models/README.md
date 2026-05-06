@@ -2,6 +2,7 @@
 
 Place the exported cat model here for Android Studio builds:
 
-- `cat.glb` — primary 3D cat model used by `CatModel3DViewer`
+- `mao-lihua-animated.glb` — primary cat model used by `CatModel3DViewer`; contains named presentation animations for UI feedback, but is not a rigged/skeletal character asset
+- `cat.glb` — legacy static model kept as a fallback/source reference
 
-Recommended format: GLB with embedded textures and animations.
+Recommended final format: GLB with embedded textures, `skins`, a `skeleton`, and named animation clips such as `Idle`, `Pet`, `Drink`, `Eat`, and `Observe`.

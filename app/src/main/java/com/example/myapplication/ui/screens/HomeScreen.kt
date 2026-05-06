@@ -291,8 +291,8 @@ fun TodaysActivitySection() {
         ) {
             ActivityCard(
                 name = "奶油",
-                location = "图书馆南侧",
-                desc = "“今天在图书馆南侧出现，看起来心情不错”",
+                location = "区域观察",
+                desc = "“今天在教学区附近被远距离观察到，状态稳定。”",
                 borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                 tagIcon = Icons.Outlined.LocationOn,
                 tagBg = SurfaceContainerHighest,
@@ -379,7 +379,7 @@ fun CoreFunctionsBento(navController: NavController? = null) {
             ) {
                 Column {
                     Text("校园猫咪地图", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    Text("查看区域热点与接近指南", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                    Text("查看校园区域与安全建议", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                 }
                 Box(modifier = Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) {
                     Icon(Icons.Outlined.LocationOn, contentDescription = "Map", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
@@ -485,7 +485,7 @@ fun StoryCardSection() {
                 Text("“橘子”的一天：从操场到实验楼", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "作为学校里最出名的“外交官”，橘子的行程总是排得很满。早晨在操场围观晨跑，中午准时出现在食堂二楼露台...",
+        text = "作为学校里最出名的“外交官”，橘子的行程总是排得很满。早晨常在开阔区域远观人群，中午会出现在安静片区附近...",
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                     lineHeight = 20.sp

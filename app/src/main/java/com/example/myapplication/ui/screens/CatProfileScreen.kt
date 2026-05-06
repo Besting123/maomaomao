@@ -185,9 +185,10 @@ private fun CatProfileHeroSection() {
             .clip(RoundedCornerShape(24.dp))
     ) {
         CatModel3DViewer(
-            modelAssetPath = "models/cat.glb",
-            label = "3D 立体猫咪模型",
+            modelAssetPath = "models/mao-lihua-animated.glb",
+            label = "3D 陪伴狸花猫模型",
             mode = CatViewerMode.PROFILE,
+            animationName = "Idle",
             modifier = Modifier.fillMaxSize()
         )
 
@@ -506,12 +507,12 @@ private fun CatMemoryPolaroid() {
 @Composable
 private fun CatLocationSection() {
     Column(modifier = Modifier.fillMaxWidth()) {
-        SectionHeader(icon = Icons.Outlined.LocationOn, title = "常出没地点与时空规律")
+        SectionHeader(icon = Icons.Outlined.LocationOn, title = "常活动片区与时段规律")
 
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = "基于近30日的目击记录统计",
+            text = "基于近30日的延迟远观记录统计",
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
             modifier = Modifier.padding(horizontal = 54.dp)
@@ -523,11 +524,11 @@ private fun CatLocationSection() {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        LocationItem("艺术楼中庭(南)", 0.65f, "65%", MaterialTheme.colorScheme.primary)
+        LocationItem("教学区安静片区", 0.65f, "65%", MaterialTheme.colorScheme.primary)
         Spacer(modifier = Modifier.height(8.dp))
-        LocationItem("图书馆侧门草坪", 0.22f, "22%", MaterialTheme.colorScheme.secondary)
+        LocationItem("草坪边缘片区", 0.22f, "22%", MaterialTheme.colorScheme.secondary)
         Spacer(modifier = Modifier.height(8.dp))
-        LocationItem("第三食堂后勤区", 0.13f, "13%", MaterialTheme.colorScheme.tertiary)
+        LocationItem("后勤绿化片区", 0.13f, "13%", MaterialTheme.colorScheme.tertiary)
     }
 }
 
@@ -689,7 +690,7 @@ private fun CatHealthAdviceSection() {
                 .padding(16.dp)
         ) {
             Text(
-                text = "如发现大橘出现精神萎靡、食欲下降、毛发异常脱落等情况，请立即联系校园流浪猫志愿者团队。日常加餐请使用指定猫粮，放置于艺术楼南侧补给点。",
+                text = "如发现大橘出现精神萎靡、食欲下降、毛发异常脱落等情况，请联系校园流浪猫志愿者团队。日常照护以固定片区规则为准，不公开精确补给位置。",
                 fontSize = 13.sp,
                 lineHeight = 22.sp,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -738,7 +739,7 @@ private fun CatTimelineSection() {
                 TimelineItem(
                     dotColor = MaterialTheme.colorScheme.primary,
                     time = "2小时前 · 被目击",
-                    title = "正在艺术楼南面晒太阳",
+                    title = "正在教学区安静片区晒太阳",
                     description = "\u201C趴在老位置，尾巴偶尔甩一下，看起来心情不错。\u201D"
                 )
 
@@ -746,7 +747,7 @@ private fun CatTimelineSection() {
                     dotColor = MaterialTheme.colorScheme.secondary,
                     time = "昨天 16:45 · 补水记录",
                     title = "志愿者已更换纯净水",
-                    description = "水碗已清洗并更换新鲜纯净水，放置于艺术楼南侧固定喂食点。"
+                    description = "水碗已清洗并更换新鲜纯净水，记录为片区级补水维护。"
                 )
 
                 TimelineItemWithImages(
@@ -899,7 +900,7 @@ private fun CatMyCompanionRecordsSection() {
                             Text("记录了观察日志", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             Text("10月20日", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        Text("发现大橘在图书馆后门睡午觉。", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("发现大橘在校园安静片区睡午觉。", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -939,7 +940,7 @@ private fun CatPersonalityTheater() {
 
         TheaterStoryCard(
             title = "第一幕：傲娇的早安",
-            description = "每天早上8点，大橘会准时出现在艺术楼门口。但如果你试图直接摸它，它会优雅地后退两步，用眼神告诉你：\u201C请先自报家门。\u201D"
+            description = "每天早上，大橘常在教学区附近短暂停留。但如果你试图直接摸它，它会优雅地后退两步，用眼神告诉你：\u201C请先保持距离。\u201D"
         )
 
         Spacer(modifier = Modifier.height(12.dp))

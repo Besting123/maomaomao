@@ -360,8 +360,8 @@ fun MapPostCard(modifier: Modifier = Modifier) {
                     Text("地图动态", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            Text(if (synced) "补给站同步完成" else "更新了 4 处能量补给站位置", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-            Text(if (synced) "地图动态已标记为已读，后续可接入真实志愿者数据。" else "根据近期猫咪活动路径，志愿者更新了位于西区礼堂背后的隐蔽补给点，请知悉。", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
+            Text(if (synced) "区域照护提醒已读" else "更新了校园区域照护提醒", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(if (synced) "地图动态已标记为已读，后续可接入真实志愿者数据。" else "根据近期远观记录，志愿者更新了若干片区的补水与不打扰建议，请以区域提示为准。", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
             Spacer(modifier = Modifier.weight(1f))
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Box(modifier = Modifier.weight(1f).height(4.dp).clip(CircleShape).background(SurfaceContainerHighest)) {

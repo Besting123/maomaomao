@@ -25,10 +25,8 @@ import com.example.myapplication.ui.theme.*
 import androidx.navigation.NavController
 import androidx.compose.ui.viewinterop.AndroidView
 import org.osmdroid.config.Configuration
-import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Marker
 
 data class CampusResidentCat(
     val name: String,
@@ -42,7 +40,6 @@ data class CampusHotspotInfo(
     val summary: String,
     val status: String,
     val imageRes: Int,
-    val geoPoint: GeoPoint,
     val residents: List<CampusResidentCat>
 )
 
@@ -54,11 +51,10 @@ fun CampusScreen(navController: NavController? = null) {
             CampusHotspotInfo(
                 name = "大白在这儿",
                 safetyTag = "适合远观",
-                areaTitle = "图书馆东侧草坪",
+                areaTitle = "教学区东侧草坪片区",
                 summary = "此区域通常有 3 只猫咪出没",
                 status = "远观优先",
                 imageRes = R.drawable.img_net_cf9a4fdf2a,
-                geoPoint = GeoPoint(39.9518, 116.3433),
                 residents = listOf(
                     CampusResidentCat("大白", R.drawable.img_net_e7d3e76bea),
                     CampusResidentCat("橘子", R.drawable.img_net_a53f9ce8f2),
@@ -68,11 +64,10 @@ fun CampusScreen(navController: NavController? = null) {
             CampusHotspotInfo(
                 name = "橘子刚喝过水",
                 safetyTag = "补水正常",
-                areaTitle = "思源楼北侧补水点",
+                areaTitle = "北侧补水观察片区",
                 summary = "补水点刚维护，适合记录状态",
                 status = "补水点充足",
                 imageRes = R.drawable.img_net_7f99b46ce0,
-                geoPoint = GeoPoint(39.9511, 116.3421),
                 residents = listOf(
                     CampusResidentCat("橘子", R.drawable.img_net_a53f9ce8f2),
                     CampusResidentCat("小黑", R.drawable.img_net_8c081179f2)
@@ -81,11 +76,10 @@ fun CampusScreen(navController: NavController? = null) {
             CampusHotspotInfo(
                 name = "奶油在树荫休息",
                 safetyTag = "请勿打扰",
-                areaTitle = "林荫道休息区",
+                areaTitle = "林荫休息片区",
                 summary = "猫咪正在休息，建议只做远距离观察",
                 status = "不打扰",
                 imageRes = R.drawable.img_net_27ce5092c2,
-                geoPoint = GeoPoint(39.9505, 116.3430),
                 residents = listOf(
                     CampusResidentCat("奶油", R.drawable.img_net_27ce5092c2)
                 )
@@ -93,11 +87,10 @@ fun CampusScreen(navController: NavController? = null) {
             CampusHotspotInfo(
                 name = "小墨在觅食",
                 safetyTag = "可远观",
-                areaTitle = "食堂后方灌木丛",
+                areaTitle = "后勤绿化观察片区",
                 summary = "傍晚偶尔出现，建议不要靠近食物残渣区",
                 status = "远观记录",
                 imageRes = R.drawable.img_net_8c081179f2,
-                geoPoint = GeoPoint(39.9497, 116.3422),
                 residents = listOf(
                     CampusResidentCat("小墨", R.drawable.img_net_8c081179f2)
                 )
@@ -137,47 +130,11 @@ fun CampusScreen(navController: NavController? = null) {
                     setMultiTouchControls(true)
                     isHorizontalMapRepetitionEnabled = false
                     isVerticalMapRepetitionEnabled = false
-                    minZoomLevel = 16.5
-                    maxZoomLevel = 19.0
 
-                    // GCJ-02 坐标（高德地图使用的坐标系）
-                    // BJTU 中心点
                     val bjtuCenter = GeoPoint(39.9510, 116.3427)
-                    val bjtuBounds = BoundingBox(39.9530, 116.3450, 39.9490, 116.3407)
-                    setScrollableAreaLimitDouble(bjtuBounds)
                     controller.setZoom(18.0)
                     controller.setCenter(bjtuCenter)
 
-                    hotspots.forEach { hotspot ->
-                        val m = Marker(this)
-                        m.position = hotspot.geoPoint
-                        m.title = "🐱 ${hotspot.name}"
-                        m.snippet = "${hotspot.areaTitle}·${hotspot.safetyTag}"
-                        m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                        m.setOnMarkerClickListener { _, _ ->
-                            selectedHotspot = hotspot
-                            sheetExpanded = true
-                            true
-                        }
-                        overlays.add(m)
-                    }
-
-                    // 建筑标注（GCJ-02 坐标）
-                    listOf(
-                        Pair("📚 图书馆", GeoPoint(39.9519, 116.3430)),
-                        Pair("🏛 思源楼", GeoPoint(39.9512, 116.3418)),
-                        Pair("🏫 逸夫楼", GeoPoint(39.9508, 116.3440)),
-                        Pair("🍽 学生食堂", GeoPoint(39.9496, 116.3424)),
-                        Pair("🏟 体育馆", GeoPoint(39.9493, 116.3436))
-                    ).forEach { (title, pos) ->
-                        val m = Marker(this)
-                        m.position = pos
-                        m.title = title
-                        m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                        overlays.add(m)
-                    }
-
-                    // 延迟到布局完成后再设置中心和缩放
                     post {
                         controller.setZoom(18.0)
                         controller.setCenter(bjtuCenter)
@@ -281,10 +238,7 @@ fun CampusTopAppBar() {
             }
             Text("校园地图", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Icon(Icons.Outlined.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-            Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-        }
+        Text("无标记展示", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

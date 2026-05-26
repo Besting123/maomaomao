@@ -71,8 +71,8 @@ enum class CatViewerMode {
 @Composable
 fun CatModel3DViewer(
     modifier: Modifier = Modifier,
-    modelAssetPath: String = "models/mao-lihua-animated.glb",
-    label: String = "3D 陪伴狸花猫",
+    modelAssetPath: String = "models/mao-xiaohei-rigged.glb",
+    label: String = "3D 陪伴小黑",
     isFullScreen: Boolean = false,
     mode: CatViewerMode = if (isFullScreen) CatViewerMode.COMPANION else CatViewerMode.PROFILE,
     animationName: String = "Idle",

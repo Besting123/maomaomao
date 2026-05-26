@@ -1,6 +1,5 @@
 package com.example.myapplication.ui.screens
 
-import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -22,7 +21,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -35,12 +33,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.example.myapplication.R
 import com.example.myapplication.ui.theme.*
+import com.example.myapplication.ui.viewmodel.CompanionRecord
 import com.example.myapplication.ui.viewmodel.MainViewModel
+import com.example.myapplication.ui.viewmodel.RewardExchangeRecord
 
 @Composable
 fun ProfileScreen(viewModel: MainViewModel? = null) {
     val scrollState = rememberScrollState()
     val uiState by viewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(null) }
+    var activePanel by remember { mutableStateOf<ProfilePanel?>(null) }
+    var showExchangeDialog by remember { mutableStateOf(false) }
+    var exchangeMessage by remember { mutableStateOf<String?>(null) }
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(
             modifier = Modifier
@@ -51,21 +54,63 @@ fun ProfileScreen(viewModel: MainViewModel? = null) {
         ) {
             Spacer(modifier = Modifier.height(80.dp))
             ProfileHeroCard()
-            TokenBalanceSection(tokenBalance = uiState?.tokenBalance ?: 350)
-            GoodwillStatsSection()
-            KnowledgeBadgesSection()
+            TokenBalanceSection(tokenBalance = uiState?.tokenBalance ?: 350, onExchangeClick = { showExchangeDialog = true })
+            GoodwillStatsSection(
+                signInDays = uiState?.signInDays ?: 0,
+                completedCoursesCount = uiState?.completedCoursesCount ?: 0,
+                reportCount = uiState?.publishedForumPosts?.count { it.category == "目击记录" } ?: 0
+            )
+            KnowledgeBadgesSection(completedCoursesCount = uiState?.completedCoursesCount ?: 0)
             FollowedCatsSection()
-            CompanionTimelineSection()
-            ProfileSettingsSection()
+            CompanionTimelineSection(records = uiState?.companionRecords.orEmpty())
+            ProfileSettingsSection(onOpenPanel = { activePanel = it })
             Spacer(modifier = Modifier.height(120.dp))
         }
-        ProfileTopBar()
+        ProfileTopBar(
+            onOpenSettings = { activePanel = ProfilePanel.GeneralSettings },
+            onOpenNotifications = { activePanel = ProfilePanel.Notifications }
+        )
+        activePanel?.let { panel ->
+            ProfilePanelDialog(
+                panel = panel,
+                joinedWeekendShelterEvent = uiState?.joinedWeekendShelterEvent == true,
+                exchangeRecords = uiState?.rewardExchangeRecords.orEmpty(),
+                onDismiss = { activePanel = null }
+            )
+        }
+        if (showExchangeDialog) {
+            RewardExchangeDialog(
+                onDismiss = { showExchangeDialog = false },
+                onExchange = { title, cost ->
+                    val success = viewModel?.exchangeReward(title, cost) ?: false
+                    exchangeMessage = if (success) "已兑换「$title」，消耗 $cost 小鱼干。" else "小鱼干不足，先完成学习、签到或陪伴任务。"
+                    showExchangeDialog = false
+                }
+            )
+        }
+        exchangeMessage?.let { message ->
+            AlertDialog(
+                onDismissRequest = { exchangeMessage = null },
+                title = { Text("兑换结果", fontWeight = FontWeight.Bold) },
+                text = { Text(message, lineHeight = 22.sp) },
+                confirmButton = { Button(onClick = { exchangeMessage = null }, shape = CircleShape) { Text("知道了") } }
+            )
+        }
     }
 }
 
+enum class ProfilePanel {
+    SavedPlaces,
+    OfflineEvents,
+    GeneralSettings,
+    Notifications
+}
+
 @Composable
-fun ProfileTopBar() {
-    val context = LocalContext.current
+fun ProfileTopBar(
+    onOpenSettings: () -> Unit,
+    onOpenNotifications: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -75,11 +120,11 @@ fun ProfileTopBar() {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = { Toast.makeText(context, "设置页将在前端闭环阶段补充", Toast.LENGTH_SHORT).show() }, modifier = Modifier.size(40.dp)) {
+        IconButton(onClick = onOpenSettings, modifier = Modifier.size(40.dp)) {
             Icon(Icons.Outlined.Settings, contentDescription = "Settings", tint = MaterialTheme.colorScheme.primary)
         }
         Text("我的", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-        IconButton(onClick = { Toast.makeText(context, "暂无新的喵伴提醒", Toast.LENGTH_SHORT).show() }, modifier = Modifier.size(40.dp)) {
+        IconButton(onClick = onOpenNotifications, modifier = Modifier.size(40.dp)) {
             Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = MaterialTheme.colorScheme.primary)
         }
     }
@@ -131,9 +176,7 @@ fun ProfileHeroCard() {
 }
 
 @Composable
-fun TokenBalanceSection(tokenBalance: Int) {
-    val context = LocalContext.current
-    var exchangeSubmitted by remember { mutableStateOf(false) }
+fun TokenBalanceSection(tokenBalance: Int, onExchangeClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
@@ -153,22 +196,55 @@ fun TokenBalanceSection(tokenBalance: Int) {
                 }
             }
             Button(
-                onClick = {
-                    val nextSubmitted = !exchangeSubmitted
-                    exchangeSubmitted = nextSubmitted
-                    Toast.makeText(context, if (nextSubmitted) "已提交兑换演示" else "已取消兑换演示", Toast.LENGTH_SHORT).show()
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = if (exchangeSubmitted) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.tertiary),
+                onClick = onExchangeClick,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text(if (exchangeSubmitted) "已提交" else "兑换奖励", color = if (exchangeSubmitted) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onTertiary, fontWeight = FontWeight.Bold)
+                Text("兑换奖励", color = MaterialTheme.colorScheme.onTertiary, fontWeight = FontWeight.Bold)
             }
         }
     }
 }
 
 @Composable
-fun GoodwillStatsSection() {
+fun RewardExchangeDialog(onDismiss: () -> Unit, onExchange: (String, Int) -> Unit) {
+    val rewards = listOf(
+        "补水点维护提醒卡" to 80,
+        "猫窝材料心愿" to 120,
+        "校园照护徽章" to 50
+    )
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("兑换奖励", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                rewards.forEach { (title, cost) ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(SurfaceContainerLow)
+                            .clickable { onExchange(title, cost) }
+                            .padding(14.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                            Text("用于本次会话内的照护记录展示", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Text("$cost 🐟", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("关闭") } }
+    )
+}
+
+@Composable
+fun GoodwillStatsSection(signInDays: Int, completedCoursesCount: Int, reportCount: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(Icons.Outlined.Home, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
@@ -180,7 +256,7 @@ fun GoodwillStatsSection() {
                 modifier = Modifier.weight(1f),
                 icon = Icons.Outlined.CheckCircle,
                 iconColor = MaterialTheme.colorScheme.tertiary,
-                value = "12",
+                value = signInDays.toString(),
                 label = "连续签到天数"
             )
             // Stat 2
@@ -188,7 +264,7 @@ fun GoodwillStatsSection() {
                 modifier = Modifier.weight(1f),
                 icon = Icons.Outlined.MenuBook,
                 iconColor = MaterialTheme.colorScheme.primary,
-                value = "5",
+                value = completedCoursesCount.toString(),
                 label = "学习完成数"
             )
         }
@@ -203,7 +279,7 @@ fun GoodwillStatsSection() {
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Icon(Icons.Outlined.Info, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
-                Text("128", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+                Text(reportCount.toString(), fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
                 Text("目击报告数", fontSize = 12.sp, color = Color.White.copy(alpha = 0.9f))
             }
         }
@@ -211,7 +287,7 @@ fun GoodwillStatsSection() {
 }
 
 @Composable
-fun KnowledgeBadgesSection() {
+fun KnowledgeBadgesSection(completedCoursesCount: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(Icons.Outlined.Star, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(20.dp))
@@ -219,8 +295,8 @@ fun KnowledgeBadgesSection() {
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             BadgeCard(icon = "🌱", name = "初级观察员", color = MaterialTheme.colorScheme.primaryContainer, onColor = MaterialTheme.colorScheme.onPrimaryContainer)
-            BadgeCard(icon = "💧", name = "懂水大师", color = MaterialTheme.colorScheme.secondaryContainer, onColor = MaterialTheme.colorScheme.onSecondaryContainer)
-            BadgeCard(icon = "🔒", name = "行为学家", color = SurfaceContainerHigh, onColor = MaterialTheme.colorScheme.outline)
+            BadgeCard(icon = if (completedCoursesCount >= 3) "💧" else "🔒", name = "懂水大师", color = if (completedCoursesCount >= 3) MaterialTheme.colorScheme.secondaryContainer else SurfaceContainerHigh, onColor = if (completedCoursesCount >= 3) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.outline)
+            BadgeCard(icon = if (completedCoursesCount >= 6) "🧭" else "🔒", name = "行为学家", color = SurfaceContainerHigh, onColor = MaterialTheme.colorScheme.outline)
         }
     }
 }
@@ -314,11 +390,27 @@ fun FollowedCatsSection() {
 }
 
 @Composable
-fun CompanionTimelineSection() {
+fun CompanionTimelineSection(records: List<CompanionRecord>) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(Icons.Outlined.List, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(20.dp))
             Text("陪伴轨迹", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+        }
+        if (records.isNotEmpty()) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                records.take(4).forEach { record ->
+                    Box(modifier = Modifier.fillMaxWidth().background(SurfaceContainerLow, RoundedCornerShape(12.dp)).padding(16.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text("${record.catName} · ${record.action}", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                                Text(record.time, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            Text(record.description, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
+                        }
+                    }
+                }
+            }
+            return
         }
         // Timeline items
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -385,12 +477,11 @@ fun CompanionTimelineSection() {
 }
 
 @Composable
-fun ProfileSettingsSection() {
-    val context = LocalContext.current
+fun ProfileSettingsSection(onOpenPanel: (ProfilePanel) -> Unit) {
     val items = listOf(
-        Triple(Icons.Outlined.Place, MaterialTheme.colorScheme.primary, "收藏的地点"),
-        Triple(Icons.Outlined.DateRange, MaterialTheme.colorScheme.secondary, "线下活动报名"),
-        Triple(Icons.Outlined.Settings, MaterialTheme.colorScheme.tertiary, "通用设置")
+        ProfileSettingsItem(Icons.Outlined.Place, MaterialTheme.colorScheme.primary, "收藏的地点", ProfilePanel.SavedPlaces),
+        ProfileSettingsItem(Icons.Outlined.DateRange, MaterialTheme.colorScheme.secondary, "线下活动报名", ProfilePanel.OfflineEvents),
+        ProfileSettingsItem(Icons.Outlined.Settings, MaterialTheme.colorScheme.tertiary, "通用设置", ProfilePanel.GeneralSettings)
     )
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -398,20 +489,20 @@ fun ProfileSettingsSection() {
         shape = RoundedCornerShape(16.dp)
     ) {
         Column {
-            items.forEachIndexed { index, (icon, color, label) ->
+            items.forEachIndexed { index, item ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { Toast.makeText(context, "$label 将在后续前端页补充", Toast.LENGTH_SHORT).show() }
+                        .clickable { onOpenPanel(item.panel) }
                         .padding(20.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        Box(modifier = Modifier.size(40.dp).background(color.copy(alpha = 0.1f), CircleShape), contentAlignment = Alignment.Center) {
-                            Icon(icon, contentDescription = label, tint = color, modifier = Modifier.size(20.dp))
+                        Box(modifier = Modifier.size(40.dp).background(item.color.copy(alpha = 0.1f), CircleShape), contentAlignment = Alignment.Center) {
+                            Icon(item.icon, contentDescription = item.label, tint = item.color, modifier = Modifier.size(20.dp))
                         }
-                        Text(label, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                        Text(item.label, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                     }
                     Icon(Icons.Outlined.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.size(20.dp))
                 }
@@ -419,6 +510,76 @@ fun ProfileSettingsSection() {
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f))
                 }
             }
+        }
+    }
+}
+
+data class ProfileSettingsItem(
+    val icon: ImageVector,
+    val color: Color,
+    val label: String,
+    val panel: ProfilePanel
+)
+
+@Composable
+fun ProfilePanelDialog(
+    panel: ProfilePanel,
+    joinedWeekendShelterEvent: Boolean,
+    exchangeRecords: List<RewardExchangeRecord>,
+    onDismiss: () -> Unit
+) {
+    val title = when (panel) {
+        ProfilePanel.SavedPlaces -> "收藏的地点"
+        ProfilePanel.OfflineEvents -> "线下活动报名"
+        ProfilePanel.GeneralSettings -> "通用设置"
+        ProfilePanel.Notifications -> "喵伴提醒"
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title, fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                when (panel) {
+                    ProfilePanel.SavedPlaces -> {
+                        ProfileInfoRow(Icons.Outlined.Place, "图书馆北门补水点", "已收藏 · 适合远观，不显示精确坐标")
+                        ProfileInfoRow(Icons.Outlined.Place, "综合体育场南侧片区", "已收藏 · 傍晚活跃，避免聚集")
+                        ProfileInfoRow(Icons.Outlined.Place, "教三后侧草坪", "医疗求助关注中，仅展示片区")
+                    }
+                    ProfilePanel.OfflineEvents -> {
+                        ProfileInfoRow(Icons.Outlined.DateRange, "周末自制猫窝换新活动", if (joinedWeekendShelterEvent) "已报名 · 10月28日 13:00 · 学生活动中心集合" else "未报名 · 可在论坛组队活动中报名")
+                        ProfileInfoRow(Icons.Outlined.Group, "秋季补水点巡查", "报名待确认 · 建议两人同行")
+                    }
+                    ProfilePanel.GeneralSettings -> {
+                        ProfileInfoRow(Icons.Outlined.Notifications, "提醒偏好", "已开启：学习、任务、片区照护提醒")
+                        ProfileInfoRow(Icons.Outlined.Shield, "动物福利保护", "隐藏精确位置 · 禁止追逐围堵提示")
+                        ProfileInfoRow(Icons.Outlined.Info, "数据状态", "本次会话内将同步任务、学习、陪伴和社区状态")
+                        exchangeRecords.take(2).forEach { record ->
+                            ProfileInfoRow(Icons.Outlined.Star, record.title, "${record.time} · 消耗 ${record.cost} 小鱼干")
+                        }
+                    }
+                    ProfilePanel.Notifications -> {
+                        ProfileInfoRow(Icons.Outlined.Favorite, "小黑云陪伴", "今天还可以进行一次安静观察互动")
+                        ProfileInfoRow(Icons.Outlined.MenuBook, "新手学堂", "完成情绪识别小测可获得 20 小鱼干")
+                        ProfileInfoRow(Icons.Outlined.Warning, "片区提醒", "傍晚远观时请优先补水，不要公开精确点位")
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss, shape = CircleShape) { Text("知道了") }
+        }
+    )
+}
+
+@Composable
+fun ProfileInfoRow(icon: ImageVector, title: String, subtitle: String) {
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+        Box(modifier = Modifier.size(36.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape), contentAlignment = Alignment.Center) {
+            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+        }
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, fontSize = 12.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

@@ -253,29 +253,29 @@ Android 项目侧后续再做：
 
 ### P0：资产确认与命名
 
-- [ ] 确认新模型名称为 `mao-xiaohei-rigged.glb`。
-- [ ] 确认模型授权或自制来源。
-- [ ] 检查模型是否包含 `skins`、`skeleton`、嵌入贴图和命名 clips。
-- [ ] 更新 `app/src/main/assets/models/README.md`。
+- [x] 确认新模型名称为 `mao-xiaohei-rigged.glb`。
+- [x] 确认模型授权或自制来源：本轮先由项目内 `cat.glb` 生成第一个带骨骼验证资产，保留其原始 CC-BY 4.0 来源信息；后续可用同名最终美术资产替换。
+- [x] 检查模型是否包含 `skins`、`skeleton`、嵌入贴图和命名 clips。
+- [x] 更新 `app/src/main/assets/models/README.md`。
 
 ### P1：SceneView 替换当前陪伴模型
 
-- [ ] 将 `mao-xiaohei-rigged.glb` 放入 `app/src/main/assets/models/`。
-- [ ] 修改 `CatModel3DViewer.kt` 默认路径。
-- [ ] 修改 `CompanionScreen.kt` 的 `modelAssetPath`。
-- [ ] 修改 `CatProfileScreen.kt` 的 `modelAssetPath`。
+- [x] 将 `mao-xiaohei-rigged.glb` 放入 `app/src/main/assets/models/`。
+- [x] 修改 `CatModel3DViewer.kt` 默认路径。
+- [x] 修改 `CompanionScreen.kt` 的 `modelAssetPath`。
+- [x] 修改 `CatProfileScreen.kt` 的 `modelAssetPath`。
 - [ ] 检查模型缩放、站位、旋转中心和地台接触阴影。
 - [ ] 验证四个动作按钮是否能触发对应动画。
 
 ### P2：Unity 工程制作
 
-- [ ] 新建 `unity/companion-cat/` Unity 工程。
-- [ ] 导入新猫模型和场景道具。
-- [ ] 建立 Animator Controller。
-- [ ] 建立动作状态：Idle / Observe / Pet / Drink / Eat。
-- [ ] 增加 C# 控制脚本，例如 `CompanionCatController`。
-- [ ] 提供统一方法：`PlayAction(string actionName)`。
-- [ ] 制作低复杂度灯光、相机和舞台。
+- [x] 新建 `unity/companion-cat/` Unity 工程。
+- [x] 导入新猫模型和场景道具。
+- [x] 建立 Animator Controller。
+- [x] 建立动作状态：Idle / Observe / Pet / Drink / Eat。
+- [x] 增加 C# 控制脚本，例如 `CompanionCatController`。
+- [x] 提供统一方法：`PlayAction(string actionName)`。
+- [x] 制作低复杂度灯光、相机和舞台。
 
 ### P3：Unity Android 导出
 
@@ -367,3 +367,36 @@ Android 项目侧后续再做：
 - 当前模型说明：`app/src/main/assets/models/README.md`
 - Unity Android 集成参考：Unity Manual, “Integrating Unity into Android applications / Unity as a Library”
 - Unity Web 交互参考：Unity Manual, “JavaScript interface in Unity Web builds / Interaction with browser scripting”
+
+---
+
+## 12. 执行记录
+
+### 2026-05-19 第一次执行
+
+- 新增 `tools/prepare_xiaohei_rigged_asset.py`，用于从项目内 legacy rigged asset 生成 `mao-xiaohei-rigged.glb`。
+- 生成目标模型：`app/src/main/assets/models/mao-xiaohei-rigged.glb`。
+- 将 `CatModel3DViewer.kt`、`CompanionScreen.kt`、`CatProfileScreen.kt` 的默认 / 显式模型路径切换到 `models/mao-xiaohei-rigged.glb`。
+- 更新 `app/src/main/assets/models/README.md`，记录当前主模型、旧模型和源参考资产。
+- Unity 阶段暂不手写 `unityLibrary` / Gradle 接入；需等 Unity Editor 导出 `unity-export/unityLibrary` 后再进入 P3 / P4。
+
+### 2026-05-19 第二次执行
+
+- 在本机发现可用编辑器为 `D:\unity\Editor\Tuanjie.exe`（`2022.3.62t7` / `m_TuanjieEditorVersion: 1.8.5`），并在仓库内创建 `unity/companion-cat/`。
+- 通过 Tuanjie batchmode 创建工程，并新增 `Assets/Editor/CompanionCatProjectBuilder.cs` 与 `Assets/Scripts/CompanionCatController.cs`。
+- 在 `Packages/manifest.json` 中加入 `com.unity.cloud.gltfast: 6.17.0`，成功导入 `Assets/Models/mao-xiaohei-rigged.glb`。
+- 已自动生成 `Assets/Scenes/CompanionCat.unity`、`Assets/Animations/XiaoheiCompanion.controller`、`Assets/Materials/CompanionStageGround.mat`，并将 `Idle / Observe / Pet / Drink / Eat / Happy` 六个 clip 接入 Animator Controller。
+- 新增 `Assets/Editor/CompanionCatAndroidExporter.cs`，用于在 Android Build Support 就绪后将 Unity Android Gradle Project 导出到 `unity-export/`。
+- 当前机器的 `D:\unity\Editor\Data\PlaybackEngines` 仅包含 `windowsstandalonesupport/`，缺少 `AndroidPlayer/`，因此 P3 仍被 Android Build Support 缺失所阻塞，暂不能实际导出 `unityLibrary`。
+
+### 2026-05-19 第三次执行
+
+- 已执行 Android 导出入口验证：`Maomaomao.CompanionCat.EditorTools.CompanionCatAndroidExporter.ExportAndroidGradleProject`。
+- 验证日志：`ulw/tuanjie-export-android-missing-module.log`。日志显示 C# 脚本编译通过，但导出阶段按预期失败：`Android Build Support is not installed for the current Tuanjie/Unity editor. Install the Android playback module before exporting to unity-export.`，进程返回码为 `1`。
+- 该失败是机器环境阻塞，不是 Unity 项目脚本错误；当前导出器会在缺少 Android 模块时提前停止，避免生成不完整或无效的 `unity-export/`。
+- 已确认本机 `D:\unity\Editor\Data\PlaybackEngines` 下仍无 `AndroidPlayer/`，所以 P3 `unityLibrary` 导出继续保持阻塞状态。
+- 已检查团结 / Tuanjie 官方 Android 环境说明：Android 导出需要通过 Hub 为当前 Editor 安装 `Android Build Support`、`Android SDK & NDK Tools`、`OpenJDK`。官方说明还建议使用 Hub 随 Editor 提供的依赖版本；Unity 2022.3 对应 JDK 11 与 NDK r23b。
+- 本机缓存的 Tuanjie Hub release metadata 未发现已安装版本 `2022.3.62t7` 的精确 Android Support 安装条目，只发现 `2022.3.61t11` 与 `2022.3.62t8` 的模块信息。因此不要把 `2022.3.62t8` 的 Android Support 模块手动混装到 `2022.3.62t7`，除非 Tuanjie Hub 官方 UI 明确允许。
+- 下一步机器操作：打开 `D:\unity Hub\Tuanjie Hub\Tuanjie Hub.exe`，在 Installs / 安装中对 `2022.3.62t7` 执行 Add Modules / 添加模块，安装 `Android Build Support`、`Android SDK & NDK Tools`、`OpenJDK`。如果 Hub 只提供 `2022.3.62t8`，优先升级 Editor 到 `2022.3.62t8` 并让 Hub 安装同版本 Android 模块，再重新打开 / 升级 `unity/companion-cat/` 工程。
+- Android 模块安装完成后，重新运行：`D:\unity\Editor\Tuanjie.exe -batchmode -quit -nographics -projectPath G:\maomaomao\unity\companion-cat -executeMethod Maomaomao.CompanionCat.EditorTools.CompanionCatAndroidExporter.ExportAndroidGradleProject -logFile G:\maomaomao\ulw\tuanjie-export-android.log`。预期产物为 `unity-export/unityLibrary` 及 Unity Android Gradle 导出工程。
+- 已更新 `.gitignore`，忽略 Unity / Tuanjie 生成目录（`Library/`、`Temp/`、`Logs/`、`UserSettings/`、构建输出等）和 `unity-export/`，避免把本机缓存和导出产物误提交到仓库。

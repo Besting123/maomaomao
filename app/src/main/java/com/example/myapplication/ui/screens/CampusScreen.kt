@@ -157,6 +157,18 @@ fun CampusScreen(navController: NavController? = null) {
             TimeSelectorOverlay(selectedTime = selectedTime, onTimeSelected = { selectedTime = it })
         }
 
+        CampusHotspotSelector(
+            hotspots = hotspots,
+            selectedHotspot = selectedHotspot,
+            onSelect = {
+                selectedHotspot = it
+                sheetExpanded = true
+            },
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(top = 142.dp)
+        )
+
         // 底部卡片 — 可折叠，默认只显示摘要行
         Column(
             modifier = Modifier
@@ -176,6 +188,36 @@ fun CampusScreen(navController: NavController? = null) {
                     hotspot = selectedHotspot,
                     onClick = { sheetExpanded = true }
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun CampusHotspotSelector(
+    hotspots: List<CampusHotspotInfo>,
+    selectedHotspot: CampusHotspotInfo,
+    onSelect: (CampusHotspotInfo) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        hotspots.forEach { hotspot ->
+            val selected = hotspot.name == selectedHotspot.name
+            Row(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(if (selected) MaterialTheme.colorScheme.primary else SurfaceContainerLowest.copy(alpha = 0.82f))
+                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), CircleShape)
+                    .clickable { onSelect(hotspot) }
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Box(modifier = Modifier.size(8.dp).background(if (selected) Color.White else MaterialTheme.colorScheme.primary, CircleShape))
+                Text(hotspot.safetyTag, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = if (selected) Color.White else MaterialTheme.colorScheme.primary)
             }
         }
     }

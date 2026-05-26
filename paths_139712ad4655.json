@@ -1,0 +1,207 @@
+[
+  {
+    "path": "root",
+    "keys": [
+      "cms",
+      "header",
+      "segment",
+      "realNameStore",
+      "downloadHubStore",
+      "modals",
+      "videoPlayer",
+      "cookiePrivacyStore",
+      "loginUser",
+      "genesisUserId",
+      "currentUserId",
+      "currentUrl",
+      "currentHost",
+      "currentPath",
+      "currentRawQuery",
+      "checkoutEnable",
+      "region",
+      "autoLocated",
+      "countryByIp",
+      "currentIp",
+      "hasJob",
+      "isSupport",
+      "unityDomain",
+      "connectDomain",
+      "connectGlobalDomain",
+      "customerChatSwitch",
+      "segments",
+      "locale",
+      "i18nOverrides",
+      "i18nKeyOnly",
+      "utcOffset",
+      "platform",
+      "supportMobile",
+      "fullPage",
+      "publicPath",
+      "cookies",
+      "appVersion",
+      "weixinConfig",
+      "commitId"
+    ],
+    "preview": "{\"cms\":{\"name\":\"团结引擎-1.8.5 release note\",\"extendedProperties\":{\"codeSnippets\":\"\",\"description\":\"团结引擎微信小游戏解决方案：一站式微信小游戏解决方案，覆盖更广阔的玩家群体。即将开放测试，敬请期待！\",\"image\":\"\",\"keywords\":\"unity, unity引擎, unity中国, 团结引擎, 微信小游戏, 团结引擎releasenote\",\"title\":\"ReleaseNote-团结引擎微信小游戏解决方案-一站式微信小游戏解决方案，覆盖更广阔的玩家群体\"},\"content\":{\"editor1-8-5--release-note\":{\"moduleName\":\"BLANK\",\"fieldTitle\":\"\",\"theme\":\"blank\",\"contents\":[{\"moduleName\":\"Customized\",\"fieldTitle\":\"CUSTOMIZED SECTION\",\"theme\":\"blank\",\"contents\":[{\"moduleName\":\"Headline\",\"fieldTitle\":\"HEADLINE\",\"theme\":\"blank\",\"headline\":{\"type\":\"h2\",\"value\":\"团结引擎 - 1.8.5\",\"color\":\"\"}},{\"moduleName\":\"RichText\",\"fieldTitle\":\"RICH TEXT\",\"theme\":\"blank\",\"richText\":\"<h3><span class=\\\"ql-size-24\\\">Additional downloads</span></h3><p><br></p><p><em>说明：</em></p><ol><li><em>HMI Android、QNX、Embedded Linux、Arm Linux相关内容，请移步至</em><a href=\\\"https://unity.cn/tuanjie/releases\\\"><em>团结Hub</em></a><em>下载，或联系我们（supportchina@unity.cn）。</em></li><li><em>当前版本Base：Unity 2022.3.62f1</em></li></ol><p><br></p>\"},{\"moduleName\":\"CTA#List\",\"fieldTitle\":\"CALL-TO-ACTION SECTION\",\"theme\":\"blank\",\"actions\":[{\"id\":\"f728cc15\",\"type\":\"button\",\"label\":\"Tuanjie Editor Windows (X86_64)\",\"url\":\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/Windows64EditorInstaller/TuanjieSetup64.exe\"}]},{\"moduleName\":\"RichText\",\"fieldTitle\":\"RICH TEXT\",\"theme\":\"blank\",\"richText\":\"<p>Component Installers</p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Android-Support-for-Editor-2022.3.62t7.exe\\\">Android Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-iOS-Support-for-Editor-2022.3.62t7.exe\\\">iOS Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Linux-IL2CPP-Support-for-Editor-2022.3.62t7.exe\\\">Linux Build Support (IL2CPP)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuan"
+  },
+  {
+    "path": "root.cms",
+    "keys": [
+      "name",
+      "extendedProperties",
+      "content",
+      "forceRefresh",
+      "locale",
+      "slug",
+      "namespace"
+    ],
+    "preview": "{\"name\":\"团结引擎-1.8.5 release note\",\"extendedProperties\":{\"codeSnippets\":\"\",\"description\":\"团结引擎微信小游戏解决方案：一站式微信小游戏解决方案，覆盖更广阔的玩家群体。即将开放测试，敬请期待！\",\"image\":\"\",\"keywords\":\"unity, unity引擎, unity中国, 团结引擎, 微信小游戏, 团结引擎releasenote\",\"title\":\"ReleaseNote-团结引擎微信小游戏解决方案-一站式微信小游戏解决方案，覆盖更广阔的玩家群体\"},\"content\":{\"editor1-8-5--release-note\":{\"moduleName\":\"BLANK\",\"fieldTitle\":\"\",\"theme\":\"blank\",\"contents\":[{\"moduleName\":\"Customized\",\"fieldTitle\":\"CUSTOMIZED SECTION\",\"theme\":\"blank\",\"contents\":[{\"moduleName\":\"Headline\",\"fieldTitle\":\"HEADLINE\",\"theme\":\"blank\",\"headline\":{\"type\":\"h2\",\"value\":\"团结引擎 - 1.8.5\",\"color\":\"\"}},{\"moduleName\":\"RichText\",\"fieldTitle\":\"RICH TEXT\",\"theme\":\"blank\",\"richText\":\"<h3><span class=\\\"ql-size-24\\\">Additional downloads</span></h3><p><br></p><p><em>说明：</em></p><ol><li><em>HMI Android、QNX、Embedded Linux、Arm Linux相关内容，请移步至</em><a href=\\\"https://unity.cn/tuanjie/releases\\\"><em>团结Hub</em></a><em>下载，或联系我们（supportchina@unity.cn）。</em></li><li><em>当前版本Base：Unity 2022.3.62f1</em></li></ol><p><br></p>\"},{\"moduleName\":\"CTA#List\",\"fieldTitle\":\"CALL-TO-ACTION SECTION\",\"theme\":\"blank\",\"actions\":[{\"id\":\"f728cc15\",\"type\":\"button\",\"label\":\"Tuanjie Editor Windows (X86_64)\",\"url\":\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/Windows64EditorInstaller/TuanjieSetup64.exe\"}]},{\"moduleName\":\"RichText\",\"fieldTitle\":\"RICH TEXT\",\"theme\":\"blank\",\"richText\":\"<p>Component Installers</p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Android-Support-for-Editor-2022.3.62t7.exe\\\">Android Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-iOS-Support-for-Editor-2022.3.62t7.exe\\\">iOS Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Linux-IL2CPP-Support-for-Editor-2022.3.62t7.exe\\\">Linux Build Support (IL2CPP)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139"
+  },
+  {
+    "path": "root.cms.content",
+    "keys": [
+      "editor1-8-5--release-note"
+    ],
+    "preview": "{\"editor1-8-5--release-note\":{\"moduleName\":\"BLANK\",\"fieldTitle\":\"\",\"theme\":\"blank\",\"contents\":[{\"moduleName\":\"Customized\",\"fieldTitle\":\"CUSTOMIZED SECTION\",\"theme\":\"blank\",\"contents\":[{\"moduleName\":\"Headline\",\"fieldTitle\":\"HEADLINE\",\"theme\":\"blank\",\"headline\":{\"type\":\"h2\",\"value\":\"团结引擎 - 1.8.5\",\"color\":\"\"}},{\"moduleName\":\"RichText\",\"fieldTitle\":\"RICH TEXT\",\"theme\":\"blank\",\"richText\":\"<h3><span class=\\\"ql-size-24\\\">Additional downloads</span></h3><p><br></p><p><em>说明：</em></p><ol><li><em>HMI Android、QNX、Embedded Linux、Arm Linux相关内容，请移步至</em><a href=\\\"https://unity.cn/tuanjie/releases\\\"><em>团结Hub</em></a><em>下载，或联系我们（supportchina@unity.cn）。</em></li><li><em>当前版本Base：Unity 2022.3.62f1</em></li></ol><p><br></p>\"},{\"moduleName\":\"CTA#List\",\"fieldTitle\":\"CALL-TO-ACTION SECTION\",\"theme\":\"blank\",\"actions\":[{\"id\":\"f728cc15\",\"type\":\"button\",\"label\":\"Tuanjie Editor Windows (X86_64)\",\"url\":\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/Windows64EditorInstaller/TuanjieSetup64.exe\"}]},{\"moduleName\":\"RichText\",\"fieldTitle\":\"RICH TEXT\",\"theme\":\"blank\",\"richText\":\"<p>Component Installers</p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Android-Support-for-Editor-2022.3.62t7.exe\\\">Android Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-iOS-Support-for-Editor-2022.3.62t7.exe\\\">iOS Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Linux-IL2CPP-Support-for-Editor-2022.3.62t7.exe\\\">Linux Build Support (IL2CPP)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Linux-Mono-Support-for-Editor-2022.3.62t7.exe\\\">Linux Build Support (Mono)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Linux-Server-Support-for-Editor-2022.3.62t7.exe\\\">Linux"
+  },
+  {
+    "path": "root.cms.content.editor1-8-5--release-note",
+    "keys": [
+      "moduleName",
+      "fieldTitle",
+      "theme",
+      "contents"
+    ],
+    "preview": "{\"moduleName\":\"BLANK\",\"fieldTitle\":\"\",\"theme\":\"blank\",\"contents\":[{\"moduleName\":\"Customized\",\"fieldTitle\":\"CUSTOMIZED SECTION\",\"theme\":\"blank\",\"contents\":[{\"moduleName\":\"Headline\",\"fieldTitle\":\"HEADLINE\",\"theme\":\"blank\",\"headline\":{\"type\":\"h2\",\"value\":\"团结引擎 - 1.8.5\",\"color\":\"\"}},{\"moduleName\":\"RichText\",\"fieldTitle\":\"RICH TEXT\",\"theme\":\"blank\",\"richText\":\"<h3><span class=\\\"ql-size-24\\\">Additional downloads</span></h3><p><br></p><p><em>说明：</em></p><ol><li><em>HMI Android、QNX、Embedded Linux、Arm Linux相关内容，请移步至</em><a href=\\\"https://unity.cn/tuanjie/releases\\\"><em>团结Hub</em></a><em>下载，或联系我们（supportchina@unity.cn）。</em></li><li><em>当前版本Base：Unity 2022.3.62f1</em></li></ol><p><br></p>\"},{\"moduleName\":\"CTA#List\",\"fieldTitle\":\"CALL-TO-ACTION SECTION\",\"theme\":\"blank\",\"actions\":[{\"id\":\"f728cc15\",\"type\":\"button\",\"label\":\"Tuanjie Editor Windows (X86_64)\",\"url\":\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/Windows64EditorInstaller/TuanjieSetup64.exe\"}]},{\"moduleName\":\"RichText\",\"fieldTitle\":\"RICH TEXT\",\"theme\":\"blank\",\"richText\":\"<p>Component Installers</p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Android-Support-for-Editor-2022.3.62t7.exe\\\">Android Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-iOS-Support-for-Editor-2022.3.62t7.exe\\\">iOS Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Linux-IL2CPP-Support-for-Editor-2022.3.62t7.exe\\\">Linux Build Support (IL2CPP)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Linux-Mono-Support-for-Editor-2022.3.62t7.exe\\\">Linux Build Support (Mono)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Linux-Server-Support-for-Editor-2022.3.62t7.exe\\\">Linux Dedicated Server Build Suppo"
+  },
+  {
+    "path": "root.cms.content.editor1-8-5--release-note.contents[0]",
+    "keys": [
+      "moduleName",
+      "fieldTitle",
+      "theme",
+      "contents"
+    ],
+    "preview": "{\"moduleName\":\"Customized\",\"fieldTitle\":\"CUSTOMIZED SECTION\",\"theme\":\"blank\",\"contents\":[{\"moduleName\":\"Headline\",\"fieldTitle\":\"HEADLINE\",\"theme\":\"blank\",\"headline\":{\"type\":\"h2\",\"value\":\"团结引擎 - 1.8.5\",\"color\":\"\"}},{\"moduleName\":\"RichText\",\"fieldTitle\":\"RICH TEXT\",\"theme\":\"blank\",\"richText\":\"<h3><span class=\\\"ql-size-24\\\">Additional downloads</span></h3><p><br></p><p><em>说明：</em></p><ol><li><em>HMI Android、QNX、Embedded Linux、Arm Linux相关内容，请移步至</em><a href=\\\"https://unity.cn/tuanjie/releases\\\"><em>团结Hub</em></a><em>下载，或联系我们（supportchina@unity.cn）。</em></li><li><em>当前版本Base：Unity 2022.3.62f1</em></li></ol><p><br></p>\"},{\"moduleName\":\"CTA#List\",\"fieldTitle\":\"CALL-TO-ACTION SECTION\",\"theme\":\"blank\",\"actions\":[{\"id\":\"f728cc15\",\"type\":\"button\",\"label\":\"Tuanjie Editor Windows (X86_64)\",\"url\":\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/Windows64EditorInstaller/TuanjieSetup64.exe\"}]},{\"moduleName\":\"RichText\",\"fieldTitle\":\"RICH TEXT\",\"theme\":\"blank\",\"richText\":\"<p>Component Installers</p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Android-Support-for-Editor-2022.3.62t7.exe\\\">Android Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-iOS-Support-for-Editor-2022.3.62t7.exe\\\">iOS Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Linux-IL2CPP-Support-for-Editor-2022.3.62t7.exe\\\">Linux Build Support (IL2CPP)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Linux-Mono-Support-for-Editor-2022.3.62t7.exe\\\">Linux Build Support (Mono)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Linux-Server-Support-for-Editor-2022.3.62t7.exe\\\">Linux Dedicated Server Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanji"
+  },
+  {
+    "path": "root.cms.content.editor1-8-5--release-note.contents[0].contents[2]",
+    "keys": [
+      "moduleName",
+      "fieldTitle",
+      "theme",
+      "actions"
+    ],
+    "preview": "{\"moduleName\":\"CTA#List\",\"fieldTitle\":\"CALL-TO-ACTION SECTION\",\"theme\":\"blank\",\"actions\":[{\"id\":\"f728cc15\",\"type\":\"button\",\"label\":\"Tuanjie Editor Windows (X86_64)\",\"url\":\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/Windows64EditorInstaller/TuanjieSetup64.exe\"}]}"
+  },
+  {
+    "path": "root.cms.content.editor1-8-5--release-note.contents[0].contents[2].actions[0]",
+    "keys": [
+      "id",
+      "type",
+      "label",
+      "url"
+    ],
+    "preview": "{\"id\":\"f728cc15\",\"type\":\"button\",\"label\":\"Tuanjie Editor Windows (X86_64)\",\"url\":\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/Windows64EditorInstaller/TuanjieSetup64.exe\"}"
+  },
+  {
+    "path": "root.cms.content.editor1-8-5--release-note.contents[0].contents[3]",
+    "keys": [
+      "moduleName",
+      "fieldTitle",
+      "theme",
+      "richText"
+    ],
+    "preview": "{\"moduleName\":\"RichText\",\"fieldTitle\":\"RICH TEXT\",\"theme\":\"blank\",\"richText\":\"<p>Component Installers</p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Android-Support-for-Editor-2022.3.62t7.exe\\\">Android Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-iOS-Support-for-Editor-2022.3.62t7.exe\\\">iOS Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Linux-IL2CPP-Support-for-Editor-2022.3.62t7.exe\\\">Linux Build Support (IL2CPP)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Linux-Mono-Support-for-Editor-2022.3.62t7.exe\\\">Linux Build Support (Mono)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Linux-Server-Support-for-Editor-2022.3.62t7.exe\\\">Linux Dedicated Server Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Mac-Mono-Support-for-Editor-2022.3.62t7.exe\\\">Mac Build Support (Mono)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Mac-Server-Support-for-Editor-2022.3.62t7.exe\\\">Mac Dedicated Server Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-WebGL-Support-for-Editor-2022.3.62t7.exe\\\">WebGL Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Windows-IL2CPP-Support-for-Editor-2022.3.62t7.exe\\\">Windows Build Support (IL2CPP)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/TargetSupportInstaller/TuanjieSetup-Windows-Server-Support-for-Editor-2022.3.62t7.exe\\\">Windows Dedicated Server Build Support</a><"
+  },
+  {
+    "path": "root.cms.content.editor1-8-5--release-note.contents[0].contents[4]",
+    "keys": [
+      "moduleName",
+      "fieldTitle",
+      "theme",
+      "actions"
+    ],
+    "preview": "{\"moduleName\":\"CTA#List\",\"fieldTitle\":\"CALL-TO-ACTION SECTION\",\"theme\":\"blank\",\"actions\":[{\"id\":\"7981ac46\",\"type\":\"button\",\"label\":\"Tuanjie Editor macOS (X86_64)\",\"url\":\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorInstaller/Tuanjie.pkg\"}]}"
+  },
+  {
+    "path": "root.cms.content.editor1-8-5--release-note.contents[0].contents[4].actions[0]",
+    "keys": [
+      "id",
+      "type",
+      "label",
+      "url"
+    ],
+    "preview": "{\"id\":\"7981ac46\",\"type\":\"button\",\"label\":\"Tuanjie Editor macOS (X86_64)\",\"url\":\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorInstaller/Tuanjie.pkg\"}"
+  },
+  {
+    "path": "root.cms.content.editor1-8-5--release-note.contents[0].contents[5]",
+    "keys": [
+      "moduleName",
+      "fieldTitle",
+      "theme",
+      "richText"
+    ],
+    "preview": "{\"moduleName\":\"RichText\",\"fieldTitle\":\"RICH TEXT\",\"theme\":\"blank\",\"richText\":\"<p>Component Installers</p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Android-Support-for-Editor-2022.3.62t7.pkg\\\">Android Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-iOS-Support-for-Editor-2022.3.62t7.pkg\\\">iOS Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Linux-IL2CPP-Support-for-Editor-2022.3.62t7.pkg\\\">Linux Build Support (IL2CPP)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Linux-Mono-Support-for-Editor-2022.3.62t7.pkg\\\">Linux Build Support (Mono)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Linux-Server-Support-for-Editor-2022.3.62t7.pkg\\\">Linux Dedicated Server Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Mac-IL2CPP-Support-for-Editor-2022.3.62t7.pkg\\\">Mac Build Support (IL2CPP)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Mac-Server-Support-for-Editor-2022.3.62t7.pkg\\\">Mac Dedicated Server Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-WebGL-Support-for-Editor-2022.3.62t7.pkg\\\">WebGL Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Windows-Mono-Support-for-Editor-2022.3.62t7.pkg\\\">Windows Build Support (Mono)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Windows-Server-Support-for-Editor-2022.3.62t7.pkg\\\">Windows Dedicated Serve"
+  },
+  {
+    "path": "root.cms.content.editor1-8-5--release-note.contents[0].contents[6]",
+    "keys": [
+      "moduleName",
+      "fieldTitle",
+      "theme",
+      "actions"
+    ],
+    "preview": "{\"moduleName\":\"CTA#List\",\"fieldTitle\":\"CALL-TO-ACTION SECTION\",\"theme\":\"blank\",\"actions\":[{\"id\":\"6b29bdb9\",\"type\":\"button\",\"label\":\"Tuanjie Editor macOS (ARM64)\",\"url\":\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorInstallerArm64/Tuanjie.pkg\"}]}"
+  },
+  {
+    "path": "root.cms.content.editor1-8-5--release-note.contents[0].contents[6].actions[0]",
+    "keys": [
+      "id",
+      "type",
+      "label",
+      "url"
+    ],
+    "preview": "{\"id\":\"6b29bdb9\",\"type\":\"button\",\"label\":\"Tuanjie Editor macOS (ARM64)\",\"url\":\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorInstallerArm64/Tuanjie.pkg\"}"
+  },
+  {
+    "path": "root.cms.content.editor1-8-5--release-note.contents[0].contents[7]",
+    "keys": [
+      "moduleName",
+      "fieldTitle",
+      "theme",
+      "richText"
+    ],
+    "preview": "{\"moduleName\":\"RichText\",\"fieldTitle\":\"RICH TEXT\",\"theme\":\"blank\",\"richText\":\"<p>Component Installers</p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Android-Support-for-Editor-2022.3.62t7.pkg\\\">Android Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-iOS-Support-for-Editor-2022.3.62t7.pkg\\\">iOS Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Linux-IL2CPP-Support-for-Editor-2022.3.62t7.pkg\\\">Linux Build Support (IL2CPP)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Linux-Mono-Support-for-Editor-2022.3.62t7.pkg\\\">Linux Build Support (Mono)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Linux-Server-Support-for-Editor-2022.3.62t7.pkg\\\">Linux Dedicated Server Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Mac-IL2CPP-Support-for-Editor-2022.3.62t7.pkg\\\">Mac Build Support (IL2CPP)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Mac-Server-Support-for-Editor-2022.3.62t7.pkg\\\">Mac Dedicated Server Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-WebGL-Support-for-Editor-2022.3.62t7.pkg\\\">WebGL Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Windows-Mono-Support-for-Editor-2022.3.62t7.pkg\\\">Windows Build Support (Mono)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Windows-Server-Support-for-Editor-2022.3.62t7.pkg\\\">Windows Dedicated Serve"
+  },
+  {
+    "path": "root.cms.content.editor1-8-5--release-note.contents[0].contents[8]",
+    "keys": [
+      "moduleName",
+      "fieldTitle",
+      "theme",
+      "actions"
+    ],
+    "preview": "{\"moduleName\":\"CTA#List\",\"fieldTitle\":\"CALL-TO-ACTION SECTION\",\"theme\":\"blank\",\"actions\":[{\"id\":\"1a4cb011\",\"type\":\"button\",\"label\":\"Tuanjie Editor Linux (X86_64)\",\"url\":\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/LinuxEditorInstaller/Tuanjie.tar.xz\"}]}"
+  },
+  {
+    "path": "root.cms.content.editor1-8-5--release-note.contents[0].contents[8].actions[0]",
+    "keys": [
+      "id",
+      "type",
+      "label",
+      "url"
+    ],
+    "preview": "{\"id\":\"1a4cb011\",\"type\":\"button\",\"label\":\"Tuanjie Editor Linux (X86_64)\",\"url\":\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/LinuxEditorInstaller/Tuanjie.tar.xz\"}"
+  },
+  {
+    "path": "root.cms.content.editor1-8-5--release-note.contents[0].contents[9]",
+    "keys": [
+      "moduleName",
+      "fieldTitle",
+      "theme",
+      "richText"
+    ],
+    "preview": "{\"moduleName\":\"RichText\",\"fieldTitle\":\"RICH TEXT\",\"theme\":\"blank\",\"richText\":\"<p>Component Installers</p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Android-Support-for-Editor-2022.3.62t7.pkg\\\">Android Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/LinuxEditorTargetInstaller/TuanjieSetup-iOS-Support-for-Editor-2022.3.62t7.tar.xz\\\">iOS Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/LinuxEditorTargetInstaller/TuanjieSetup-Linux-IL2CPP-Support-for-Editor-2022.3.62t7.tar.xz\\\">Linux Build Support (IL2CPP)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/LinuxEditorTargetInstaller/TuanjieSetup-Linux-Server-Support-for-Editor-2022.3.62t7.tar.xz\\\">Linux Dedicated Server Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Mac-Mono-Support-for-Editor-2022.3.62t7.pkg\\\">Mac Build Support (Mono)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Mac-Server-Support-for-Editor-2022.3.62t7.pkg\\\">Mac Dedicated Server Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/LinuxEditorTargetInstaller/TuanjieSetup-WebGL-Support-for-Editor-2022.3.62t7.tar.xz\\\">WebGL Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Windows-Mono-Support-for-Editor-2022.3.62t7.pkg\\\">Windows Build Support (Mono)</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/MacEditorTargetInstaller/TuanjieSetup-Windows-Server-Support-for-Editor-2022.3.62t7.pkg\\\">Windows Dedicated Server Build Support</a></p><p><a href=\\\"https://download.tuanjie.cn/download_tuanjie/139712ad4655/LinuxEditorTargetInstaller/TuanjieSetup-MiniGame-Support-for-Editor-2022.3.62t7.t"
+  }
+]

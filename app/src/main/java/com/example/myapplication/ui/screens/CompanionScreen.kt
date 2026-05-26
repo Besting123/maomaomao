@@ -310,8 +310,8 @@ fun CompanionHeroCard(
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
                 .height(420.dp),
-            modelAssetPath = "models/mao-lihua-animated.glb",
-            label = "3D 真实猫咪建模",
+            modelAssetPath = "models/mao-xiaohei-rigged.glb",
+            label = "3D 小黑骨骼模型",
             isFullScreen = false,
             mode = CatViewerMode.COMPANION,
             animationName = selectedAction.animationName,

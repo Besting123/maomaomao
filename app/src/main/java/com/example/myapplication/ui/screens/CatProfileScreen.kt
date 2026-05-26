@@ -1,7 +1,7 @@
 package com.example.myapplication.ui.screens
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.BorderStroke
@@ -42,11 +42,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
@@ -76,10 +79,15 @@ import com.example.myapplication.ui.theme.SurfaceContainerHigh
 import com.example.myapplication.ui.theme.SurfaceContainerHighest
 import com.example.myapplication.ui.theme.SurfaceContainerLow
 import com.example.myapplication.ui.theme.SurfaceContainerLowest
+import com.example.myapplication.ui.utils.sharePlainText
+import com.example.myapplication.ui.viewmodel.CompanionRecord
+import com.example.myapplication.ui.viewmodel.MainViewModel
 
 @Composable
-fun CatProfileScreen(onBackClick: () -> Unit) {
+fun CatProfileScreen(onBackClick: () -> Unit, viewModel: MainViewModel? = null) {
     val scrollState = rememberScrollState()
+    val uiState by viewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(null) }
+    var showMoreDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -93,7 +101,10 @@ fun CatProfileScreen(onBackClick: () -> Unit) {
         ) {
             Spacer(modifier = Modifier.height(72.dp))
 
-            CatProfileHeroSection()
+            CatProfileHeroSection(
+                isFollowed = uiState?.followedCatNames?.contains("大橘") ?: false,
+                onToggleFollow = { viewModel?.toggleCatFollow("大橘") }
+            )
             Spacer(modifier = Modifier.height(24.dp))
             
             CatMoodIndicatorSection()
@@ -117,19 +128,22 @@ fun CatProfileScreen(onBackClick: () -> Unit) {
             CatTimelineSection()
             Spacer(modifier = Modifier.height(24.dp))
             
-            CatMyCompanionRecordsSection()
+            CatMyCompanionRecordsSection(records = uiState?.companionRecords.orEmpty().filter { it.catName == "大橘" })
             Spacer(modifier = Modifier.height(24.dp))
 
             CatPersonalityTheater()
             Spacer(modifier = Modifier.height(48.dp))
         }
 
-        CatProfileTopBar(onBackClick = onBackClick)
+        CatProfileTopBar(onBackClick = onBackClick, onOpenMore = { showMoreDialog = true })
+        if (showMoreDialog) {
+            CatProfileMoreDialog(onDismiss = { showMoreDialog = false })
+        }
     }
 }
 
 @Composable
-private fun CatProfileTopBar(onBackClick: () -> Unit) {
+private fun CatProfileTopBar(onBackClick: () -> Unit, onOpenMore: () -> Unit) {
     val context = LocalContext.current
     Row(
         modifier = Modifier
@@ -154,14 +168,21 @@ private fun CatProfileTopBar(onBackClick: () -> Unit) {
             color = MaterialTheme.colorScheme.primary
         )
         Row {
-            IconButton(onClick = { Toast.makeText(context, "档案分享卡片生成中", Toast.LENGTH_SHORT).show() }) {
+            IconButton(onClick = {
+                sharePlainText(
+                    context = context,
+                    chooserTitle = "分享猫咪档案",
+                    subject = "喵伴云养猫咪档案：大橘",
+                    body = "大橘 · SC-2023-009 · 艺术学院常驻嘉宾\n\n慢热型橘猫，适合保持距离远观。互动提示：不追逐、不围堵、不公开精确位置。"
+                )
+            }) {
                 Icon(
                     Icons.Outlined.Share,
                     contentDescription = "分享",
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
-            IconButton(onClick = { Toast.makeText(context, "更多档案功能将在前端演示中补充", Toast.LENGTH_SHORT).show() }) {
+            IconButton(onClick = onOpenMore) {
                 Icon(
                     Icons.Outlined.MoreVert,
                     contentDescription = "更多",
@@ -173,8 +194,56 @@ private fun CatProfileTopBar(onBackClick: () -> Unit) {
 }
 
 @Composable
-private fun CatProfileHeroSection() {
-    var isFollowed by remember { mutableStateOf(false) }
+private fun CatProfileMoreDialog(onDismiss: () -> Unit) {
+    var detailTitle by remember { mutableStateOf<String?>(null) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("档案操作", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                if (detailTitle == null) {
+                    CatProfileActionRow(Icons.Outlined.History, "查看照护历史", "近 30 日远观、补水、健康提醒已汇总。") { detailTitle = "照护历史" }
+                    CatProfileActionRow(Icons.Outlined.Block, "上报不当互动", "发现追逐、围堵、闪光拍摄时可记录线索。") { detailTitle = "不当互动记录" }
+                    CatProfileActionRow(Icons.Outlined.AutoStories, "阅读互动指南", "先观察尾巴、耳朵和身体姿态，再决定是否靠近。") { detailTitle = "互动指南" }
+                } else {
+                    Text(detailTitle ?: "档案操作", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        text = when (detailTitle) {
+                            "照护历史" -> "示例：10月24日完成补水；10月22日完成远观；10月20日志愿者记录步态正常。"
+                            "不当互动记录" -> "如发现追逐、围堵、闪光拍摄，请记录时间段、片区和现象，不公开精确点位。"
+                            else -> "先观察耳朵、尾巴和身体姿态；猫咪主动靠近前不伸手，后退或飞机耳时立即停止。"
+                        },
+                        fontSize = 13.sp,
+                        lineHeight = 20.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = { if (detailTitle == null) onDismiss() else detailTitle = null }, shape = CircleShape) { Text(if (detailTitle == null) "完成" else "返回") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("关闭") }
+        }
+    )
+}
+
+@Composable
+private fun CatProfileActionRow(icon: ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
+    Row(modifier = Modifier.clickable { onClick() }, horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+        Box(modifier = Modifier.size(38.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape), contentAlignment = Alignment.Center) {
+            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(19.dp))
+        }
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, fontSize = 12.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f))
+        }
+    }
+}
+
+@Composable
+private fun CatProfileHeroSection(isFollowed: Boolean, onToggleFollow: () -> Unit) {
     val moodLabel = if (isFollowed) "亲近中" else "保持观察"
 
     Box(
@@ -185,8 +254,8 @@ private fun CatProfileHeroSection() {
             .clip(RoundedCornerShape(24.dp))
     ) {
         CatModel3DViewer(
-            modelAssetPath = "models/mao-lihua-animated.glb",
-            label = "3D 陪伴狸花猫模型",
+            modelAssetPath = "models/mao-xiaohei-rigged.glb",
+            label = "3D 陪伴小黑模型",
             mode = CatViewerMode.PROFILE,
             animationName = "Idle",
             modifier = Modifier.fillMaxSize()
@@ -271,7 +340,7 @@ private fun CatProfileHeroSection() {
 
                 Button(
                     onClick = {
-                        isFollowed = !isFollowed
+                        onToggleFollow()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isFollowed) Color.White.copy(alpha = 0.3f) else MaterialTheme.colorScheme.primary,
@@ -865,7 +934,7 @@ private fun TimelineItemWithImages(
 }
 
 @Composable
-private fun CatMyCompanionRecordsSection() {
+private fun CatMyCompanionRecordsSection(records: List<CompanionRecord>) {
     Column(modifier = Modifier.fillMaxWidth()) {
         SectionHeader(icon = Icons.Outlined.History, title = "我的陪伴记录")
         Spacer(modifier = Modifier.height(16.dp))
@@ -876,6 +945,23 @@ private fun CatMyCompanionRecordsSection() {
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
         ) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                if (records.isNotEmpty()) {
+                    records.take(3).forEach { record ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Box(modifier = Modifier.size(36.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape), contentAlignment = Alignment.Center) {
+                                Text(if (record.action == "补水") "💧" else "🐾", fontSize = 16.sp)
+                            }
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.weight(1f)) {
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("${record.action}记录", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                                    Text(record.time, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                Text(record.description, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+                    return@Column
+                }
                 // Record 1
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Box(modifier = Modifier.size(36.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape), contentAlignment = Alignment.Center) {

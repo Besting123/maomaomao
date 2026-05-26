@@ -61,10 +61,10 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
             composable(BottomNavItem.Home.route) { HomeScreen(navController = navController, viewModel = viewModel) }
             composable(BottomNavItem.Campus.route) { CampusScreen(navController = navController) }
             composable(BottomNavItem.Companion.route) { CompanionScreen(viewModel = viewModel) }
-            composable(BottomNavItem.Forum.route) { ForumScreen() }
+            composable(BottomNavItem.Forum.route) { ForumScreen(viewModel = viewModel) }
             composable(BottomNavItem.Profile.route) { ProfileScreen(viewModel = viewModel) }
             composable("catProfile") {
-                CatProfileScreen(onBackClick = { navController.popBackStack() })
+                CatProfileScreen(onBackClick = { navController.popBackStack() }, viewModel = viewModel)
             }
             composable("tasks") {
                 TaskScreen(onBackClick = { navController.popBackStack() }, viewModel = viewModel)
@@ -149,4 +149,3 @@ fun BottomNavItemView(item: BottomNavItem, selected: Boolean, onClick: () -> Uni
         )
     }
 }
-

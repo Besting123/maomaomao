@@ -1,6 +1,5 @@
 package com.example.myapplication.ui.screens
 
-import android.widget.Toast
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -26,12 +25,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.automirrored.outlined.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -51,16 +53,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.remember
 import androidx.navigation.NavController
 import com.example.myapplication.ui.theme.*
 import com.example.myapplication.ui.viewmodel.MainViewModel
 
+private enum class HomePanel { Notifications, ActivityList, Story, FollowedCats }
+
 @Composable
 fun HomeScreen(navController: NavController? = null, viewModel: MainViewModel? = null) {
     val scrollState = rememberScrollState()
     val uiState by viewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(null) }
+    var activePanel by remember { mutableStateOf<HomePanel?>(null) }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         // Main Scrollable Content
@@ -75,35 +79,43 @@ fun HomeScreen(navController: NavController? = null, viewModel: MainViewModel? =
             HeroSection()
 
             // NEW: Daily Tasks and Sign-in Section
-            DailyMissionSection(navController, uiState?.signInDays ?: 3, uiState?.hasSignedInToday ?: false)
+            DailyMissionSection(
+                navController = navController,
+                signInDays = uiState?.signInDays ?: 3,
+                hasSignedInToday = uiState?.hasSignedInToday ?: false,
+                completedCount = uiState?.tasks?.count { it.isCompleted } ?: 0,
+                totalCount = uiState?.tasks?.size ?: 0
+            )
 
             // Scientific Feeding Alert
             FeedingAlertSection()
 
             // Today's Activity
-            TodaysActivitySection()
+            TodaysActivitySection(onOpenAll = { activePanel = HomePanel.ActivityList })
 
             // NEW: Followed Cats Section
             Spacer(modifier = Modifier.height(16.dp))
-            HomeFollowedCatsSection()
+            HomeFollowedCatsSection(onOpenAll = { activePanel = HomePanel.FollowedCats })
 
             // Core Functions Bento
             CoreFunctionsBento(navController)
 
             // Story Card
-            StoryCardSection()
+            StoryCardSection(onOpenStory = { activePanel = HomePanel.Story })
             
             Spacer(modifier = Modifier.height(120.dp)) // space for bottom bar
         }
 
         // Fixed Top App Bar with Blur Effect (simulated with semi-transparent bg)
-        TopAppBarSection(uiState?.tokenBalance ?: 350)
+        TopAppBarSection(uiState?.tokenBalance ?: 350, onOpenNotifications = { activePanel = HomePanel.Notifications })
+        activePanel?.let { panel ->
+            HomePanelDialog(panel = panel, onDismiss = { activePanel = null }, navController = navController)
+        }
     }
 }
 
 @Composable
-fun TopAppBarSection(tokenBalance: Int) {
-    val context = LocalContext.current
+fun TopAppBarSection(tokenBalance: Int, onOpenNotifications: () -> Unit) {
     val animatedToken by animateIntAsState(
         targetValue = tokenBalance,
         animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
@@ -173,7 +185,7 @@ fun TopAppBarSection(tokenBalance: Int) {
                 }
             }
             IconButton(
-                onClick = { Toast.makeText(context, "今日提醒：傍晚适合远观猫咪并记录状态", Toast.LENGTH_SHORT).show() },
+                onClick = onOpenNotifications,
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
@@ -259,7 +271,7 @@ fun FeedingAlertSection() {
 }
 
 @Composable
-fun TodaysActivitySection() {
+fun TodaysActivitySection(onOpenAll: () -> Unit) {
     Column {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
@@ -276,7 +288,8 @@ fun TodaysActivitySection() {
                 text = "查看全部",
                 color = MaterialTheme.colorScheme.primary,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable { onOpenAll() }
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -448,7 +461,7 @@ fun FunctionSquareCard(
 }
 
 @Composable
-fun StoryCardSection() {
+fun StoryCardSection(onOpenStory: () -> Unit) {
     Column(modifier = Modifier.padding(horizontal = 24.dp).padding(bottom = 24.dp)) {
         Text(
             text = "故事集",
@@ -459,7 +472,7 @@ fun StoryCardSection() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Card(
-            modifier = Modifier.fillMaxWidth().rotate(1f),
+            modifier = Modifier.fillMaxWidth().rotate(1f).clickable { onOpenStory() },
             colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             shape = RoundedCornerShape(8.dp)
@@ -491,7 +504,7 @@ fun StoryCardSection() {
                     lineHeight = 20.sp
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onOpenStory() }) {
                     Text("阅读全文", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     Icon(
                     Icons.AutoMirrored.Outlined.ArrowForward,
@@ -504,7 +517,90 @@ fun StoryCardSection() {
 }
 
 @Composable
-fun DailyMissionSection(navController: NavController? = null, signInDays: Int = 3, hasSignedInToday: Boolean = false) {
+private fun HomePanelDialog(panel: HomePanel, onDismiss: () -> Unit, navController: NavController?) {
+    val title = when (panel) {
+        HomePanel.Notifications -> "今日提醒"
+        HomePanel.ActivityList -> "全部猫咪动态"
+        HomePanel.Story -> "故事详情"
+        HomePanel.FollowedCats -> "关注对象示例"
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title, fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                when (panel) {
+                    HomePanel.Notifications -> {
+                        HomeInfoRow(Icons.Outlined.Notifications, "傍晚远观提醒", "18:00 后适合观察猫咪活动状态，保持距离并记录片区即可。")
+                        HomeInfoRow(Icons.Outlined.Info, "补水优先", "今日天气偏干，优先检查清水，不建议频繁零食投喂。")
+                        HomeInfoRow(Icons.Outlined.School, "学习任务", "完成情绪识别课程，可获得小鱼干并减少不当互动。")
+                    }
+                    HomePanel.ActivityList -> {
+                        HomeInfoRow(Icons.Outlined.LocationOn, "奶油 · 教学区附近", "远距离观察到，状态稳定，无需靠近。")
+                        HomeInfoRow(Icons.Outlined.CheckCircle, "小黑 · 补水正常", "连续两天补水点状态良好，建议继续巡查。")
+                        HomeInfoRow(Icons.Outlined.Pets, "三花 · 图书馆片区", "午后常在安静角落休息，请降低音量。")
+                    }
+                    HomePanel.Story -> {
+                        Text("橘子常在开阔区域远观人群，中午会绕到安静片区休息。志愿者记录显示，它更接受固定人员的远距离陪伴，不适合突然靠近或多人围观。", fontSize = 14.sp, lineHeight = 22.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        HomeInfoRow(Icons.Outlined.FavoriteBorder, "照护建议", "先观察耳朵和尾巴，保持两米以上距离，不主动伸手。")
+                    }
+                    HomePanel.FollowedCats -> {
+                        HomeInfoRow(Icons.Outlined.Pets, "橘子", "慢热型橘猫，常在开阔区域出现。")
+                        HomeInfoRow(Icons.Outlined.Pets, "小黑", "云陪伴主角，适合用观察和补水作为演示对象。")
+                        HomeInfoRow(Icons.Outlined.Pets, "奶油", "教学区附近远观记录较多，状态稳定。")
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val route = when (panel) {
+                        HomePanel.Notifications -> "tasks"
+                        HomePanel.ActivityList -> "campus"
+                        HomePanel.Story -> "catProfile"
+                        HomePanel.FollowedCats -> "catProfile"
+                    }
+                    onDismiss()
+                    navController?.navigate(route)
+                },
+                shape = CircleShape
+            ) {
+                Text(
+                    when (panel) {
+                        HomePanel.Notifications -> "去任务中心"
+                        HomePanel.ActivityList -> "打开地图"
+                        HomePanel.Story -> "查看档案"
+                        HomePanel.FollowedCats -> "查看档案"
+                    }
+                )
+            }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("关闭") } }
+    )
+}
+
+@Composable
+private fun HomeInfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String) {
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+        Box(modifier = Modifier.size(36.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
+            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+        }
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, fontSize = 12.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+fun DailyMissionSection(
+    navController: NavController? = null,
+    signInDays: Int = 3,
+    hasSignedInToday: Boolean = false,
+    completedCount: Int = 0,
+    totalCount: Int = 0
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -537,7 +633,7 @@ fun DailyMissionSection(navController: NavController? = null, signInDays: Int = 
             Row(modifier = Modifier.fillMaxSize().padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                 Column {
                     Text("今日任务", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                    Text("完成 1/3", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("完成 $completedCount/$totalCount", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Icon(
                 Icons.AutoMirrored.Outlined.Assignment,
@@ -548,7 +644,7 @@ fun DailyMissionSection(navController: NavController? = null, signInDays: Int = 
 }
 
 @Composable
-fun HomeFollowedCatsSection() {
+fun HomeFollowedCatsSection(onOpenAll: () -> Unit) {
     Column {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(top = 8.dp),
@@ -561,6 +657,7 @@ fun HomeFollowedCatsSection() {
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
+            Text("管理", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.clickable { onOpenAll() })
         }
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -572,12 +669,12 @@ fun HomeFollowedCatsSection() {
                 .padding(horizontal = 24.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            FollowedCatAvatar("橘子", com.example.myapplication.R.drawable.img_net_ec43d2eca7)
-            FollowedCatAvatar("小黑", com.example.myapplication.R.drawable.img_net_c9e15cf0b7)
-            FollowedCatAvatar("奶油", com.example.myapplication.R.drawable.img_net_27ce5092c2)
+            FollowedCatAvatar("橘子", com.example.myapplication.R.drawable.img_net_ec43d2eca7, onClick = onOpenAll)
+            FollowedCatAvatar("小黑", com.example.myapplication.R.drawable.img_net_c9e15cf0b7, onClick = onOpenAll)
+            FollowedCatAvatar("奶油", com.example.myapplication.R.drawable.img_net_27ce5092c2, onClick = onOpenAll)
             
             Box(
-                modifier = Modifier.size(64.dp).clip(CircleShape).background(SurfaceContainerHigh).border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f), CircleShape),
+                modifier = Modifier.size(64.dp).clip(CircleShape).background(SurfaceContainerHigh).border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f), CircleShape).clickable { onOpenAll() },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(Icons.Outlined.Add, contentDescription = "Add", tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -587,8 +684,8 @@ fun HomeFollowedCatsSection() {
 }
 
 @Composable
-fun FollowedCatAvatar(name: String, imageResId: Int) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+fun FollowedCatAvatar(name: String, imageResId: Int, onClick: () -> Unit) {
+    Column(modifier = Modifier.clickable { onClick() }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Box(
             modifier = Modifier.size(64.dp).clip(CircleShape).border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
         ) {

@@ -186,7 +186,7 @@ fun TaskOverviewSection(tokenBalance: Int, completedCount: Int, totalCount: Int)
         TaskStatCard(
             title = "任务进度",
             value = "$completedCount/$totalCount",
-            subtitle = "今日前端模拟状态",
+            subtitle = "今日任务完成情况",
             color = MaterialTheme.colorScheme.tertiary,
             modifier = Modifier.weight(1f)
         )

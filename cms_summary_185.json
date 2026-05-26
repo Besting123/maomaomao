@@ -1,0 +1,41 @@
+{
+  "name": "团结引擎-1.8.5 release note",
+  "extendedProperties": {
+    "codeSnippets": "",
+    "description": "团结引擎微信小游戏解决方案：一站式微信小游戏解决方案，覆盖更广阔的玩家群体。即将开放测试，敬请期待！",
+    "image": "",
+    "keywords": "unity, unity引擎, unity中国, 团结引擎, 微信小游戏, 团结引擎releasenote",
+    "title": "ReleaseNote-团结引擎微信小游戏解决方案-一站式微信小游戏解决方案，覆盖更广阔的玩家群体"
+  },
+  "content": {
+    "editor1-8-5--release-note": {
+      "moduleName": "BLANK",
+      "fieldTitle": "",
+      "theme": "blank",
+      "contents": {
+        "type": "array",
+        "length": 1,
+        "sample": [
+          {
+            "moduleName": "Customized",
+            "fieldTitle": "CUSTOMIZED SECTION",
+            "theme": "blank",
+            "contents": {
+              "type": "array",
+              "length": 11,
+              "sample": [
+                "object",
+                "object",
+                "object"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "forceRefresh": false,
+  "locale": "zh_CN",
+  "slug": "editor1-8-5--release-note",
+  "namespace": "china"
+}

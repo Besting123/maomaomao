@@ -59,10 +59,10 @@ data class MainAppState(
     val signInDays: Int = 3,
     val hasSignedInToday: Boolean = false,
     val tasks: List<TaskState> = listOf(
-        TaskState("1", "完成1次观察记录", "记录猫咪的健康状态", 10, false, TaskType.DAILY),
-        TaskState("2", "进行1次安抚互动", "传递你的善意", 15, false, TaskType.DAILY),
+        TaskState("1", "完成1次安全观察记录", "保持距离记录猫咪状态", 10, false, TaskType.DAILY),
+        TaskState("2", "进行1次温和安抚互动", "先判断边界再传递善意", 15, false, TaskType.DAILY),
         TaskState("3", "阅读《如何正确判断猫咪情绪》", "掌握正确的互动边界", 20, false, TaskType.LEARNING),
-        TaskState("4", "连续陪伴同一只猫咪3天", "建立深厚情感羁绊", 50, false, TaskType.SPECIAL)
+        TaskState("4", "连续陪伴同一只猫咪3天", "用稳定远观建立长期守护", 50, false, TaskType.SPECIAL)
     ),
     val companionRecords: List<CompanionRecord> = listOf(
         CompanionRecord("10月24日", "补水", "大橘", "「大橘今天看起来心情不错，喝了不少水。」", 2),
@@ -101,6 +101,7 @@ data class MainAppState(
         ForumCommentState("图书馆路过同学", "刚刚经过，没有围观，奶牛还在安静晒太阳。", "10:25")
     ),
     val followedCatNames: Set<String> = setOf("大橘", "小黑", "奶油"),
+    val selectedProfileCatName: String = "大橘",
     val joinedWeekendShelterEvent: Boolean = false,
     val rewardExchangeRecords: List<RewardExchangeRecord> = emptyList(),
     val completedCourseTitles: Set<String> = setOf("边界与安全", "情绪识别", "科学补水"),
@@ -205,6 +206,12 @@ class MainViewModel : ViewModel() {
                     currentState.followedCatNames + catName
                 }
             )
+        }
+    }
+
+    fun selectProfileCat(catName: String) {
+        _uiState.update { currentState ->
+            currentState.copy(selectedProfileCatName = catName)
         }
     }
 

@@ -238,7 +238,7 @@ fun ForumTopAppBar(onSearchClick: () -> Unit, onNotificationsClick: () -> Unit) 
                     modifier = Modifier.fillMaxSize()
                 )
             }
-            Text("论坛", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+            Text("共护", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             IconButton(onClick = onSearchClick) {
@@ -427,11 +427,11 @@ fun ForumSearchDialog(posts: List<ForumPostState>, onDismiss: () -> Unit, onOpen
 fun ForumNotificationsDialog(postCount: Int, commentCount: Int, hasJoinedEmergencyQueue: Boolean, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("社区提醒", fontWeight = FontWeight.Bold) },
+        title = { Text("共护提醒", fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 CommentNoticeRow(Icons.Outlined.Send, "目击评论", "奶牛目击记录已有 $commentCount 条安全观察评论。")
-                CommentNoticeRow(Icons.Outlined.Edit, "内容流", "本次会话社区中已有 $postCount 条帖子和示例对象。")
+                CommentNoticeRow(Icons.Outlined.Edit, "共护内容流", "本次会话中已有 $postCount 条片区记录和示例对象。")
                 CommentNoticeRow(Icons.Outlined.Warning, "求助响应", if (hasJoinedEmergencyQueue) "你已加入医疗求助协助队列。" else "教三片区仍有医疗求助可响应。")
             }
         },
@@ -468,7 +468,7 @@ fun EmergencyForumCard(
         ) {
             Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("教三教学楼后的「大橘」腿部受伤，急需送医", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, lineHeight = 26.sp)
+                    Text("教三教学楼后的「大橘」疑似腿部受伤，需志愿者确认", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, lineHeight = 26.sp)
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         Icon(Icons.Outlined.DateRange, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(14.dp))
                         Text("15分钟前发布", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -568,7 +568,7 @@ fun SightingForumCard(
                     }
                 }
             }
-            Text("奶牛今天看起来心情不错，在南侧看台晒太阳，有人刚提供了冻干小零食。", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 22.sp)
+            Text("奶牛今天看起来心情不错，在南侧看台晒太阳。建议只做远观记录，不围观、不补充零食。", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 22.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                 Row(modifier = Modifier.clickable { onToggleLike() }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Icon(if (liked) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder, contentDescription = "Like", tint = if (liked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
@@ -923,11 +923,11 @@ fun KnowledgeShareCard() {
                     Icon(Icons.Outlined.MenuBook, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(16.dp))
                 }
                 Column {
-                    Text("科普：秋季猫咪易发疾病及预防", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text("科普：秋季猫咪易发疾病及安全观察", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                     Text("3小时前 · 知识分享", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            Text("秋季气温变化大，校园流浪猫极易感染猫鼻支等上呼吸道疾病。在此向大家科普如何通过观察猫咪眼鼻分泌物进行初步判断...", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
+            Text("秋季气温变化大，校园流浪猫容易出现上呼吸道问题。请通过远观眼鼻分泌物、精神状态和步态做初步记录，不自行用药或抓捕...", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("#医疗科普", fontSize = 11.sp, color = MaterialTheme.colorScheme.tertiary)

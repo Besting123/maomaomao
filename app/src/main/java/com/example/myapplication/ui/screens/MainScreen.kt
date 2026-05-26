@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -51,27 +53,40 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
         bottomBar = { if (showBottomBar) CustomBottomNavigationBar(navController) },
         contentWindowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp) // Handle insets inside screens
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = BottomNavItem.Home.route,
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = innerPadding.calculateBottomPadding())
         ) {
-            composable(BottomNavItem.Home.route) { HomeScreen(navController = navController, viewModel = viewModel) }
-            composable(BottomNavItem.Campus.route) { CampusScreen(navController = navController) }
-            composable(BottomNavItem.Companion.route) { CompanionScreen(viewModel = viewModel) }
-            composable(BottomNavItem.Forum.route) { ForumScreen(viewModel = viewModel) }
-            composable(BottomNavItem.Profile.route) { ProfileScreen(viewModel = viewModel) }
-            composable("catProfile") {
-                CatProfileScreen(onBackClick = { navController.popBackStack() }, viewModel = viewModel)
+            NavHost(
+                navController = navController,
+                startDestination = BottomNavItem.Home.route,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                composable(BottomNavItem.Home.route) { HomeScreen(navController = navController, viewModel = viewModel) }
+                composable(BottomNavItem.Campus.route) { CampusScreen(navController = navController) }
+                composable(BottomNavItem.Companion.route) { Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) }
+                composable(BottomNavItem.Forum.route) { ForumScreen(viewModel = viewModel) }
+                composable(BottomNavItem.Profile.route) { ProfileScreen(viewModel = viewModel) }
+                composable("catProfile") {
+                    CatProfileScreen(onBackClick = { navController.popBackStack() }, viewModel = viewModel)
+                }
+                composable("tasks") {
+                    TaskScreen(onBackClick = { navController.popBackStack() }, viewModel = viewModel)
+                }
+                composable("education") {
+                    EducationScreen(onBackClick = { navController.popBackStack() }, viewModel = viewModel)
+                }
             }
-            composable("tasks") {
-                TaskScreen(onBackClick = { navController.popBackStack() }, viewModel = viewModel)
-            }
-            composable("education") {
-                EducationScreen(onBackClick = { navController.popBackStack() }, viewModel = viewModel)
-            }
+            CompanionScreen(
+                navController = navController,
+                viewModel = viewModel,
+                modifier = if (currentRoute == BottomNavItem.Companion.route) {
+                    Modifier.fillMaxSize()
+                } else {
+                    Modifier.size(1.dp).offset(x = (-10000).dp)
+                }
+            )
         }
     }
 }
@@ -110,10 +125,12 @@ fun CustomBottomNavigationBar(navController: NavController) {
             items.forEach { item ->
                 val selected = currentRoute == item.route
                 BottomNavItemView(item, selected) {
-                    navController.navigate(item.route) {
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
+                    if (!selected) {
+                        navController.navigate(item.route) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 }
             }

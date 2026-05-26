@@ -55,16 +55,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.runtime.remember
 import androidx.navigation.NavController
+import com.example.myapplication.ui.navigation.BottomNavItem
 import com.example.myapplication.ui.theme.*
 import com.example.myapplication.ui.viewmodel.MainViewModel
 
 private enum class HomePanel { Notifications, ActivityList, Story, FollowedCats }
+
+private fun NavController.navigateFromHome(route: String) {
+    navigate(route) {
+        popUpTo(graph.startDestinationId) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
 
 @Composable
 fun HomeScreen(navController: NavController? = null, viewModel: MainViewModel? = null) {
     val scrollState = rememberScrollState()
     val uiState by viewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(null) }
     var activePanel by remember { mutableStateOf<HomePanel?>(null) }
+    var showCatProfilePicker by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         // Main Scrollable Content
@@ -98,7 +108,7 @@ fun HomeScreen(navController: NavController? = null, viewModel: MainViewModel? =
             HomeFollowedCatsSection(onOpenAll = { activePanel = HomePanel.FollowedCats })
 
             // Core Functions Bento
-            CoreFunctionsBento(navController)
+            CoreFunctionsBento(navController, onOpenCatProfilePicker = { showCatProfilePicker = true })
 
             // Story Card
             StoryCardSection(onOpenStory = { activePanel = HomePanel.Story })
@@ -107,15 +117,30 @@ fun HomeScreen(navController: NavController? = null, viewModel: MainViewModel? =
         }
 
         // Fixed Top App Bar with Blur Effect (simulated with semi-transparent bg)
-        TopAppBarSection(uiState?.tokenBalance ?: 350, onOpenNotifications = { activePanel = HomePanel.Notifications })
+        TopAppBarSection(
+            tokenBalance = uiState?.tokenBalance ?: 350,
+            onOpenProfile = { navController?.navigateFromHome(BottomNavItem.Profile.route) },
+            onOpenNotifications = { activePanel = HomePanel.Notifications }
+        )
         activePanel?.let { panel ->
             HomePanelDialog(panel = panel, onDismiss = { activePanel = null }, navController = navController)
+        }
+        if (showCatProfilePicker) {
+            HomeCatProfilePickerDialog(
+                selectedCatName = uiState?.selectedProfileCatName ?: "大橘",
+                onSelect = { catName ->
+                    viewModel?.selectProfileCat(catName)
+                    showCatProfilePicker = false
+                    navController?.navigate("catProfile")
+                },
+                onDismiss = { showCatProfilePicker = false }
+            )
         }
     }
 }
 
 @Composable
-fun TopAppBarSection(tokenBalance: Int, onOpenNotifications: () -> Unit) {
+fun TopAppBarSection(tokenBalance: Int, onOpenProfile: () -> Unit, onOpenNotifications: () -> Unit) {
     val animatedToken by animateIntAsState(
         targetValue = tokenBalance,
         animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
@@ -149,7 +174,8 @@ fun TopAppBarSection(tokenBalance: Int, onOpenNotifications: () -> Unit) {
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
+                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
+                    .clickable { onOpenProfile() },
                 contentAlignment = Alignment.Center
             ) {
                 Image(
@@ -237,7 +263,7 @@ fun HeroSection() {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "今天空气清新，是个探访猫咪的好天气",
+                text = "今天适合远观记录，优先补水，不打扰猫咪",
                 color = Color.White.copy(alpha = 0.9f),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
@@ -261,7 +287,7 @@ fun FeedingAlertSection() {
     ) {
         Icon(Icons.Outlined.Info, contentDescription = "Water", tint = MaterialTheme.colorScheme.tertiary)
         Text(
-            text = "补水优先于加餐，当前环境更建议补充洁净饮水。",
+            text = "补水优先于加餐，保持距离观察，不追逐、不围堵。",
             color = MaterialTheme.colorScheme.onTertiaryContainer,
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
@@ -375,13 +401,13 @@ fun ActivityCard(
 }
 
 @Composable
-fun CoreFunctionsBento(navController: NavController? = null) {
+fun CoreFunctionsBento(navController: NavController? = null, onOpenCatProfilePicker: () -> Unit = {}) {
     Column(modifier = Modifier.padding(24.dp).fillMaxWidth()) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(100.dp)
-                .clickable { navController?.navigate("campus") },
+                .clickable { navController?.navigateFromHome(BottomNavItem.Campus.route) },
             colors = CardDefaults.cardColors(containerColor = SurfaceContainerLow),
             shape = RoundedCornerShape(16.dp)
         ) {
@@ -404,12 +430,12 @@ fun CoreFunctionsBento(navController: NavController? = null) {
             FunctionSquareCard(
                 modifier = Modifier.weight(1f),
                 title = "云陪伴",
-                subtitle = "互动与关怀",
+                subtitle = "低压力陪伴",
                 icon = Icons.Outlined.FavoriteBorder,
                 iconBg = MaterialTheme.colorScheme.primaryContainer,
                 iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
                 cardBg = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
-                onClick = { navController?.navigate("companion") }
+                onClick = { navController?.navigateFromHome(BottomNavItem.Companion.route) }
             )
             FunctionSquareCard(
                 modifier = Modifier.weight(1f),
@@ -424,15 +450,54 @@ fun CoreFunctionsBento(navController: NavController? = null) {
             FunctionSquareCard(
                 modifier = Modifier.weight(1f),
                 title = "猫咪档案",
-                subtitle = "云养猫咪全集",
+                subtitle = "边界与长期记录",
                 icon = Icons.Outlined.Pets,
                 iconBg = MaterialTheme.colorScheme.secondaryContainer,
                 iconTint = MaterialTheme.colorScheme.onSecondaryContainer,
                 cardBg = MaterialTheme.colorScheme.secondary.copy(alpha = 0.05f),
-                onClick = { navController?.navigate("catProfile") }
+                onClick = onOpenCatProfilePicker
             )
         }
     }
+}
+
+@Composable
+private fun HomeCatProfilePickerDialog(selectedCatName: String, onSelect: (String) -> Unit, onDismiss: () -> Unit) {
+    val cats = listOf(
+        "大橘" to "慢热型橘猫 · 适合稳定远观",
+        "小黑" to "云陪伴主角 · 适合观察和补水",
+        "奶油" to "教学区常见 · 状态稳定"
+    )
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("选择猫咪档案", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                cats.forEach { (name, desc) ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(if (name == selectedCatName) MaterialTheme.colorScheme.primaryContainer else SurfaceContainerLow)
+                            .clickable { onSelect(name) }
+                            .padding(14.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(modifier = Modifier.size(36.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer), contentAlignment = Alignment.Center) {
+                            Icon(Icons.Outlined.Pets, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(18.dp))
+                        }
+                        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Text(if (name == selectedCatName) "$name · 当前" else name, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                            Text(desc, fontSize = 12.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("关闭") } }
+    )
 }
 
 @Composable
@@ -545,9 +610,9 @@ private fun HomePanelDialog(panel: HomePanel, onDismiss: () -> Unit, navControll
                         HomeInfoRow(Icons.Outlined.FavoriteBorder, "照护建议", "先观察耳朵和尾巴，保持两米以上距离，不主动伸手。")
                     }
                     HomePanel.FollowedCats -> {
-                        HomeInfoRow(Icons.Outlined.Pets, "橘子", "慢热型橘猫，常在开阔区域出现。")
-                        HomeInfoRow(Icons.Outlined.Pets, "小黑", "云陪伴主角，适合用观察和补水作为演示对象。")
-                        HomeInfoRow(Icons.Outlined.Pets, "奶油", "教学区附近远观记录较多，状态稳定。")
+                        HomeInfoRow(Icons.Outlined.Pets, "橘子", "慢热型橘猫，适合稳定远观，不适合突然靠近。")
+                        HomeInfoRow(Icons.Outlined.Pets, "小黑", "云陪伴主角，适合用观察和补水作为长期陪伴对象。")
+                        HomeInfoRow(Icons.Outlined.Pets, "奶油", "教学区附近远观记录较多，状态稳定，继续保持距离。")
                     }
                 }
             }

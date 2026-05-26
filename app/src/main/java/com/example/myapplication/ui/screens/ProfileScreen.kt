@@ -67,7 +67,6 @@ fun ProfileScreen(viewModel: MainViewModel? = null) {
             Spacer(modifier = Modifier.height(120.dp))
         }
         ProfileTopBar(
-            onOpenSettings = { activePanel = ProfilePanel.GeneralSettings },
             onOpenNotifications = { activePanel = ProfilePanel.Notifications }
         )
         activePanel?.let { panel ->
@@ -108,7 +107,6 @@ enum class ProfilePanel {
 
 @Composable
 fun ProfileTopBar(
-    onOpenSettings: () -> Unit,
     onOpenNotifications: () -> Unit
 ) {
     Row(
@@ -120,10 +118,8 @@ fun ProfileTopBar(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = onOpenSettings, modifier = Modifier.size(40.dp)) {
-            Icon(Icons.Outlined.Settings, contentDescription = "Settings", tint = MaterialTheme.colorScheme.primary)
-        }
-        Text("我的", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        Spacer(modifier = Modifier.size(40.dp))
+        Text("善意账本", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         IconButton(onClick = onOpenNotifications, modifier = Modifier.size(40.dp)) {
             Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = MaterialTheme.colorScheme.primary)
         }
@@ -231,7 +227,7 @@ fun RewardExchangeDialog(onDismiss: () -> Unit, onExchange: (String, Int) -> Uni
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                             Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                            Text("用于本次会话内的照护记录展示", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("用于本次会话内的安全照护与长期陪伴展示", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         Text("$cost 🐟", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
@@ -280,7 +276,7 @@ fun GoodwillStatsSection(signInDays: Int, completedCoursesCount: Int, reportCoun
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Icon(Icons.Outlined.Info, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
                 Text(reportCount.toString(), fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
-                Text("目击报告数", fontSize = 12.sp, color = Color.White.copy(alpha = 0.9f))
+                Text("安全观察报告数", fontSize = 12.sp, color = Color.White.copy(alpha = 0.9f))
             }
         }
     }
@@ -361,7 +357,7 @@ fun FollowedCatsSection() {
                         Text(cat.name, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                         if (selectedCat == cat.name) {
                             Box(modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer, CircleShape).padding(horizontal = 8.dp, vertical = 2.dp)) {
-                                Text("今日已看过", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                        Text("持续关注中", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer)
                             }
                         }
                     }
@@ -550,7 +546,7 @@ fun ProfilePanelDialog(
                         ProfileInfoRow(Icons.Outlined.Group, "秋季补水点巡查", "报名待确认 · 建议两人同行")
                     }
                     ProfilePanel.GeneralSettings -> {
-                        ProfileInfoRow(Icons.Outlined.Notifications, "提醒偏好", "已开启：学习、任务、片区照护提醒")
+                        ProfileInfoRow(Icons.Outlined.Notifications, "提醒偏好", "已开启：学习、任务、片区照护和长期陪伴提醒")
                         ProfileInfoRow(Icons.Outlined.Shield, "动物福利保护", "隐藏精确位置 · 禁止追逐围堵提示")
                         ProfileInfoRow(Icons.Outlined.Info, "数据状态", "本次会话内将同步任务、学习、陪伴和社区状态")
                         exchangeRecords.take(2).forEach { record ->

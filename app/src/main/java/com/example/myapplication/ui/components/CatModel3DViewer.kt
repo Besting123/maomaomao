@@ -61,6 +61,7 @@ import io.github.sceneview.rememberEngine
 import io.github.sceneview.rememberEnvironmentLoader
 import io.github.sceneview.rememberModelInstance
 import io.github.sceneview.rememberModelLoader
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 enum class CatViewerMode {
@@ -78,6 +79,7 @@ fun CatModel3DViewer(
     animationName: String = "Idle",
     animationLoop: Boolean = true,
     animationSpeed: Float = 1f,
+    deferSceneMillis: Long = 0L,
     onDoubleTap: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -94,6 +96,17 @@ fun CatModel3DViewer(
         hasInteracted = true
         coroutineScope.launch { rotationY.snapTo((rotationY.value + delta * 0.35f).coerceIn(-50f, 50f)) }
     }
+    var sceneReady by remember(modelAssetPath, mode, deferSceneMillis) { mutableStateOf(deferSceneMillis == 0L) }
+
+    LaunchedEffect(modelAssetPath, mode, deferSceneMillis) {
+        if (deferSceneMillis > 0L) {
+            sceneReady = false
+            delay(deferSceneMillis)
+            sceneReady = true
+        } else {
+            sceneReady = true
+        }
+    }
 
     Box(
         modifier = modifier
@@ -103,7 +116,7 @@ fun CatModel3DViewer(
         AnimatedModelBackdrop(mode = mode)
         ModelGroundingStage(mode = mode, animationName = animationName)
 
-        if (hasModelAsset) {
+        if (hasModelAsset && sceneReady) {
             val engine = rememberEngine()
             val modelLoader = rememberModelLoader(engine)
             val environmentLoader = rememberEnvironmentLoader(engine)
@@ -156,6 +169,8 @@ fun CatModel3DViewer(
             if (modelInstance == null) {
                 ModelLoadingOverlay()
             }
+        } else if (hasModelAsset) {
+            ModelLoadingOverlay()
         } else {
             ModelMissingOverlay(modelAssetPath = modelAssetPath)
         }

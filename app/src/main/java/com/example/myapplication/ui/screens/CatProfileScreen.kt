@@ -73,8 +73,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.R
-import com.example.myapplication.ui.components.CatModel3DViewer
-import com.example.myapplication.ui.components.CatViewerMode
 import com.example.myapplication.ui.theme.SurfaceContainerHigh
 import com.example.myapplication.ui.theme.SurfaceContainerHighest
 import com.example.myapplication.ui.theme.SurfaceContainerLow
@@ -83,10 +81,64 @@ import com.example.myapplication.ui.utils.sharePlainText
 import com.example.myapplication.ui.viewmodel.CompanionRecord
 import com.example.myapplication.ui.viewmodel.MainViewModel
 
+private data class CatProfileUi(
+    val name: String,
+    val codeLine: String,
+    val tags: List<String>,
+    val imageRes: Int,
+    val personality: String,
+    val memoryQuote: String,
+    val memoryAuthor: String,
+    val healthText: String,
+    val theaterFirst: String,
+    val theaterSecond: String
+)
+
+private fun catProfileFor(catName: String): CatProfileUi = when (catName) {
+    "小黑" -> CatProfileUi(
+        name = "小黑",
+        codeLine = "编号: SC-2023-011 · 教学区边缘常驻",
+        tags = listOf("小黑", "安静型", "适合远观"),
+        imageRes = R.drawable.img_net_8c081179f2,
+        personality = "小黑习惯在教学区边缘慢慢移动，遇到人多时会主动拉开距离。它更适合固定时段的远观记录和补水提醒，不适合突然靠近或多人围观。",
+        memoryQuote = "它从树影里绕出来，又很快回到安静的角落。",
+        memoryAuthor = "— 2023.11.08 · 教学区观察员",
+        healthText = "如发现小黑步态异常、长时间躲藏或精神下降，请联系校园流浪猫志愿者团队。日常记录只保留片区，不公开精确停留点。",
+        theaterFirst = "每天傍晚，小黑常沿教学区边缘短暂停留。保持距离时，它会放慢脚步；靠得太近时，它会直接退回树影里。",
+        theaterSecond = "小黑对补水点很敏感。水碗干净时会停留更久，因此比起零食，稳定清水更适合它。"
+    )
+    "奶油" -> CatProfileUi(
+        name = "奶油",
+        codeLine = "编号: SC-2023-015 · 教学区休息片区",
+        tags = listOf("奶油", "稳定型", "爱晒太阳"),
+        imageRes = R.drawable.img_net_27ce5092c2,
+        personality = "奶油常在教学区和草坪边缘活动，状态稳定，但休息时不喜欢被打扰。适合远距离拍照记录，不建议在午后休息时靠近。",
+        memoryQuote = "它趴在草坪边缘晒太阳，听到脚步声也没有马上离开。",
+        memoryAuthor = "— 2023.11.10 · 图书馆路过同学",
+        healthText = "如发现奶油眼鼻分泌物增多、食欲下降或长时间不移动，请记录片区并联系志愿者，不自行用药或抓捕。",
+        theaterFirst = "午后的奶油很会挑位置，常在有阳光但不吵的地方休息。远远看一眼就足够，不需要靠近确认。",
+        theaterSecond = "奶油对人群比较淡定，但多人围观仍会让它紧张。一个人安静记录，比一群人靠近更合适。"
+    )
+    else -> CatProfileUi(
+        name = "大橘",
+        codeLine = "编号: SC-2023-009 · 艺术学院常驻嘉宾",
+        tags = listOf("橘子", "警惕型", "爱晒太阳"),
+        imageRes = R.drawable.img_net_a53f9ce8f2,
+        personality = "大橘是一只典型的“慢热型”橘猫。初次见面时会保持警惕距离，但一旦建立信任，就会展现出极其黏人的一面。它对固定的几位志愿者表现出明显的偏好，会主动蹭腿、翻肚皮。对陌生人则保持礼貌但疏离的态度。",
+        memoryQuote = "它在蹭我的画架，仿佛在指导我构图。",
+        memoryAuthor = "— 2023.11.12 · 某大一新生",
+        healthText = "如发现大橘出现精神萎靡、食欲下降、毛发异常脱落等情况，请联系校园流浪猫志愿者团队。日常照护以固定片区规则为准，不公开精确补给位置。",
+        theaterFirst = "每天早上，大橘常在教学区附近短暂停留。但如果你试图直接摸它，它会优雅地后退两步，用眼神告诉你：“请先保持距离。”",
+        theaterSecond = "大橘对画室有着莫名的执着。它会趁门没关严时溜进去，在画架之间巡视一圈，最后选一个最碍事的位置趴下，仿佛在说：“今天的构图，我来把关。”"
+    )
+}
+
 @Composable
-fun CatProfileScreen(onBackClick: () -> Unit, viewModel: MainViewModel? = null) {
+fun CatProfileScreen(onBackClick: () -> Unit, viewModel: MainViewModel? = null, catName: String? = null) {
     val scrollState = rememberScrollState()
     val uiState by viewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(null) }
+    val selectedCatName = catName ?: uiState?.selectedProfileCatName ?: "大橘"
+    val profile = remember(selectedCatName) { catProfileFor(selectedCatName) }
     var showMoreDialog by remember { mutableStateOf(false) }
 
     Box(
@@ -102,8 +154,9 @@ fun CatProfileScreen(onBackClick: () -> Unit, viewModel: MainViewModel? = null) 
             Spacer(modifier = Modifier.height(72.dp))
 
             CatProfileHeroSection(
-                isFollowed = uiState?.followedCatNames?.contains("大橘") ?: false,
-                onToggleFollow = { viewModel?.toggleCatFollow("大橘") }
+                profile = profile,
+                isFollowed = uiState?.followedCatNames?.contains(profile.name) ?: false,
+                onToggleFollow = { viewModel?.toggleCatFollow(profile.name) }
             )
             Spacer(modifier = Modifier.height(24.dp))
             
@@ -113,29 +166,29 @@ fun CatProfileScreen(onBackClick: () -> Unit, viewModel: MainViewModel? = null) 
             CatInteractionBoundarySection()
             Spacer(modifier = Modifier.height(24.dp))
 
-            CatPersonalitySection()
+            CatPersonalitySection(profile)
             Spacer(modifier = Modifier.height(24.dp))
 
-            CatMemoryPolaroid()
+            CatMemoryPolaroid(profile)
             Spacer(modifier = Modifier.height(24.dp))
 
             CatLocationSection()
             Spacer(modifier = Modifier.height(24.dp))
 
-            CatHealthAdviceSection()
+            CatHealthAdviceSection(profile)
             Spacer(modifier = Modifier.height(24.dp))
 
-            CatTimelineSection()
+            CatTimelineSection(profile)
             Spacer(modifier = Modifier.height(24.dp))
             
-            CatMyCompanionRecordsSection(records = uiState?.companionRecords.orEmpty().filter { it.catName == "大橘" })
+            CatMyCompanionRecordsSection(records = uiState?.companionRecords.orEmpty().filter { it.catName == profile.name }, profile = profile)
             Spacer(modifier = Modifier.height(24.dp))
 
-            CatPersonalityTheater()
+            CatPersonalityTheater(profile)
             Spacer(modifier = Modifier.height(48.dp))
         }
 
-        CatProfileTopBar(onBackClick = onBackClick, onOpenMore = { showMoreDialog = true })
+        CatProfileTopBar(profile = profile, onBackClick = onBackClick, onOpenMore = { showMoreDialog = true })
         if (showMoreDialog) {
             CatProfileMoreDialog(onDismiss = { showMoreDialog = false })
         }
@@ -143,7 +196,7 @@ fun CatProfileScreen(onBackClick: () -> Unit, viewModel: MainViewModel? = null) 
 }
 
 @Composable
-private fun CatProfileTopBar(onBackClick: () -> Unit, onOpenMore: () -> Unit) {
+private fun CatProfileTopBar(profile: CatProfileUi, onBackClick: () -> Unit, onOpenMore: () -> Unit) {
     val context = LocalContext.current
     Row(
         modifier = Modifier
@@ -172,8 +225,8 @@ private fun CatProfileTopBar(onBackClick: () -> Unit, onOpenMore: () -> Unit) {
                 sharePlainText(
                     context = context,
                     chooserTitle = "分享猫咪档案",
-                    subject = "喵伴云养猫咪档案：大橘",
-                    body = "大橘 · SC-2023-009 · 艺术学院常驻嘉宾\n\n慢热型橘猫，适合保持距离远观。互动提示：不追逐、不围堵、不公开精确位置。"
+                    subject = "喵伴云养猫咪档案：${profile.name}",
+                    body = "${profile.name} · ${profile.codeLine.removePrefix("编号: ")}\n\n${profile.personality}\n\n互动提示：不追逐、不围堵、不公开精确位置。"
                 )
             }) {
                 Icon(
@@ -243,7 +296,7 @@ private fun CatProfileActionRow(icon: ImageVector, title: String, subtitle: Stri
 }
 
 @Composable
-private fun CatProfileHeroSection(isFollowed: Boolean, onToggleFollow: () -> Unit) {
+private fun CatProfileHeroSection(profile: CatProfileUi, isFollowed: Boolean, onToggleFollow: () -> Unit) {
     val moodLabel = if (isFollowed) "亲近中" else "保持观察"
 
     Box(
@@ -253,11 +306,10 @@ private fun CatProfileHeroSection(isFollowed: Boolean, onToggleFollow: () -> Uni
             .height(480.dp)
             .clip(RoundedCornerShape(24.dp))
     ) {
-        CatModel3DViewer(
-            modelAssetPath = "models/mao-xiaohei-rigged.glb",
-            label = "3D 陪伴小黑模型",
-            mode = CatViewerMode.PROFILE,
-            animationName = "Idle",
+        Image(
+            painter = painterResource(id = profile.imageRes),
+            contentDescription = "${profile.name}档案图",
+            contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
 
@@ -288,15 +340,20 @@ private fun CatProfileHeroSection(isFollowed: Boolean, onToggleFollow: () -> Uni
                 .padding(24.dp)
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                CatTag("橘子", MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer)
-                CatTag("警惕型", MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer)
-                CatTag("爱晒太阳", MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer)
+                profile.tags.take(3).forEachIndexed { index, tag ->
+                    val colors = when (index) {
+                        0 -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
+                        1 -> MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
+                        else -> MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
+                    }
+                    CatTag(tag, colors.first, colors.second)
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "大橘",
+                text = profile.name,
                 fontSize = 48.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color.White,
@@ -306,7 +363,7 @@ private fun CatProfileHeroSection(isFollowed: Boolean, onToggleFollow: () -> Uni
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "编号: SC-2023-009 · 艺术学院常驻嘉宾",
+                text = profile.codeLine,
                 fontSize = 14.sp,
                 color = Color.White.copy(alpha = 0.8f)
             )
@@ -457,14 +514,14 @@ private fun SectionHeader(icon: ImageVector, title: String) {
 }
 
 @Composable
-private fun CatPersonalitySection() {
+private fun CatPersonalitySection(profile: CatProfileUi) {
     Column(modifier = Modifier.fillMaxWidth()) {
         SectionHeader(icon = Icons.Outlined.Psychology, title = "个性与习惯")
 
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = "大橘是一只典型的\u201C慢热型\u201D橘猫。初次见面时会保持警惕距离，但一旦建立信任，就会展现出极其黏人的一面。它对固定的几位志愿者表现出明显的偏好，会主动蹭腿、翻肚皮。对陌生人则保持礼貌但疏离的态度。",
+            text = profile.personality,
             fontSize = 14.sp,
             lineHeight = 24.sp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
@@ -526,7 +583,7 @@ private fun HabitCard(borderColor: Color, title: String, description: String) {
 }
 
 @Composable
-private fun CatMemoryPolaroid() {
+private fun CatMemoryPolaroid(profile: CatProfileUi) {
     Column(
         modifier = Modifier
             .padding(horizontal = 40.dp)
@@ -538,7 +595,7 @@ private fun CatMemoryPolaroid() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(id = R.drawable.img_net_ec43d2eca7),
+            painter = painterResource(id = profile.imageRes),
             contentDescription = "记忆照片",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -550,7 +607,7 @@ private fun CatMemoryPolaroid() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "\u201C它在蹭我的画架，仿佛在指导我构图。\u201D",
+            text = "“${profile.memoryQuote}”",
             fontSize = 14.sp,
             fontStyle = FontStyle.Italic,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
@@ -562,7 +619,7 @@ private fun CatMemoryPolaroid() {
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "— 2023.11.12 · 某大一新生",
+            text = profile.memoryAuthor,
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
             textAlign = TextAlign.Center,
@@ -682,7 +739,7 @@ private fun LocationItem(name: String, fraction: Float, percent: String, color: 
 }
 
 @Composable
-private fun CatHealthAdviceSection() {
+private fun CatHealthAdviceSection(profile: CatProfileUi) {
     val errorColor = MaterialTheme.colorScheme.error
     Column(
         modifier = Modifier
@@ -759,7 +816,7 @@ private fun CatHealthAdviceSection() {
                 .padding(16.dp)
         ) {
             Text(
-                text = "如发现大橘出现精神萎靡、食欲下降、毛发异常脱落等情况，请联系校园流浪猫志愿者团队。日常照护以固定片区规则为准，不公开精确补给位置。",
+                text = profile.healthText,
                 fontSize = 13.sp,
                 lineHeight = 22.sp,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -789,7 +846,7 @@ private fun ProhibitedItem(text: String) {
 }
 
 @Composable
-private fun CatTimelineSection() {
+private fun CatTimelineSection(profile: CatProfileUi) {
     Column(modifier = Modifier.fillMaxWidth()) {
         SectionHeader(icon = Icons.Outlined.AutoStories, title = "成长与生命轨迹")
 
@@ -808,7 +865,7 @@ private fun CatTimelineSection() {
                 TimelineItem(
                     dotColor = MaterialTheme.colorScheme.primary,
                     time = "2小时前 · 被目击",
-                    title = "正在教学区安静片区晒太阳",
+                    title = "${profile.name}正在安静片区停留",
                     description = "\u201C趴在老位置，尾巴偶尔甩一下，看起来心情不错。\u201D"
                 )
 
@@ -823,7 +880,7 @@ private fun CatTimelineSection() {
                     dotColor = MaterialTheme.colorScheme.tertiary,
                     time = "3天前 · 档案更新",
                     title = "更新了冬季换毛写真",
-                    images = listOf(R.drawable.img_net_e7d3e76bea, R.drawable.img_net_a53f9ce8f2, R.drawable.img_net_8c081179f2)
+                    images = listOf(profile.imageRes, R.drawable.img_net_e7d3e76bea, R.drawable.img_net_8c081179f2)
                 )
             }
         }
@@ -934,9 +991,9 @@ private fun TimelineItemWithImages(
 }
 
 @Composable
-private fun CatMyCompanionRecordsSection(records: List<CompanionRecord>) {
+private fun CatMyCompanionRecordsSection(records: List<CompanionRecord>, profile: CatProfileUi) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        SectionHeader(icon = Icons.Outlined.History, title = "我的陪伴记录")
+        SectionHeader(icon = Icons.Outlined.History, title = "我的长期陪伴记录")
         Spacer(modifier = Modifier.height(16.dp))
         Card(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
@@ -953,7 +1010,7 @@ private fun CatMyCompanionRecordsSection(records: List<CompanionRecord>) {
                             }
                             Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.weight(1f)) {
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text("${record.action}记录", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                                Text("${record.action}安全记录", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                                     Text(record.time, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 Text(record.description, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -969,10 +1026,10 @@ private fun CatMyCompanionRecordsSection(records: List<CompanionRecord>) {
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("为大橘补水", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                            Text("为${profile.name}补水", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             Text("10月24日", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        Text("大橘今天看起来心情不错，喝了不少水。", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("${profile.name}今天状态稳定，补水后继续保持远观。", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
                 
@@ -986,7 +1043,7 @@ private fun CatMyCompanionRecordsSection(records: List<CompanionRecord>) {
                             Text("记录了观察日志", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             Text("10月20日", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        Text("发现大橘在校园安静片区睡午觉。", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("发现${profile.name}在校园安静片区休息，只记录片区，不靠近打扰。", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -995,7 +1052,7 @@ private fun CatMyCompanionRecordsSection(records: List<CompanionRecord>) {
 }
 
 @Composable
-private fun CatPersonalityTheater() {
+private fun CatPersonalityTheater(profile: CatProfileUi) {
     Column(
         modifier = Modifier
             .padding(horizontal = 20.dp)
@@ -1026,14 +1083,14 @@ private fun CatPersonalityTheater() {
 
         TheaterStoryCard(
             title = "第一幕：傲娇的早安",
-            description = "每天早上，大橘常在教学区附近短暂停留。但如果你试图直接摸它，它会优雅地后退两步，用眼神告诉你：\u201C请先保持距离。\u201D"
+            description = profile.theaterFirst
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         TheaterStoryCard(
             title = "第二幕：画室的不速之客",
-            description = "大橘对画室有着莫名的执着。它会趁门没关严时溜进去，在画架之间巡视一圈，最后选一个最碍事的位置趴下，仿佛在说：\u201C今天的构图，我来把关。\u201D"
+            description = profile.theaterSecond
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -1058,8 +1115,8 @@ private fun CatPersonalityTheater() {
                     )
             )
             Image(
-                painter = painterResource(id = R.drawable.img_net_a53f9ce8f2),
-                contentDescription = "大橘个性照",
+                painter = painterResource(id = profile.imageRes),
+                contentDescription = "${profile.name}个性照",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(256.dp)

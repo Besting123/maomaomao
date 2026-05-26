@@ -66,7 +66,7 @@ fun TaskScreen(onBackClick: () -> Unit, viewModel: MainViewModel? = null) {
                 hasSignedInToday = uiState?.hasSignedInToday ?: false,
                 onSignIn = {
                     viewModel?.signIn()
-                    feedbackMessage = "签到成功：获得 10 小鱼干，连续参与会提升陪伴等级。"
+                    feedbackMessage = "签到成功：获得 10 小鱼干，连续参与会形成长期陪伴记录。"
                 }
             )
             Spacer(modifier = Modifier.height(20.dp))
@@ -77,7 +77,7 @@ fun TaskScreen(onBackClick: () -> Unit, viewModel: MainViewModel? = null) {
             )
             Spacer(modifier = Modifier.height(32.dp))
             TaskCategorySection(
-                title = "日常陪伴任务",
+                title = "安全陪伴任务",
                 tasks = allTasks.filter { it.type == TaskType.DAILY },
                 onTaskClick = { task ->
                     viewModel?.completeTask(task.id)
@@ -179,14 +179,14 @@ fun TaskOverviewSection(tokenBalance: Int, completedCount: Int, totalCount: Int)
         TaskStatCard(
             title = "小鱼干余额",
             value = tokenBalance.toString(),
-            subtitle = "可用于云陪伴互动",
+            subtitle = "学习后用于温和云陪伴",
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.weight(1f)
         )
         TaskStatCard(
             title = "任务进度",
             value = "$completedCount/$totalCount",
-            subtitle = "今日任务完成情况",
+            subtitle = "安全互动任务完成情况",
             color = MaterialTheme.colorScheme.tertiary,
             modifier = Modifier.weight(1f)
         )

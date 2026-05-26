@@ -1,11 +1,8 @@
 package com.example.myapplication.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -30,16 +27,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Analytics
-import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Pets
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -67,9 +65,9 @@ import com.example.myapplication.ui.theme.SurfaceContainerLow
 import com.example.myapplication.ui.theme.SurfaceContainerLowest
 import com.example.myapplication.ui.theme.SurfaceContainerHighest
 import com.example.myapplication.ui.viewmodel.CompanionRecord
-import com.example.myapplication.ui.viewmodel.MainAppState
 import com.example.myapplication.ui.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
+import androidx.navigation.NavController
 
 data class CompanionActionUi(
     val emoji: String,
@@ -84,7 +82,7 @@ data class CompanionActionUi(
 )
 
 @Composable
-fun CompanionScreen(viewModel: MainViewModel? = null) {
+fun CompanionScreen(navController: NavController? = null, viewModel: MainViewModel? = null, modifier: Modifier = Modifier.fillMaxSize()) {
     val uiState by viewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(null) }
     val colorScheme = MaterialTheme.colorScheme
     val actions = remember(colorScheme) {
@@ -124,28 +122,37 @@ fun CompanionScreen(viewModel: MainViewModel? = null) {
         )
     }
     var selectedAction by remember { mutableStateOf(actions[1]) }
-    var catFeedback by remember { mutableStateOf("小黑在休息区慢慢放松，适合安静陪伴。") }
-    var showDataPanel by remember { mutableStateOf(false) }
+    var selectedCatName by remember { mutableStateOf("小黑") }
+    var showCatPicker by remember { mutableStateOf(false) }
+    val selectableCats = remember { listOf("小黑", "大橘", "奶油") }
+    var catFeedback by remember { mutableStateOf("小黑在休息区慢慢放松，适合安静远观和长期陪伴。") }
 
     fun handleAction(action: CompanionActionUi) {
-        val actionSucceeded = viewModel?.interactWithCat(action.label, "小黑", 5) ?: true
+        val actionSucceeded = viewModel?.interactWithCat(action.label, selectedCatName, 5) ?: true
         if (!actionSucceeded) {
             selectedAction = action
-            catFeedback = "小鱼干不足，先完成签到或学习任务再来陪伴小黑吧。"
+            catFeedback = "小鱼干不足，先完成签到或学习任务再来陪伴${selectedCatName}吧。"
             return
         }
 
         selectedAction = action
         catFeedback = when (action.label) {
-            "安抚" -> "你放低动作，小黑眯起眼睛，尾巴轻轻摆了一下。"
-            "观察" -> "你保持了安全距离，小黑状态稳定，没有出现应激反应。"
-            "补水" -> "补水提醒已点亮，今天优先关注饮水和泌尿健康。"
+            "安抚" -> "你放低动作，$selectedCatName 眯起眼睛，尾巴轻轻摆了一下。"
+            "观察" -> "你保持了安全距离，$selectedCatName 状态稳定，没有出现应激反应。"
+            "补水" -> "$selectedCatName 的补水提醒已点亮，今天优先关注饮水和泌尿健康。"
             "添粮" -> "已记录一次轻量添粮，系统提醒不要高频投喂零食。"
             else -> "已完成一次温和陪伴。"
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    fun chooseCat(catName: String) {
+        selectedCatName = catName
+        viewModel?.selectProfileCat(catName)
+        catFeedback = "$catName 已切换为当前陪伴对象，先观察状态再互动。"
+        showCatPicker = false
+    }
+
+    Box(modifier = modifier) {
         CompanionAtmosphereBackground()
 
         Column(
@@ -160,17 +167,23 @@ fun CompanionScreen(viewModel: MainViewModel? = null) {
             CompanionTopBar(
                 tokens = uiState?.tokenBalance ?: 350,
                 level = uiState?.petLevel ?: 5,
-                onOpenData = { showDataPanel = true }
+                catName = selectedCatName,
+                onChooseCat = { showCatPicker = true }
             )
             CompanionHeroCard(
                 feedback = catFeedback,
+                catName = selectedCatName,
                 selectedAction = selectedAction,
                 actions = actions,
                 hunger = uiState?.hungerValue ?: 0.7f,
                 happiness = uiState?.happinessValue ?: 0.85f,
                 health = uiState?.healthValue ?: 0.92f,
                 onAction = ::handleAction,
-                onDoubleTap = { handleAction(actions.first { it.label == "安抚" }) }
+                onDoubleTap = { handleAction(actions.first { it.label == "安抚" }) },
+                onOpenProfile = {
+                    viewModel?.selectProfileCat(selectedCatName)
+                    navController?.navigate("catProfile")
+                }
             )
             TodayCompanionInsight(
                 selectedAction = selectedAction,
@@ -189,15 +202,12 @@ fun CompanionScreen(viewModel: MainViewModel? = null) {
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        AnimatedVisibility(
-            visible = showDataPanel,
-            enter = slideInVertically(initialOffsetY = { it }),
-            exit = slideOutVertically(targetOffsetY = { it }),
-            modifier = Modifier.align(Alignment.BottomCenter)
-        ) {
-            DataPanelOverlay(
-                onClose = { showDataPanel = false },
-                uiState = uiState
+        if (showCatPicker) {
+            CatPickerDialog(
+                cats = selectableCats,
+                selectedCatName = selectedCatName,
+                onSelect = ::chooseCat,
+                onDismiss = { showCatPicker = false }
             )
         }
     }
@@ -239,37 +249,58 @@ fun CompanionAtmosphereBackground() {
 }
 
 @Composable
-fun CompanionTopBar(tokens: Int, level: Int, onOpenData: () -> Unit) {
+fun CompanionTopBar(tokens: Int, level: Int, catName: String, onChooseCat: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            Text(
-                text = "云陪伴 · 安静模式",
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.ExtraBold,
-                style = androidx.compose.ui.text.TextStyle(shadow = Shadow(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f), blurRadius = 8f))
-            )
-            Text("Lv.$level 小黑 · 今日建议补水优先", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.58f))
+                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.18f), RoundedCornerShape(50))
+                    .clickable { onChooseCat() }
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(Icons.Outlined.Pets, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                Text(
+                    text = "选择猫咪 · $catName",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    style = androidx.compose.ui.text.TextStyle(shadow = Shadow(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f), blurRadius = 8f))
+                )
+            }
+            Text("Lv.$level · 今日建议补水优先 · 不打扰真实猫咪", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-            GlassPill(text = "🐾 $tokens")
-            IconButton(
-                onClick = onOpenData,
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f))
-                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), CircleShape)
-            ) {
-                Icon(Icons.Outlined.Analytics, contentDescription = "数据中心", tint = MaterialTheme.colorScheme.primary)
-            }
+            GlassPill(text = "🐟 $tokens")
         }
     }
+}
+
+@Composable
+fun CatPickerDialog(cats: List<String>, selectedCatName: String, onSelect: (String) -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("选择猫咪", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                cats.forEach { catName ->
+                    TextButton(onClick = { onSelect(catName) }) {
+                        Text(if (catName == selectedCatName) "$catName · 当前" else catName)
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("关闭") } }
+    )
 }
 
 @Composable
@@ -288,13 +319,15 @@ fun GlassPill(text: String) {
 @Composable
 fun CompanionHeroCard(
     feedback: String,
+    catName: String,
     selectedAction: CompanionActionUi,
     actions: List<CompanionActionUi>,
     hunger: Float,
     happiness: Float,
     health: Float,
     onAction: (CompanionActionUi) -> Unit,
-    onDoubleTap: () -> Unit
+    onDoubleTap: () -> Unit,
+    onOpenProfile: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -311,12 +344,28 @@ fun CompanionHeroCard(
                 .fillMaxWidth()
                 .height(420.dp),
             modelAssetPath = "models/mao-xiaohei-rigged.glb",
-            label = "3D 小黑骨骼模型",
+            label = "3D $catName 陪伴模型",
             isFullScreen = false,
             mode = CatViewerMode.COMPANION,
             animationName = selectedAction.animationName,
             onDoubleTap = onDoubleTap
         )
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 18.dp)
+                .clip(RoundedCornerShape(50))
+                .background(SurfaceContainerLowest.copy(alpha = 0.92f))
+                .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.22f), RoundedCornerShape(50))
+                .clickable { onOpenProfile() }
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            Text("进入档案", fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+            Icon(Icons.Outlined.ArrowForward, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
+        }
 
         Column(
             modifier = Modifier
@@ -411,7 +460,7 @@ fun HeroActionDock(actions: List<CompanionActionUi>, selectedAction: CompanionAc
                 Text("陪伴操作台", fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
                 Text(selectedAction.subtitle, fontSize = 10.sp, color = selectedAction.color, fontWeight = FontWeight.Bold)
             }
-            Text("-5 🐾", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text("-5 🐟", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
             actions.forEach { action ->
@@ -564,7 +613,7 @@ fun RecentCompanionRecords(records: List<CompanionRecord>) {
         colors = CardDefaults.cardColors(containerColor = SurfaceContainerLow.copy(alpha = 0.94f))
     ) {
         Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("最近陪伴", fontSize = 17.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+            Text("长期陪伴记录", fontSize = 17.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
             if (records.isEmpty()) {
                 Text("还没有新的陪伴记录", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
@@ -589,85 +638,5 @@ fun CompanionRecordRow(record: CompanionRecord) {
             Text("${record.time.substringAfter(" ")} · ${record.action}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             Text(record.description, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 17.sp)
         }
-    }
-}
-
-@Composable
-fun DataPanelOverlay(onClose: () -> Unit, uiState: MainAppState?) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.24f))
-            .clickable(onClick = onClose)
-    ) {
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxHeight(0.78f)
-                .clip(RoundedCornerShape(topStart = 34.dp, topEnd = 34.dp))
-                .background(MaterialTheme.colorScheme.background)
-                .clickable { }
-                .navigationBarsPadding()
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 22.dp, vertical = 18.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text("陪伴数据中心", fontSize = 21.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onBackground)
-                    Text("查看今日互动与健康建议", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                IconButton(onClick = onClose) {
-                    Icon(Icons.Outlined.Close, contentDescription = "关闭", tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 22.dp),
-                verticalArrangement = Arrangement.spacedBy(18.dp)
-            ) {
-                DataMetricGrid(uiState = uiState)
-                DataCallout()
-                RecentCompanionRecords(records = uiState?.companionRecords ?: emptyList())
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-        }
-    }
-}
-
-@Composable
-fun DataMetricGrid(uiState: MainAppState?) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-        DataMetricCard(icon = Icons.Outlined.Favorite, label = "心情", value = "${((uiState?.happinessValue ?: 0.85f) * 100).toInt()}%", modifier = Modifier.weight(1f))
-        DataMetricCard(icon = Icons.Outlined.Info, label = "记录", value = "${uiState?.companionRecords?.size ?: 0} 次", modifier = Modifier.weight(1f))
-    }
-}
-
-@Composable
-fun DataMetricCard(icon: ImageVector, label: String, value: String, modifier: Modifier = Modifier) {
-    Card(modifier = modifier, shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = SurfaceContainer)) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-            Text(value, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
-            Text(label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-    }
-}
-
-@Composable
-fun DataCallout() {
-    Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = SurfaceContainerHighest.copy(alpha = 0.7f))) {
-        Text(
-            text = "科学建议：今天优先补水与远距离观察。若猫咪耳朵后压、尾巴快速摆动，请停止互动。",
-            modifier = Modifier.padding(16.dp),
-            fontSize = 13.sp,
-            color = MaterialTheme.colorScheme.onSurface,
-            lineHeight = 20.sp
-        )
     }
 }

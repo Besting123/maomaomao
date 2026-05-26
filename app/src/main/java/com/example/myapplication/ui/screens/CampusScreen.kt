@@ -145,6 +145,8 @@ fun CampusScreen(navController: NavController? = null) {
             modifier = Modifier.fillMaxSize()
         )
 
+        CampusTimeEffectOverlay(selectedTime)
+
         // 顶部浮层 — 半透明
         CampusTopAppBar()
 
@@ -194,6 +196,21 @@ fun CampusScreen(navController: NavController? = null) {
 }
 
 @Composable
+fun CampusTimeEffectOverlay(selectedTime: String) {
+    val colors = when (selectedTime) {
+        "清晨" -> listOf(Color(0x22FFDFA8), Color.Transparent, Color(0x18FFF6D5))
+        "午后" -> listOf(Color(0x10FFFFFF), Color.Transparent, Color(0x14FFE7A3))
+        "傍晚" -> listOf(Color(0x26FF9A62), Color.Transparent, Color(0x22C56A3A))
+        else -> listOf(Color(0x66304966), Color(0x33222B45), Color(0x66111A2E))
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Brush.verticalGradient(colors))
+    )
+}
+
+@Composable
 fun CampusHotspotSelector(
     hotspots: List<CampusHotspotInfo>,
     selectedHotspot: CampusHotspotInfo,
@@ -202,22 +219,30 @@ fun CampusHotspotSelector(
 ) {
     Row(
         modifier = modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         hotspots.forEach { hotspot ->
             val selected = hotspot.name == selectedHotspot.name
             Row(
                 modifier = Modifier
-                    .clip(CircleShape)
-                    .background(if (selected) MaterialTheme.colorScheme.primary else SurfaceContainerLowest.copy(alpha = 0.82f))
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(if (selected) MaterialTheme.colorScheme.primary else SurfaceContainerLowest.copy(alpha = 0.88f))
                     .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), CircleShape)
                     .clickable { onSelect(hotspot) }
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                    .padding(horizontal = 10.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Box(modifier = Modifier.size(8.dp).background(if (selected) Color.White else MaterialTheme.colorScheme.primary, CircleShape))
-                Text(hotspot.safetyTag, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = if (selected) Color.White else MaterialTheme.colorScheme.primary)
+                Image(
+                    painter = painterResource(id = hotspot.imageRes),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(28.dp).clip(CircleShape)
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(hotspot.areaTitle.removeSuffix("片区"), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (selected) Color.White else MaterialTheme.colorScheme.onSurface)
+                    Text(hotspot.safetyTag, fontSize = 10.sp, color = if (selected) Color.White.copy(alpha = 0.82f) else MaterialTheme.colorScheme.primary)
+                }
             }
         }
     }
@@ -280,29 +305,32 @@ fun CampusTopAppBar() {
             }
             Text("校园地图", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         }
-        Text("无标记展示", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("无实时点位 · 安全远观", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 @Composable
 fun TimeSelectorOverlay(selectedTime: String, onTimeSelected: (String) -> Unit) {
-    val times = listOf("清晨", "午后", "傍晚", "夜间")
+    val times = listOf("清晨" to "🌤", "午后" to "☀️", "傍晚" to "🌇", "夜间" to "🌙")
     Row(
         modifier = Modifier
-            .background(Color.White.copy(alpha = 0.6f), RoundedCornerShape(50))
+            .background(Color.White.copy(alpha = 0.72f), RoundedCornerShape(50))
             .border(1.dp, Color.White.copy(alpha = 0.4f), RoundedCornerShape(50))
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        times.forEach { time ->
+        times.forEach { (time, icon) ->
             val selected = time == selectedTime
-            Box(
+            Row(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
                     .background(if (selected) MaterialTheme.colorScheme.primary else Color.Transparent)
                     .clickable { onTimeSelected(time) }
-                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                Text(icon, fontSize = 11.sp)
                 Text(
                     time,
                     fontSize = 12.sp,
@@ -388,7 +416,7 @@ fun CampusBottomSheet(navController: NavController? = null, selectedTime: String
                         .padding(16.dp)
                 ) {
                     Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(MaterialTheme.colorScheme.primary))
-                    Text("接近指南 ($selectedTime)", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+                    Text("安全接近指南 ($selectedTime)", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
                     Text(guideText, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, lineHeight = 18.sp)
                 }
                 Column(
@@ -398,7 +426,7 @@ fun CampusBottomSheet(navController: NavController? = null, selectedTime: String
                         .padding(16.dp)
                 ) {
                     Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(MaterialTheme.colorScheme.secondary))
-                    Text("推荐互动时间", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+                    Text("推荐长期观察时段", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
                     Text(activeAdvice, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, lineHeight = 18.sp)
                 }
             }

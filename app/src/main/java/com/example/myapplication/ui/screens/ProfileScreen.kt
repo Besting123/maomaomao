@@ -166,6 +166,7 @@ fun ProfileHeroCard() {
                         Text("校园观察者", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
                     }
                 }
+                Text("长期记录安全观察、学习与补水提醒，不公开精确点位。", fontSize = 12.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -185,6 +186,7 @@ fun TokenBalanceSection(tokenBalance: Int, onExchangeClick: () -> Unit) {
         ) {
             Column {
                 Text("我的小鱼干", fontSize = 14.sp, color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f))
+                Text("通过学习、观察和温和陪伴获得", fontSize = 11.sp, color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.68f))
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("🐟", fontSize = 24.sp)
@@ -244,7 +246,7 @@ fun GoodwillStatsSection(signInDays: Int, completedCoursesCount: Int, reportCoun
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(Icons.Outlined.Home, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-            Text("善意账本", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text("长期陪伴账本", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             // Stat 1
@@ -253,7 +255,7 @@ fun GoodwillStatsSection(signInDays: Int, completedCoursesCount: Int, reportCoun
                 icon = Icons.Outlined.CheckCircle,
                 iconColor = MaterialTheme.colorScheme.tertiary,
                 value = signInDays.toString(),
-                label = "连续签到天数"
+                label = "连续守护天数"
             )
             // Stat 2
             StatBentoCard(
@@ -261,7 +263,7 @@ fun GoodwillStatsSection(signInDays: Int, completedCoursesCount: Int, reportCoun
                 icon = Icons.Outlined.MenuBook,
                 iconColor = MaterialTheme.colorScheme.primary,
                 value = completedCoursesCount.toString(),
-                label = "学习完成数"
+                label = "安全课程完成"
             )
         }
         // Highlighted stat
@@ -277,6 +279,7 @@ fun GoodwillStatsSection(signInDays: Int, completedCoursesCount: Int, reportCoun
                 Icon(Icons.Outlined.Info, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
                 Text(reportCount.toString(), fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
                 Text("安全观察报告数", fontSize = 12.sp, color = Color.White.copy(alpha = 0.9f))
+                Text("只记录片区与状态，保护猫咪活动边界", fontSize = 11.sp, color = Color.White.copy(alpha = 0.78f), textAlign = TextAlign.Center)
             }
         }
     }
@@ -290,9 +293,9 @@ fun KnowledgeBadgesSection(completedCoursesCount: Int) {
             Text("知识勋章", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            BadgeCard(icon = "🌱", name = "初级观察员", color = MaterialTheme.colorScheme.primaryContainer, onColor = MaterialTheme.colorScheme.onPrimaryContainer)
-            BadgeCard(icon = if (completedCoursesCount >= 3) "💧" else "🔒", name = "懂水大师", color = if (completedCoursesCount >= 3) MaterialTheme.colorScheme.secondaryContainer else SurfaceContainerHigh, onColor = if (completedCoursesCount >= 3) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.outline)
-            BadgeCard(icon = if (completedCoursesCount >= 6) "🧭" else "🔒", name = "行为学家", color = SurfaceContainerHigh, onColor = MaterialTheme.colorScheme.outline)
+            BadgeCard(icon = "🌱", name = "安全观察员", color = MaterialTheme.colorScheme.primaryContainer, onColor = MaterialTheme.colorScheme.onPrimaryContainer)
+            BadgeCard(icon = if (completedCoursesCount >= 3) "💧" else "🔒", name = "补水守护者", color = if (completedCoursesCount >= 3) MaterialTheme.colorScheme.secondaryContainer else SurfaceContainerHigh, onColor = if (completedCoursesCount >= 3) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.outline)
+            BadgeCard(icon = if (completedCoursesCount >= 6) "🧭" else "🔒", name = "边界识别", color = SurfaceContainerHigh, onColor = MaterialTheme.colorScheme.outline)
         }
     }
 }
@@ -324,15 +327,15 @@ fun StatBentoCard(modifier: Modifier = Modifier, icon: ImageVector, iconColor: C
     }
 }
 
-data class FollowedCat(val name: String, val imageRes: Int)
+data class FollowedCat(val name: String, val imageRes: Int, val status: String, val note: String)
 
 @Composable
 fun FollowedCatsSection() {
     var selectedCat by remember { mutableStateOf("大橘") }
     val cats = listOf(
-        FollowedCat("大橘", R.drawable.img_net_2af44102d5),
-        FollowedCat("小黑", R.drawable.img_net_5bd5bb21ca),
-        FollowedCat("奶油", R.drawable.img_net_6cd1d93759)
+        FollowedCat("大橘", R.drawable.img_net_2af44102d5, "稳定远观", "固定片区记录中"),
+        FollowedCat("小黑", R.drawable.img_net_5bd5bb21ca, "补水优先", "云陪伴主对象"),
+        FollowedCat("奶油", R.drawable.img_net_6cd1d93759, "请勿打扰", "午后多在休息")
     )
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -342,7 +345,7 @@ fun FollowedCatsSection() {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             items(cats) { cat ->
                 Card(
-                    modifier = Modifier.clickable { selectedCat = cat.name },
+                    modifier = Modifier.width(132.dp).clickable { selectedCat = cat.name },
                     colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -355,6 +358,10 @@ fun FollowedCatsSection() {
                             Image(painter = painterResource(cat.imageRes), contentDescription = cat.name, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
                         }
                         Text(cat.name, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                        Box(modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f), CircleShape).padding(horizontal = 8.dp, vertical = 2.dp)) {
+                            Text(cat.status, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        }
+                        Text(cat.note, fontSize = 10.sp, lineHeight = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
                         if (selectedCat == cat.name) {
                             Box(modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer, CircleShape).padding(horizontal = 8.dp, vertical = 2.dp)) {
                         Text("持续关注中", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer)
@@ -390,7 +397,7 @@ fun CompanionTimelineSection(records: List<CompanionRecord>) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(Icons.Outlined.List, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(20.dp))
-            Text("陪伴轨迹", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text("长期陪伴轨迹", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         }
         if (records.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -402,6 +409,7 @@ fun CompanionTimelineSection(records: List<CompanionRecord>) {
                                 Text(record.time, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             Text(record.description, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
+                            Text("已同步到善意账本 · 仅保留陪伴行为与片区级记录", fontSize = 10.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
@@ -427,7 +435,7 @@ fun CompanionTimelineSection(records: List<CompanionRecord>) {
                                 Text("大橘", fontSize = 14.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                                 Text(" 进行了补水。", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium)
                             }
-                            Text("\u300c大橘今天看起来心情不错，喝了不少水。\u300d", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
+                            Text("\u300c大橘今天看起来心情不错，喝了不少水。记录片区状态，不公开精确位置。\u300d", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
                         }
                     }
                 }

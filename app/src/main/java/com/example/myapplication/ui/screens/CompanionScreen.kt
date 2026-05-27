@@ -88,14 +88,6 @@ fun CompanionScreen(navController: NavController? = null, viewModel: MainViewMod
     val actions = remember(colorScheme) {
         listOf(
             CompanionActionUi(
-                "🤚", "安抚", "慢慢靠近，降低紧张", colorScheme.primary,
-                "Pet",
-                "什么时候可以安抚？",
-                "只有猫咪主动靠近、尾巴放松、没有后退时，才适合短时间轻柔安抚。",
-                "先伸手停住，让猫自己决定是否靠近。",
-                "不要追、抱、摸肚子或强行贴近。"
-            ),
-            CompanionActionUi(
                 "👀", "观察", "保持距离，记录状态", colorScheme.secondary,
                 "Observe",
                 "观察比接触更安全",
@@ -112,6 +104,14 @@ fun CompanionScreen(navController: NavController? = null, viewModel: MainViewMod
                 "不要倒牛奶、饮料或不明液体。"
             ),
             CompanionActionUi(
+                "🤚", "安抚", "慢慢靠近，降低紧张", colorScheme.primary,
+                "Pet",
+                "什么时候可以安抚？",
+                "只有猫咪主动靠近、尾巴放松、没有后退时，才适合短时间轻柔安抚。",
+                "先伸手停住，让猫自己决定是否靠近。",
+                "不要追、抱、摸肚子或强行贴近。"
+            ),
+            CompanionActionUi(
                 "🐟", "添粮", "少量记录，避免过喂", colorScheme.primaryContainer,
                 "Eat",
                 "为什么不能随便投喂？",
@@ -121,11 +121,11 @@ fun CompanionScreen(navController: NavController? = null, viewModel: MainViewMod
             )
         )
     }
-    var selectedAction by remember { mutableStateOf(actions[1]) }
+    var selectedAction by remember { mutableStateOf(actions.first()) }
     var selectedCatName by remember { mutableStateOf("小黑") }
     var showCatPicker by remember { mutableStateOf(false) }
     val selectableCats = remember { listOf("小黑", "大橘", "奶油") }
-    var catFeedback by remember { mutableStateOf("小黑在休息区慢慢放松，适合安静远观和长期陪伴。") }
+    var catFeedback by remember { mutableStateOf("小黑在休息区慢慢放松，适合先观察，再决定是否补水或安抚。") }
 
     fun handleAction(action: CompanionActionUi) {
         val actionSucceeded = viewModel?.interactWithCat(action.label, selectedCatName, 5) ?: true
@@ -179,7 +179,7 @@ fun CompanionScreen(navController: NavController? = null, viewModel: MainViewMod
                 happiness = uiState?.happinessValue ?: 0.85f,
                 health = uiState?.healthValue ?: 0.92f,
                 onAction = ::handleAction,
-                onDoubleTap = { handleAction(actions.first { it.label == "安抚" }) },
+                onDoubleTap = { handleAction(actions.first()) },
                 onOpenProfile = {
                     viewModel?.selectProfileCat(selectedCatName)
                     navController?.navigate("catProfile")
@@ -275,7 +275,7 @@ fun CompanionTopBar(tokens: Int, level: Int, catName: String, onChooseCat: () ->
                     style = androidx.compose.ui.text.TextStyle(shadow = Shadow(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f), blurRadius = 8f))
                 )
             }
-            Text("Lv.$level · 今日建议补水优先 · 不打扰真实猫咪", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+            Text("Lv.$level · 默认先观察，再决定补水或安抚", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -378,7 +378,7 @@ fun CompanionHeroCard(
                 .padding(horizontal = 13.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            Text("${selectedAction.emoji} ${selectedAction.label}反馈", color = selectedAction.color, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+            Text(if (selectedAction.label == "观察") "${selectedAction.emoji} 默认动作 · 观察反馈" else "${selectedAction.emoji} ${selectedAction.label}反馈", color = selectedAction.color, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
             Text(
                 text = feedback,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -460,7 +460,14 @@ fun HeroActionDock(actions: List<CompanionActionUi>, selectedAction: CompanionAc
                 Text("陪伴操作台", fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
                 Text(selectedAction.subtitle, fontSize = 10.sp, color = selectedAction.color, fontWeight = FontWeight.Bold)
             }
-            Text("-5 🐟", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                if (selectedAction.label == "观察") {
+                    Box(modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer, CircleShape).padding(horizontal = 8.dp, vertical = 3.dp)) {
+                        Text("默认推荐", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                    }
+                }
+                Text("-5 🐟", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
             actions.forEach { action ->

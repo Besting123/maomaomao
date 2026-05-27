@@ -88,6 +88,9 @@ fun HomeScreen(navController: NavController? = null, viewModel: MainViewModel? =
             // Immersive Welcome Hero
             HeroSection()
 
+            // Scientific Feeding Alert
+            FeedingAlertSection()
+
             // NEW: Daily Tasks and Sign-in Section
             DailyMissionSection(
                 navController = navController,
@@ -97,8 +100,8 @@ fun HomeScreen(navController: NavController? = null, viewModel: MainViewModel? =
                 totalCount = uiState?.tasks?.size ?: 0
             )
 
-            // Scientific Feeding Alert
-            FeedingAlertSection()
+            // Core Functions Bento
+            CoreFunctionsBento(navController, onOpenCatProfilePicker = { showCatProfilePicker = true })
 
             // Today's Activity
             TodaysActivitySection(onOpenAll = { activePanel = HomePanel.ActivityList })
@@ -107,13 +110,7 @@ fun HomeScreen(navController: NavController? = null, viewModel: MainViewModel? =
             Spacer(modifier = Modifier.height(16.dp))
             HomeFollowedCatsSection(onOpenAll = { activePanel = HomePanel.FollowedCats })
 
-            // Core Functions Bento
-            CoreFunctionsBento(navController, onOpenCatProfilePicker = { showCatProfilePicker = true })
-
-            // Story Card
-            StoryCardSection(onOpenStory = { activePanel = HomePanel.Story })
-            
-            Spacer(modifier = Modifier.height(120.dp)) // space for bottom bar
+            Spacer(modifier = Modifier.height(96.dp)) // space for bottom bar
         }
 
         // Fixed Top App Bar with Blur Effect (simulated with semi-transparent bg)
@@ -229,7 +226,7 @@ fun HeroSection() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
-            .aspectRatio(4f / 3f)
+            .aspectRatio(16f / 9f)
             .clip(RoundedCornerShape(16.dp))
     ) {
         Image(
@@ -254,19 +251,34 @@ fun HeroSection() {
                 .align(Alignment.BottomStart)
                 .padding(24.dp)
         ) {
+            Box(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.18f))
+                    .padding(horizontal = 10.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = "安全优先 · 先远观后互动",
+                    color = Color.White,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "早安，思源楼附近的猫咪开始活跃了",
+                text = "早安，教学区片区的猫咪开始活跃了",
                 color = Color.White,
-                fontSize = 24.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
-                lineHeight = 30.sp
+                lineHeight = 28.sp
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "今天适合远观记录，优先补水，不打扰猫咪",
+                text = "先看片区状态与补水提醒，再决定是否记录或互动。",
                 color = Color.White.copy(alpha = 0.9f),
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                lineHeight = 20.sp
             )
         }
     }
@@ -286,13 +298,21 @@ fun FeedingAlertSection() {
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Icon(Icons.Outlined.Info, contentDescription = "Water", tint = MaterialTheme.colorScheme.tertiary)
-        Text(
-            text = "补水优先于加餐，保持距离观察，不追逐、不围堵。",
-            color = MaterialTheme.colorScheme.onTertiaryContainer,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium,
-            lineHeight = 18.sp
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = "今日安全提醒",
+                color = MaterialTheme.colorScheme.tertiary,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "补水优先于加餐，保持距离观察，不追逐、不围堵。",
+                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                lineHeight = 18.sp
+            )
+        }
     }
 }
 
@@ -331,7 +351,7 @@ fun TodaysActivitySection(onOpenAll: () -> Unit) {
             ActivityCard(
                 name = "奶油",
                 location = "区域观察",
-                desc = "“今天在教学区附近被远距离观察到，状态稳定。”",
+                desc = "“今天在教学区片区被远距离观察到，状态稳定。”",
                 borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                 tagIcon = Icons.Outlined.LocationOn,
                 tagBg = SurfaceContainerHighest,
@@ -417,8 +437,8 @@ fun CoreFunctionsBento(navController: NavController? = null, onOpenCatProfilePic
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text("校园猫咪地图", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    Text("查看校园区域与安全建议", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                    Text("先看校园片区", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text("非精确点位 · 先看安全建议", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                 }
                 Box(modifier = Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) {
                     Icon(Icons.Outlined.LocationOn, contentDescription = "Map", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
@@ -430,7 +450,7 @@ fun CoreFunctionsBento(navController: NavController? = null, onOpenCatProfilePic
             FunctionSquareCard(
                 modifier = Modifier.weight(1f),
                 title = "云陪伴",
-                subtitle = "低压力陪伴",
+                subtitle = "先观察再互动",
                 icon = Icons.Outlined.FavoriteBorder,
                 iconBg = MaterialTheme.colorScheme.primaryContainer,
                 iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -450,7 +470,7 @@ fun CoreFunctionsBento(navController: NavController? = null, onOpenCatProfilePic
             FunctionSquareCard(
                 modifier = Modifier.weight(1f),
                 title = "猫咪档案",
-                subtitle = "边界与长期记录",
+                subtitle = "长期记录与边界",
                 icon = Icons.Outlined.Pets,
                 iconBg = MaterialTheme.colorScheme.secondaryContainer,
                 iconTint = MaterialTheme.colorScheme.onSecondaryContainer,

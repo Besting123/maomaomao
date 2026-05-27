@@ -71,7 +71,7 @@ data class MainAppState(
     val publishedForumPosts: List<ForumPostState> = listOf(
         ForumPostState(
             id = "sample-water-point",
-            category = "地图发帖",
+            category = "片区记录",
             title = "图书馆北门补水点已清理",
             content = "今天中午路过时看到水碗有落叶，已经清理并补充了清水。这个点位只记录为图书馆北侧片区，不建议公开精确坐标。",
             author = "图书馆路过同学",

@@ -55,11 +55,13 @@ fun ForumScreen(viewModel: MainViewModel? = null) {
                 .verticalScroll(scrollState)
                 .padding(horizontal = 24.dp)
         ) {
-            Spacer(modifier = Modifier.height(96.dp))
+            Spacer(modifier = Modifier.height(88.dp))
             SchoolSwitcherRow()
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(14.dp))
             CategoryChipsRow(selectedLabel = selectedCategory, onSelected = { selectedCategory = it })
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+            SafePostingNotice()
+            Spacer(modifier = Modifier.height(20.dp))
 
             PublishedPostsSection(
                 posts = uiState?.publishedForumPosts.orEmpty().filter { selectedCategory == "全部" || it.category == selectedCategory },
@@ -102,19 +104,19 @@ fun ForumScreen(viewModel: MainViewModel? = null) {
                             context = context,
                             chooserTitle = "分享目击记录",
                             subject = "喵伴云养目击记录",
-                            body = "目击：奶牛在操场南侧安静晒太阳。请保持距离，不围观、不追逐，不公开精确位置。"
+                            body = "目击：奶牛在操场南侧片区安静晒太阳。请保持距离，不围观、不追逐，不公开精确位置。"
                         )
                     }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            if (selectedCategory == "全部" || selectedCategory == "猫咪日记" || selectedCategory == "地图发帖") {
+            if (selectedCategory == "全部" || selectedCategory == "猫咪日记" || selectedCategory == "片区记录") {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     if (selectedCategory == "全部" || selectedCategory == "猫咪日记") {
                         DiaryPolaroidCard(modifier = Modifier.weight(1f))
                     }
-                    if (selectedCategory == "全部" || selectedCategory == "地图发帖") {
+                    if (selectedCategory == "全部" || selectedCategory == "片区记录") {
                         MapPostCard(modifier = Modifier.weight(1f))
                     }
                 }
@@ -176,7 +178,7 @@ fun ForumScreen(viewModel: MainViewModel? = null) {
                         context = context,
                         chooserTitle = "分享目击详情",
                         subject = "喵伴云养目击详情",
-                        body = "奶牛刚刚在综合体育场南侧远观区域出现，状态稳定。建议只记录片区动态，避免聚集和投喂。"
+                        body = "奶牛刚刚在综合体育场南侧片区出现，状态稳定。建议只记录片区动态，避免聚集和投喂。"
                     )
                 }
             )
@@ -225,7 +227,7 @@ fun ForumTopAppBar(onSearchClick: () -> Unit, onNotificationsClick: () -> Unit) 
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background.copy(alpha = 0.9f))
             .statusBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(horizontal = 24.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -238,7 +240,10 @@ fun ForumTopAppBar(onSearchClick: () -> Unit, onNotificationsClick: () -> Unit) 
                     modifier = Modifier.fillMaxSize()
                 )
             }
-            Text("共护", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("共护", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+                Text("片区记录 · 不公开精确位置", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             IconButton(onClick = onSearchClick) {
@@ -262,7 +267,7 @@ fun SchoolSwitcherRow() {
                     .clip(CircleShape)
                     .background(if (selected == index) MaterialTheme.colorScheme.primary else SurfaceContainerHigh)
                     .clickable { selected = index }
-                    .padding(horizontal = 24.dp, vertical = 10.dp)
+                    .padding(horizontal = 20.dp, vertical = 9.dp)
             ) {
                 Text(
                     text = tabs[index],
@@ -286,7 +291,7 @@ fun CategoryChipsRow(selectedLabel: String, onSelected: (String) -> Unit) {
         Chip(Icons.Outlined.Info, "求助信息"),
         Chip(Icons.Outlined.Star, "经验分享"),
         Chip(Icons.Outlined.Home, "猫咪日记"),
-        Chip(Icons.Outlined.Place, "地图发帖")
+        Chip(Icons.Outlined.Place, "片区记录")
     )
     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         items(chips) { chip ->
@@ -298,13 +303,40 @@ fun CategoryChipsRow(selectedLabel: String, onSelected: (String) -> Unit) {
                         if (selected) MaterialTheme.colorScheme.secondaryContainer else SurfaceContainerHighest
                     )
                     .clickable { onSelected(chip.label) }
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(horizontal = 14.dp, vertical = 7.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Icon(chip.icon, contentDescription = chip.label, tint = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                 Text(chip.label, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant)
             }
+        }
+    }
+}
+
+@Composable
+fun SafePostingNotice() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.72f))
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Box(
+            modifier = Modifier
+                .size(28.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.45f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(16.dp))
+        }
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text("安全发帖默认规则", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer)
+            Text("只写片区、时段和状态，不写精确点位、路线或实时追踪。", fontSize = 12.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.9f))
         }
     }
 }
@@ -322,7 +354,7 @@ fun PublishedPostsSection(
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(Icons.Outlined.Edit, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
-            Text("我的最新发布", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text("我的最新共护发布", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         }
         posts.forEach { post ->
             PublishedPostCard(
@@ -481,7 +513,7 @@ fun EmergencyForumCard(
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(16.dp))
-                            Text("第三教学楼 · 停车场草坪", fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Medium)
+                            Text("第三教学楼后侧片区", fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Medium)
                         }
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             Icon(Icons.Outlined.Favorite, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(16.dp))
@@ -550,7 +582,7 @@ fun SightingForumCard(
                 }
                 Column {
                     Text("目击：奶牛在操场出没", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                    Text("刚刚 · 综合体育场南侧", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("刚刚 · 综合体育场南侧片区", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             Box(modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(RoundedCornerShape(12.dp))) {
@@ -568,7 +600,7 @@ fun SightingForumCard(
                     }
                 }
             }
-            Text("奶牛今天看起来心情不错，在南侧看台晒太阳。建议只做远观记录，不围观、不补充零食。", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 22.sp)
+            Text("奶牛今天看起来心情不错，在南侧片区晒太阳。建议只做远观记录，不围观、不补充零食。", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 22.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                 Row(modifier = Modifier.clickable { onToggleLike() }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Icon(if (liked) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder, contentDescription = "Like", tint = if (liked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
@@ -595,7 +627,7 @@ fun ForumPostDialog(
     onDismiss: () -> Unit,
     onPublish: (String, String, String) -> Unit
 ) {
-    val categories = listOf("目击记录", "组队活动", "知识分享", "求助信息", "经验分享", "猫咪日记", "地图发帖")
+    val categories = listOf("目击记录", "组队活动", "知识分享", "求助信息", "经验分享", "猫咪日记", "片区记录")
     var selectedCategory by remember { mutableStateOf(categories.first()) }
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
@@ -630,7 +662,7 @@ fun ForumPostDialog(
                     value = title,
                     onValueChange = { title = it },
                     label = { Text("标题") },
-                    placeholder = { Text("例如：图书馆北侧发现奶油在休息") },
+                    placeholder = { Text("例如：图书馆北侧片区发现奶油在休息") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -644,7 +676,7 @@ fun ForumPostDialog(
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
                     Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(16.dp))
-                    Text("发布内容会显示在本次会话的社区内容流中；请遵守不追逐、不围堵、不公开精确位置的原则。", fontSize = 12.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("发布内容会显示在本次会话的社区内容流中；请只写片区、时段和状态，避免精确点位、路线或实时追踪。", fontSize = 12.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         },
@@ -684,7 +716,7 @@ fun SightingDetailDialog(
                 Text("现场状态稳定，没有明显受伤或应激。建议保持 3 米以上距离，只记录片区动态，不聚集围观，不补充零食。", fontSize = 13.sp, lineHeight = 21.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
                     Icon(Icons.Outlined.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
-                    Text("为保护猫咪安全，详情页不展示精确坐标和路线。", fontSize = 12.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.error)
+                    Text("为保护猫咪安全，详情页仅展示片区与状态，不展示精确坐标和路线。", fontSize = 12.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.error)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     AssistChip(onClick = onShare, label = { Text("分享") }, leadingIcon = { Icon(Icons.Outlined.Share, contentDescription = null, modifier = Modifier.size(16.dp)) })
@@ -851,11 +883,11 @@ fun MapPostCard(modifier: Modifier = Modifier) {
                     Icon(Icons.Outlined.Place, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 }
                 Box(modifier = Modifier.background(SurfaceContainerHighest, RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
-                    Text("地图动态", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("片区动态", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             Text(if (synced) "区域照护提醒已读" else "更新了校园区域照护提醒", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-            Text(if (synced) "地图动态已标记为已读，可在校园地图查看片区建议。" else "根据近期远观记录，志愿者更新了若干片区的补水与不打扰建议，请以区域提示为准。", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
+            Text(if (synced) "片区动态已标记为已读，可在校园地图查看片区建议。" else "根据近期远观记录，志愿者更新了若干片区的补水与不打扰建议，请以区域提示为准。", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
             Spacer(modifier = Modifier.weight(1f))
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Box(modifier = Modifier.weight(1f).height(4.dp).clip(CircleShape).background(SurfaceContainerHighest)) {

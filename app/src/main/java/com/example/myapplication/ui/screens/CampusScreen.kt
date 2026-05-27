@@ -49,10 +49,10 @@ fun CampusScreen(navController: NavController? = null) {
     val hotspots = remember {
         listOf(
             CampusHotspotInfo(
-                name = "大白在这儿",
+                name = "大白常在这片活动",
                 safetyTag = "适合远观",
-                areaTitle = "教学区东侧草坪片区",
-                summary = "此区域通常有 3 只猫咪出没",
+                areaTitle = "教学区东侧草坪带",
+                summary = "此片区通常有 3 只猫咪出没",
                 status = "远观优先",
                 imageRes = R.drawable.img_net_cf9a4fdf2a,
                 residents = listOf(
@@ -62,10 +62,10 @@ fun CampusScreen(navController: NavController? = null) {
                 )
             ),
             CampusHotspotInfo(
-                name = "橘子刚喝过水",
+                name = "橘子常来补水",
                 safetyTag = "补水正常",
-                areaTitle = "北侧补水观察片区",
-                summary = "补水点刚维护，适合记录状态",
+                areaTitle = "北侧补水观察带",
+                summary = "近期补水点刚维护，适合记录状态",
                 status = "补水点充足",
                 imageRes = R.drawable.img_net_7f99b46ce0,
                 residents = listOf(
@@ -76,7 +76,7 @@ fun CampusScreen(navController: NavController? = null) {
             CampusHotspotInfo(
                 name = "奶油在树荫休息",
                 safetyTag = "请勿打扰",
-                areaTitle = "林荫休息片区",
+                areaTitle = "林荫休息带",
                 summary = "猫咪正在休息，建议只做远距离观察",
                 status = "不打扰",
                 imageRes = R.drawable.img_net_27ce5092c2,
@@ -85,9 +85,9 @@ fun CampusScreen(navController: NavController? = null) {
                 )
             ),
             CampusHotspotInfo(
-                name = "小墨在觅食",
+                name = "小墨傍晚会来觅食",
                 safetyTag = "可远观",
-                areaTitle = "后勤绿化观察片区",
+                areaTitle = "后勤绿化观察带",
                 summary = "傍晚偶尔出现，建议不要靠近食物残渣区",
                 status = "远观记录",
                 imageRes = R.drawable.img_net_8c081179f2,
@@ -187,6 +187,7 @@ fun CampusScreen(navController: NavController? = null) {
             } else {
                 // 折叠态：只显示一行摘要
                 CampusBottomSheetCollapsed(
+                    selectedTime = selectedTime,
                     hotspot = selectedHotspot,
                     onClick = { sheetExpanded = true }
                 )
@@ -240,8 +241,8 @@ fun CampusHotspotSelector(
                     modifier = Modifier.size(28.dp).clip(CircleShape)
                 )
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(hotspot.areaTitle.removeSuffix("片区"), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (selected) Color.White else MaterialTheme.colorScheme.onSurface)
-                    Text(hotspot.safetyTag, fontSize = 10.sp, color = if (selected) Color.White.copy(alpha = 0.82f) else MaterialTheme.colorScheme.primary)
+                    Text(hotspot.safetyTag, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (selected) Color.White else MaterialTheme.colorScheme.primary)
+                    Text(hotspot.areaTitle, fontSize = 11.sp, color = if (selected) Color.White.copy(alpha = 0.82f) else MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -250,7 +251,7 @@ fun CampusHotspotSelector(
 
 // ── 折叠态底部卡片 ──
 @Composable
-fun CampusBottomSheetCollapsed(hotspot: CampusHotspotInfo, onClick: () -> Unit) {
+fun CampusBottomSheetCollapsed(selectedTime: String, hotspot: CampusHotspotInfo, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -269,6 +270,15 @@ fun CampusBottomSheetCollapsed(hotspot: CampusHotspotInfo, onClick: () -> Unit) 
                 modifier = Modifier.size(36.dp).clip(CircleShape)
             )
             Column {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Box(modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape).padding(horizontal = 8.dp, vertical = 3.dp)) {
+                        Text(hotspot.safetyTag, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    }
+                    Box(modifier = Modifier.background(SurfaceContainerHigh, CircleShape).padding(horizontal = 8.dp, vertical = 3.dp)) {
+                        Text(selectedTime, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(hotspot.areaTitle, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 Text(hotspot.summary, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
@@ -305,7 +315,7 @@ fun CampusTopAppBar() {
             }
             Text("校园地图", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         }
-        Text("无实时点位 · 安全远观", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("仅展示片区 · 无实时点位", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -345,16 +355,16 @@ fun TimeSelectorOverlay(selectedTime: String, onTimeSelected: (String) -> Unit) 
 @Composable
 fun CampusBottomSheet(navController: NavController? = null, selectedTime: String = "清晨", hotspot: CampusHotspotInfo, onCollapse: () -> Unit = {}) {
     val guideText = when (selectedTime) {
-        "清晨" -> "可远距离观察，先看尾巴和耳朵状态，保持 2 米以上距离。"
-        "午后" -> "远观记录即可，保持 3 米以上安全社交距离。"
-        "傍晚" -> "猫咪较活跃，可慢速靠近，不要突然伸手或围堵。"
-        else -> "夜间不建议寻找或打扰猫咪，优先查看历史记录。"
+        "清晨" -> "可远距离观察，先看尾巴和耳朵状态，保持充足距离。"
+        "午后" -> "远观记录即可，猫咪多在休息，放慢停留节奏。"
+        "傍晚" -> "猫咪较活跃，可先观察是否主动靠近，再决定是否互动。"
+        else -> "夜间不建议寻找或打扰猫咪，优先查看历史片区记录。"
     }
     val activeAdvice = when (selectedTime) {
-        "清晨" -> "清晨 7:00-9:00 适合安静观察。"
-        "午后" -> "午后多在休息，建议只做远观。"
-        "傍晚" -> "傍晚 17:00 后活跃，适合温和互动。"
-        else -> "夜间降低打扰，避免使用闪光灯。"
+        "清晨" -> "清晨通常更安静，适合做第一轮状态记录。"
+        "午后" -> "午后多在休息，建议只做短时远观。"
+        "傍晚" -> "傍晚活动增多，更适合补水巡看和温和记录。"
+        else -> "夜间以减少打扰为主，避免闪光拍摄。"
     }
     Column(
         modifier = Modifier
@@ -372,21 +382,27 @@ fun CampusBottomSheet(navController: NavController? = null, selectedTime: String
             Icon(Icons.Outlined.KeyboardArrowDown, "收起", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
         }
         Spacer(modifier = Modifier.height(8.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                Text(hotspot.safetyTag, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+            }
+            Box(modifier = Modifier.background(SurfaceContainerHigh, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                Text(selectedTime, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
         
         // Title
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
             Column {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Icon(Icons.Outlined.LocationOn, contentDescription = "Location", tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(20.dp))
-                    Text(hotspot.areaTitle, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                }
+                Text(hotspot.areaTitle, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 Text(hotspot.summary, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.padding(top = 4.dp))
             }
             Column(horizontalAlignment = Alignment.End) {
                 Box(modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer, CircleShape).padding(horizontal = 12.dp, vertical = 4.dp)) {
                     Text(hotspot.status, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onTertiaryContainer)
                 }
-                Text("更新于 10分钟前", fontSize = 10.sp, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 4.dp))
+                Text("依据近期片区观察整理", fontSize = 10.sp, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 4.dp))
             }
         }
         
@@ -416,7 +432,7 @@ fun CampusBottomSheet(navController: NavController? = null, selectedTime: String
                         .padding(16.dp)
                 ) {
                     Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(MaterialTheme.colorScheme.primary))
-                    Text("安全接近指南 ($selectedTime)", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+                    Text("安全建议 · $selectedTime", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
                     Text(guideText, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, lineHeight = 18.sp)
                 }
                 Column(
@@ -426,7 +442,7 @@ fun CampusBottomSheet(navController: NavController? = null, selectedTime: String
                         .padding(16.dp)
                 ) {
                     Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(MaterialTheme.colorScheme.secondary))
-                    Text("推荐长期观察时段", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+                    Text("时段建议", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
                     Text(activeAdvice, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, lineHeight = 18.sp)
                 }
             }

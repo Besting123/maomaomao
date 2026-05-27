@@ -185,12 +185,6 @@ fun CompanionScreen(navController: NavController? = null, viewModel: MainViewMod
                     navController?.navigate("catProfile")
                 }
             )
-            TodayCompanionInsight(
-                selectedAction = selectedAction,
-                hunger = uiState?.hungerValue ?: 0.7f,
-                happiness = uiState?.happinessValue ?: 0.85f,
-                health = uiState?.healthValue ?: 0.92f
-            )
             CareVitalsCard(
                 hunger = uiState?.hungerValue ?: 0.7f,
                 happiness = uiState?.happinessValue ?: 0.85f,
@@ -332,7 +326,7 @@ fun CompanionHeroCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(560.dp)
+            .height(540.dp)
             .shadow(22.dp, RoundedCornerShape(36.dp), spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f))
             .clip(RoundedCornerShape(36.dp))
             .background(SurfaceContainerLowest.copy(alpha = 0.96f))
@@ -342,7 +336,7 @@ fun CompanionHeroCard(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
-                .height(420.dp),
+                .height(410.dp),
             modelAssetPath = "models/mao-xiaohei-rigged.glb",
             label = "3D $catName 陪伴模型",
             isFullScreen = false,
@@ -353,63 +347,23 @@ fun CompanionHeroCard(
 
         Row(
             modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 18.dp)
+                .align(Alignment.TopEnd)
+                .padding(12.dp)
                 .clip(RoundedCornerShape(50))
                 .background(SurfaceContainerLowest.copy(alpha = 0.92f))
-                .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.22f), RoundedCornerShape(50))
-                .clickable { onOpenProfile() }
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .border(1.dp, selectedAction.color.copy(alpha = 0.28f), RoundedCornerShape(50))
+                .padding(horizontal = 10.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(5.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text("进入档案", fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
-            Icon(Icons.Outlined.ArrowForward, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
-        }
-
-        Column(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(18.dp)
-                .fillMaxWidth(0.62f)
-                .clip(RoundedCornerShape(18.dp))
-                .background(SurfaceContainerLowest.copy(alpha = 0.92f))
-                .border(1.dp, selectedAction.color.copy(alpha = 0.45f), RoundedCornerShape(18.dp))
-                .padding(horizontal = 13.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(5.dp)
-        ) {
-            Text(if (selectedAction.label == "观察") "${selectedAction.emoji} 默认动作 · 观察反馈" else "${selectedAction.emoji} ${selectedAction.label}反馈", color = selectedAction.color, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
-            Text(
-                text = feedback,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.SemiBold,
-                lineHeight = 16.sp
-            )
-            Text(
-                text = "学习点：${selectedAction.lessonTitle}",
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        Column(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-            horizontalAlignment = Alignment.End
-        ) {
-            HeroStatusPill("饱食", hunger, MaterialTheme.colorScheme.primary)
-            HeroStatusPill("心情", happiness, MaterialTheme.colorScheme.secondary)
-            HeroStatusPill("健康", health, MaterialTheme.colorScheme.tertiary)
+            Box(modifier = Modifier.size(8.dp).background(selectedAction.color, CircleShape))
+            Text("-5 🐟", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = selectedAction.color)
         }
 
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 112.dp)
+                .padding(bottom = 118.dp)
                 .width(84.dp)
                 .height(8.dp)
                 .clip(RoundedCornerShape(50))
@@ -424,6 +378,21 @@ fun CompanionHeroCard(
                 .align(Alignment.BottomCenter)
                 .padding(horizontal = 12.dp, vertical = 14.dp)
         )
+        Row(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 18.dp, top = 126.dp)
+                .clip(RoundedCornerShape(50))
+                .background(SurfaceContainerLowest.copy(alpha = 0.9f))
+                .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.18f), RoundedCornerShape(50))
+                .clickable { onOpenProfile() }
+                .padding(horizontal = 10.dp, vertical = 7.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text("档案", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+            Icon(Icons.Outlined.ArrowForward, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(13.dp))
+        }
     }
 }
 
@@ -458,7 +427,7 @@ fun HeroActionDock(actions: List<CompanionActionUi>, selectedAction: CompanionAc
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Column {
                 Text("陪伴操作台", fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
-                Text(selectedAction.subtitle, fontSize = 10.sp, color = selectedAction.color, fontWeight = FontWeight.Bold)
+                Text("推荐：${selectedAction.subtitle}", fontSize = 10.sp, color = selectedAction.color, fontWeight = FontWeight.Bold)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 if (selectedAction.label == "观察") {

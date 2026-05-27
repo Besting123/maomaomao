@@ -114,7 +114,9 @@ fun CatModel3DViewer(
             .background(if (mode == CatViewerMode.COMPANION) Color.Transparent else Color(0xFFFFF3E4))
     ) {
         AnimatedModelBackdrop(mode = mode)
-        ModelGroundingStage(mode = mode, animationName = animationName)
+        if (mode != CatViewerMode.COMPANION) {
+            ModelGroundingStage(mode = mode, animationName = animationName)
+        }
 
         if (hasModelAsset && sceneReady) {
             val engine = rememberEngine()
@@ -128,6 +130,7 @@ fun CatModel3DViewer(
             SceneView(
                 modifier = Modifier
                     .fillMaxSize()
+                    .graphicsLayer(alpha = if (mode == CatViewerMode.COMPANION) 0.78f else 1f)
                     .pointerInput(Unit) {
                         detectTapGestures(onDoubleTap = {
                             hasInteracted = true
@@ -155,8 +158,8 @@ fun CatModel3DViewer(
                 modelInstance?.let { instance ->
                     ModelNode(
                         modelInstance = instance,
-                        scaleToUnits = if (mode == CatViewerMode.COMPANION) 0.72f else 0.98f,
-                        position = if (mode == CatViewerMode.COMPANION) Float3(0f, -0.08f, 0f) else Float3(0f, -0.06f, 0f),
+                        scaleToUnits = if (mode == CatViewerMode.COMPANION) 0.46f else 0.98f,
+                        position = if (mode == CatViewerMode.COMPANION) Float3(0f, -0.18f, 0f) else Float3(0f, -0.06f, 0f),
                         rotation = Float3(0f, rotationY.value, 0f),
                         autoAnimate = false,
                         animationName = animationName,
@@ -175,7 +178,11 @@ fun CatModel3DViewer(
             ModelMissingOverlay(modelAssetPath = modelAssetPath)
         }
 
-        AnimatedModelForeground(mode = mode)
+        if (mode == CatViewerMode.COMPANION) {
+            CompanionCatBedForeground()
+        } else {
+            AnimatedModelForeground(mode = mode)
+        }
         GestureHint(visible = hasModelAsset && !hasInteracted, mode = mode)
         if (mode == CatViewerMode.PROFILE) {
             ModelLabel(label = label, animationName = animationName)
@@ -193,23 +200,107 @@ private fun BoxScope.AnimatedModelBackdrop(mode: CatViewerMode) {
         label = "model-stage-pulse"
     )
     val colors = if (mode == CatViewerMode.COMPANION) {
-        listOf(Color(0x00FFFCF7), Color(0x55FDBC82), Color(0x44C9EBCA))
+        listOf(Color(0xFFFFF4DF), Color(0xFFFFD8A8), Color(0xFFFFF7EA))
     } else {
         listOf(Color(0xFFFFE7C7), Color(0xFFFFF6EA), Color(0xFFFFFBF6))
     }
-    val accent = if (mode == CatViewerMode.COMPANION) MaterialTheme.colorScheme.primary else Color(0xFFFF9F43)
+    val accent = if (mode == CatViewerMode.COMPANION) Color(0xFFD28A45) else Color(0xFFFF9F43)
 
     Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(colors)))
     Box(
         modifier = Modifier
             .align(Alignment.Center)
-            .offset(y = if (mode == CatViewerMode.COMPANION) 28.dp else 0.dp)
-            .size(if (mode == CatViewerMode.COMPANION) 350.dp else 285.dp)
+            .offset(y = if (mode == CatViewerMode.COMPANION) 24.dp else 0.dp)
+            .size(if (mode == CatViewerMode.COMPANION) 360.dp else 285.dp)
             .graphicsLayer(scaleX = pulse, scaleY = pulse)
             .background(
-                Brush.radialGradient(listOf(accent.copy(alpha = 0.38f), accent.copy(alpha = 0.1f), Color.Transparent)),
+                Brush.radialGradient(listOf(Color(0xFFFFE1B8).copy(alpha = 0.72f), accent.copy(alpha = 0.22f), Color.Transparent)),
                 CircleShape
             )
+    )
+    if (mode == CatViewerMode.COMPANION) {
+        Box(modifier = Modifier.fillMaxSize().background(Color(0xFFFFE6C2).copy(alpha = 0.42f)))
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .offset(x = 26.dp, y = 24.dp)
+                .width(92.dp)
+                .height(126.dp)
+                .clip(RoundedCornerShape(46.dp))
+                .background(Color(0xFFFFC66D).copy(alpha = 0.24f))
+        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .offset(x = (-28).dp, y = 34.dp)
+                .size(58.dp)
+                .background(Color(0xFFFFF5D8).copy(alpha = 0.72f), CircleShape)
+        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .offset(y = (-6).dp)
+                .width(330.dp)
+                .height(116.dp)
+                .clip(RoundedCornerShape(58.dp))
+                .background(Color(0xFFD79248).copy(alpha = 0.24f))
+                .border(2.dp, Color(0xFFB56D2B).copy(alpha = 0.18f), RoundedCornerShape(58.dp))
+        )
+    }
+}
+
+@Composable
+private fun BoxScope.CompanionCatBedForeground() {
+    Box(
+        modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .offset(y = (-18).dp)
+            .width(318.dp)
+            .height(82.dp)
+            .shadow(18.dp, CircleShape, spotColor = Color(0xFF6D3E1D).copy(alpha = 0.22f))
+            .background(Color(0xFFB97834).copy(alpha = 0.34f), CircleShape)
+    )
+    Box(
+        modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .offset(y = (-32).dp)
+            .width(292.dp)
+            .height(62.dp)
+            .border(2.dp, Color(0xFFFFF4DF).copy(alpha = 0.9f), CircleShape)
+            .background(Color(0xFFFFDDAA).copy(alpha = 0.72f), CircleShape)
+    )
+    Box(
+        modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .offset(y = (-48).dp)
+            .width(224.dp)
+            .height(28.dp)
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        Color.White.copy(alpha = 0.68f),
+                        Color(0xFFE6A45D).copy(alpha = 0.34f),
+                        Color.Transparent
+                    )
+                ),
+                CircleShape
+            )
+    )
+    Row(
+        modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .offset(y = (-80).dp),
+        horizontalArrangement = Arrangement.spacedBy(152.dp)
+    ) {
+        Box(modifier = Modifier.size(16.dp).background(Color(0xFFFFF3D8).copy(alpha = 0.92f), CircleShape))
+        Box(modifier = Modifier.size(16.dp).background(Color(0xFFFFF3D8).copy(alpha = 0.92f), CircleShape))
+    }
+    Box(
+        modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .fillMaxWidth()
+            .height(70.dp)
+            .background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xFFFFC98F).copy(alpha = 0.22f))))
     )
 }
 
@@ -222,25 +313,19 @@ private fun BoxScope.ModelGroundingStage(mode: CatViewerMode, animationName: Str
         animationSpec = infiniteRepeatable(tween(2200), RepeatMode.Reverse),
         label = "model-ground-pulse"
     )
-    val accent = when (animationName) {
-        "Drink" -> MaterialTheme.colorScheme.tertiary
-        "Eat" -> MaterialTheme.colorScheme.primary
-        "Pet", "Happy" -> MaterialTheme.colorScheme.secondary
-        else -> MaterialTheme.colorScheme.primary
-    }
-    val bottomOffset = if (mode == CatViewerMode.COMPANION) (-34).dp else (-18).dp
+    val bottomOffset = if (mode == CatViewerMode.COMPANION) (-22).dp else (-18).dp
 
     Box(
         modifier = Modifier
             .align(Alignment.BottomCenter)
             .offset(y = bottomOffset)
-            .width(if (mode == CatViewerMode.COMPANION) 310.dp else 240.dp)
-            .height(if (mode == CatViewerMode.COMPANION) 86.dp else 58.dp)
+            .width(if (mode == CatViewerMode.COMPANION) 300.dp else 240.dp)
+            .height(if (mode == CatViewerMode.COMPANION) 74.dp else 58.dp)
             .graphicsLayer(scaleX = pulse)
             .background(
                 Brush.radialGradient(
                     listOf(
-                        accent.copy(alpha = if (mode == CatViewerMode.COMPANION) 0.22f else 0.14f),
+                        Color(0xFF8D5A2B).copy(alpha = if (mode == CatViewerMode.COMPANION) 0.20f else 0.14f),
                         Color.Transparent
                     )
                 ),
@@ -251,61 +336,38 @@ private fun BoxScope.ModelGroundingStage(mode: CatViewerMode, animationName: Str
         modifier = Modifier
             .align(Alignment.BottomCenter)
             .offset(y = bottomOffset + 10.dp)
-            .width(if (mode == CatViewerMode.COMPANION) 230.dp else 180.dp)
-            .height(if (mode == CatViewerMode.COMPANION) 42.dp else 30.dp)
-            .shadow(18.dp, CircleShape, spotColor = Color(0xFF3E2723).copy(alpha = 0.28f))
-            .background(Color(0xFF4E342E).copy(alpha = if (mode == CatViewerMode.COMPANION) 0.28f else 0.16f), CircleShape)
+            .width(if (mode == CatViewerMode.COMPANION) 250.dp else 180.dp)
+            .height(if (mode == CatViewerMode.COMPANION) 48.dp else 30.dp)
+            .shadow(18.dp, CircleShape, spotColor = Color(0xFF6D3E1D).copy(alpha = 0.24f))
+            .background(Color(0xFFB97834).copy(alpha = if (mode == CatViewerMode.COMPANION) 0.32f else 0.16f), CircleShape)
     )
     Box(
         modifier = Modifier
             .align(Alignment.BottomCenter)
             .offset(y = bottomOffset - 2.dp)
-            .width(if (mode == CatViewerMode.COMPANION) 268.dp else 204.dp)
-            .height(if (mode == CatViewerMode.COMPANION) 50.dp else 34.dp)
-            .border(1.dp, Color.White.copy(alpha = 0.46f), CircleShape)
-            .background(Color.White.copy(alpha = if (mode == CatViewerMode.COMPANION) 0.18f else 0.1f), CircleShape)
+            .width(if (mode == CatViewerMode.COMPANION) 286.dp else 204.dp)
+            .height(if (mode == CatViewerMode.COMPANION) 58.dp else 34.dp)
+            .border(1.dp, Color(0xFFFFF4DF).copy(alpha = 0.72f), CircleShape)
+            .background(Color(0xFFFFDFAE).copy(alpha = if (mode == CatViewerMode.COMPANION) 0.46f else 0.1f), CircleShape)
     )
 
     Box(
         modifier = Modifier
             .align(Alignment.BottomCenter)
             .offset(y = bottomOffset - 12.dp)
-            .width(if (mode == CatViewerMode.COMPANION) 218.dp else 160.dp)
-            .height(if (mode == CatViewerMode.COMPANION) 20.dp else 14.dp)
+            .width(if (mode == CatViewerMode.COMPANION) 230.dp else 160.dp)
+            .height(if (mode == CatViewerMode.COMPANION) 24.dp else 14.dp)
             .background(
                 Brush.verticalGradient(
                     listOf(
-                        Color.White.copy(alpha = 0.34f),
-                        Color(0xFF8B5928).copy(alpha = 0.16f),
+                        Color.White.copy(alpha = 0.52f),
+                        Color(0xFFB97834).copy(alpha = 0.24f),
                         Color.Transparent
                     )
                 ),
                 CircleShape
             )
     )
-
-    if (mode == CatViewerMode.COMPANION) {
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .offset(y = bottomOffset - 28.dp)
-                .clip(RoundedCornerShape(50))
-                .background(Color.White.copy(alpha = 0.82f))
-                .border(1.dp, accent.copy(alpha = 0.2f), RoundedCornerShape(50))
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val props = when (animationName) {
-                "Drink" -> listOf("💧", "小水碗")
-                "Eat" -> listOf("🐟", "少量添粮")
-                "Pet", "Happy" -> listOf("💕", "轻柔安抚")
-                else -> listOf("🌿", "安静观察")
-            }
-            Text(props[0], fontSize = 14.sp)
-            Text(props[1], fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = accent)
-        }
-    }
 }
 
 @Composable

@@ -1,111 +1,85 @@
 package com.example.myapplication.ui.screens
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.outlined.DoNotDisturbOn
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Pets
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.*
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.R
-import com.example.myapplication.ui.theme.*
-import androidx.navigation.NavController
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.navigation.NavController
+import com.example.myapplication.ui.theme.SurfaceContainerHigh
+import com.example.myapplication.ui.theme.SurfaceContainerLow
+import com.example.myapplication.ui.theme.SurfaceContainerLowest
 import org.osmdroid.config.Configuration
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 
-data class CampusResidentCat(
-    val name: String,
-    val imageRes: Int
+data class CampusCatTimeHabit(
+    val catName: String,
+    val areaHint: String,
+    val habit: String,
+    val safety: String,
+    val accent: Color
 )
 
-data class CampusHotspotInfo(
+data class CampusTimeSegmentInfo(
     val name: String,
-    val safetyTag: String,
-    val areaTitle: String,
+    val icon: String,
+    val title: String,
     val summary: String,
-    val status: String,
-    val imageRes: Int,
-    val residents: List<CampusResidentCat>
+    val notice: String,
+    val cats: List<CampusCatTimeHabit>
 )
 
 @Composable
 fun CampusScreen(navController: NavController? = null) {
     var selectedTime by remember { mutableStateOf("清晨") }
-    val hotspots = remember {
-        listOf(
-            CampusHotspotInfo(
-                name = "大白常在这片活动",
-                safetyTag = "适合远观",
-                areaTitle = "教学区东侧草坪带",
-                summary = "此片区通常有 3 只猫咪出没",
-                status = "远观优先",
-                imageRes = R.drawable.img_net_cf9a4fdf2a,
-                residents = listOf(
-                    CampusResidentCat("大白", R.drawable.img_net_e7d3e76bea),
-                    CampusResidentCat("橘子", R.drawable.img_net_a53f9ce8f2),
-                    CampusResidentCat("奶油", R.drawable.img_net_27ce5092c2)
-                )
-            ),
-            CampusHotspotInfo(
-                name = "橘子常来补水",
-                safetyTag = "补水正常",
-                areaTitle = "北侧补水观察带",
-                summary = "近期补水点刚维护，适合记录状态",
-                status = "补水点充足",
-                imageRes = R.drawable.img_net_7f99b46ce0,
-                residents = listOf(
-                    CampusResidentCat("橘子", R.drawable.img_net_a53f9ce8f2),
-                    CampusResidentCat("小黑", R.drawable.img_net_8c081179f2)
-                )
-            ),
-            CampusHotspotInfo(
-                name = "奶油在树荫休息",
-                safetyTag = "请勿打扰",
-                areaTitle = "林荫休息带",
-                summary = "猫咪正在休息，建议只做远距离观察",
-                status = "不打扰",
-                imageRes = R.drawable.img_net_27ce5092c2,
-                residents = listOf(
-                    CampusResidentCat("奶油", R.drawable.img_net_27ce5092c2)
-                )
-            ),
-            CampusHotspotInfo(
-                name = "小墨傍晚会来觅食",
-                safetyTag = "可远观",
-                areaTitle = "后勤绿化观察带",
-                summary = "傍晚偶尔出现，建议不要靠近食物残渣区",
-                status = "远观记录",
-                imageRes = R.drawable.img_net_8c081179f2,
-                residents = listOf(
-                    CampusResidentCat("小墨", R.drawable.img_net_8c081179f2)
-                )
-            )
-        )
-    }
-    var selectedHotspot by remember { mutableStateOf(hotspots.first()) }
-    var sheetExpanded by remember { mutableStateOf(false) }
+    val segments = rememberCampusTimeSegments()
+    val selectedSegment = segments.first { it.name == selectedTime }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(SurfaceContainerLow)
     ) {
-        // ══ 真实校园地图 (osmdroid + 高德瓦片) ══
         val context = androidx.compose.ui.platform.LocalContext.current
         DisposableEffect(Unit) {
             Configuration.getInstance().userAgentValue = context.packageName
@@ -114,7 +88,6 @@ fun CampusScreen(navController: NavController? = null) {
         AndroidView(
             factory = { ctx ->
                 MapView(ctx).apply {
-                    // 使用高德地图瓦片（国内极速）
                     val amapSource = object : org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase(
                         "Amap", 3, 19, 256, ".png",
                         arrayOf("https://webrd01.is.autonavi.com", "https://webrd02.is.autonavi.com", "https://webrd03.is.autonavi.com", "https://webrd04.is.autonavi.com")
@@ -146,53 +119,71 @@ fun CampusScreen(navController: NavController? = null) {
         )
 
         CampusTimeEffectOverlay(selectedTime)
-
-        // 顶部浮层 — 半透明
         CampusTopAppBar()
 
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 90.dp, start = 16.dp, end = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+                .fillMaxSize()
+                .statusBarsPadding()
+                .padding(top = 72.dp, start = 16.dp, end = 16.dp, bottom = 92.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             TimeSelectorOverlay(selectedTime = selectedTime, onTimeSelected = { selectedTime = it })
         }
+    }
+}
 
-        CampusHotspotSelector(
-            hotspots = hotspots,
-            selectedHotspot = selectedHotspot,
-            onSelect = {
-                selectedHotspot = it
-                sheetExpanded = true
-            },
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(top = 142.dp)
+@Composable
+fun rememberCampusTimeSegments(): List<CampusTimeSegmentInfo> {
+    val colorScheme = MaterialTheme.colorScheme
+    return remember(colorScheme) {
+        listOf(
+            CampusTimeSegmentInfo(
+                name = "清晨",
+                icon = "🌤",
+                title = "清晨活跃观察",
+                summary = "清晨人流较少，胆子大的猫会先出来巡看水点和草坪边缘。",
+                notice = "适合远距离记录精神状态，先看尾巴、耳朵和步态。",
+                cats = listOf(
+                    CampusCatTimeHabit("大白", "教学区草坪边", "会沿草坪边慢走，愿意保持距离被观察。", "保持 2 米以上", colorScheme.primary),
+                    CampusCatTimeHabit("橘子", "北侧补水点", "常先检查水点，停留时间短。", "只记录不追随", colorScheme.tertiary)
+                )
+            ),
+            CampusTimeSegmentInfo(
+                name = "午后",
+                icon = "☀️",
+                title = "午后休息避扰",
+                summary = "午后多数猫咪进入休息状态，树荫和安静墙角更常见。",
+                notice = "午后不建议主动寻找或靠近，避免打扰睡眠。",
+                cats = listOf(
+                    CampusCatTimeHabit("奶油", "林荫休息带", "午后常蜷在树荫下休息，对声音敏感。", "降低音量", colorScheme.secondary),
+                    CampusCatTimeHabit("小黑", "休息区内侧", "通常减少移动，只适合远观确认状态。", "不触碰不投喂", colorScheme.primary)
+                )
+            ),
+            CampusTimeSegmentInfo(
+                name = "傍晚",
+                icon = "🌇",
+                title = "傍晚巡看补水",
+                summary = "傍晚活动增加，适合巡看补水和记录不同猫咪的出现节奏。",
+                notice = "先补水后互动，避免多人聚集在同一片区。",
+                cats = listOf(
+                    CampusCatTimeHabit("小墨", "后勤绿化带", "傍晚会沿绿化带缓慢移动，偶尔停留。", "不要堵路", colorScheme.tertiary),
+                    CampusCatTimeHabit("橘子", "开放草坪外缘", "傍晚更可能出现，但不喜欢被围观。", "分散观察", colorScheme.primary)
+                )
+            ),
+            CampusTimeSegmentInfo(
+                name = "夜间",
+                icon = "🌙",
+                title = "夜间减少打扰",
+                summary = "夜间不鼓励主动寻找猫咪，只查看历史片区习惯和次日提醒。",
+                notice = "不要开闪光灯，不发布实时路线，不追踪精确位置。",
+                cats = listOf(
+                    CampusCatTimeHabit("小黑", "安静通道附近", "夜间可能短暂经过，不建议跟随。", "不追踪", colorScheme.secondary),
+                    CampusCatTimeHabit("奶油", "隐蔽休息点", "夜间更依赖安静环境，发现后应离开。", "立即降噪离开", colorScheme.tertiary)
+                )
+            )
         )
-
-        // 底部卡片 — 可折叠，默认只显示摘要行
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 72.dp, start = 12.dp, end = 12.dp)
-        ) {
-            if (sheetExpanded) {
-                CampusBottomSheet(
-                    navController = navController,
-                    selectedTime = selectedTime,
-                    hotspot = selectedHotspot,
-                    onCollapse = { sheetExpanded = false }
-                )
-            } else {
-                // 折叠态：只显示一行摘要
-                CampusBottomSheetCollapsed(
-                    selectedTime = selectedTime,
-                    hotspot = selectedHotspot,
-                    onClick = { sheetExpanded = true }
-                )
-            }
-        }
     }
 }
 
@@ -212,87 +203,11 @@ fun CampusTimeEffectOverlay(selectedTime: String) {
 }
 
 @Composable
-fun CampusHotspotSelector(
-    hotspots: List<CampusHotspotInfo>,
-    selectedHotspot: CampusHotspotInfo,
-    onSelect: (CampusHotspotInfo) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        hotspots.forEach { hotspot ->
-            val selected = hotspot.name == selectedHotspot.name
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(if (selected) MaterialTheme.colorScheme.primary else SurfaceContainerLowest.copy(alpha = 0.88f))
-                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), CircleShape)
-                    .clickable { onSelect(hotspot) }
-                    .padding(horizontal = 10.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = hotspot.imageRes),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(28.dp).clip(CircleShape)
-                )
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(hotspot.safetyTag, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (selected) Color.White else MaterialTheme.colorScheme.primary)
-                    Text(hotspot.areaTitle, fontSize = 11.sp, color = if (selected) Color.White.copy(alpha = 0.82f) else MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-        }
-    }
-}
-
-// ── 折叠态底部卡片 ──
-@Composable
-fun CampusBottomSheetCollapsed(selectedTime: String, hotspot: CampusHotspotInfo, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(8.dp, RoundedCornerShape(20.dp))
-            .background(SurfaceContainerLowest, RoundedCornerShape(20.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Image(
-                painter = painterResource(id = hotspot.imageRes),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.size(36.dp).clip(CircleShape)
-            )
-            Column {
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape).padding(horizontal = 8.dp, vertical = 3.dp)) {
-                        Text(hotspot.safetyTag, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                    }
-                    Box(modifier = Modifier.background(SurfaceContainerHigh, CircleShape).padding(horizontal = 8.dp, vertical = 3.dp)) {
-                        Text(selectedTime, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(hotspot.areaTitle, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                Text(hotspot.summary, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-        Icon(Icons.Outlined.KeyboardArrowUp, "展开", tint = MaterialTheme.colorScheme.primary)
-    }
-}
-
-@Composable
 fun CampusTopAppBar() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.55f))
+            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.75f))
             .statusBarsPadding()
             .padding(horizontal = 20.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -303,19 +218,17 @@ fun CampusTopAppBar() {
                 modifier = Modifier
                     .size(34.dp)
                     .clip(CircleShape)
-                    .background(SurfaceContainerHighest)
-                    .border(1.5.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f), CircleShape)
+                    .background(SurfaceContainerHigh),
+                contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.img_net_aaf424f0b6),
-                    contentDescription = "User",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
+                Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
             }
-            Text("校园地图", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("校园地图", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Text("按时间了解猫咪习性", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
-        Text("仅展示片区 · 无实时点位", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
     }
 }
 
@@ -324,8 +237,9 @@ fun TimeSelectorOverlay(selectedTime: String, onTimeSelected: (String) -> Unit) 
     val times = listOf("清晨" to "🌤", "午后" to "☀️", "傍晚" to "🌇", "夜间" to "🌙")
     Row(
         modifier = Modifier
-            .background(Color.White.copy(alpha = 0.72f), RoundedCornerShape(50))
-            .border(1.dp, Color.White.copy(alpha = 0.4f), RoundedCornerShape(50))
+            .fillMaxWidth()
+            .background(Color.White.copy(alpha = 0.84f), RoundedCornerShape(50))
+            .border(1.dp, Color.White.copy(alpha = 0.55f), RoundedCornerShape(50))
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -333,19 +247,21 @@ fun TimeSelectorOverlay(selectedTime: String, onTimeSelected: (String) -> Unit) 
             val selected = time == selectedTime
             Row(
                 modifier = Modifier
+                    .weight(1f)
                     .clip(RoundedCornerShape(50))
                     .background(if (selected) MaterialTheme.colorScheme.primary else Color.Transparent)
                     .clickable { onTimeSelected(time) }
-                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                    .padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                horizontalArrangement = Arrangement.Center
             ) {
-                Text(icon, fontSize = 11.sp)
+                Text(icon, fontSize = 12.sp)
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     time,
                     fontSize = 12.sp,
                     fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-                    color = if (selected) Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    color = if (selected) Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.68f)
                 )
             }
         }
@@ -353,162 +269,83 @@ fun TimeSelectorOverlay(selectedTime: String, onTimeSelected: (String) -> Unit) 
 }
 
 @Composable
-fun CampusBottomSheet(navController: NavController? = null, selectedTime: String = "清晨", hotspot: CampusHotspotInfo, onCollapse: () -> Unit = {}) {
-    val guideText = when (selectedTime) {
-        "清晨" -> "可远距离观察，先看尾巴和耳朵状态，保持充足距离。"
-        "午后" -> "远观记录即可，猫咪多在休息，放慢停留节奏。"
-        "傍晚" -> "猫咪较活跃，可先观察是否主动靠近，再决定是否互动。"
-        else -> "夜间不建议寻找或打扰猫咪，优先查看历史片区记录。"
-    }
-    val activeAdvice = when (selectedTime) {
-        "清晨" -> "清晨通常更安静，适合做第一轮状态记录。"
-        "午后" -> "午后多在休息，建议只做短时远观。"
-        "傍晚" -> "傍晚活动增多，更适合补水巡看和温和记录。"
-        else -> "夜间以减少打扰为主，避免闪光拍摄。"
-    }
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .shadow(48.dp, RoundedCornerShape(32.dp), spotColor = Color(0x14383833))
-            .background(SurfaceContainerLowest, RoundedCornerShape(32.dp))
-            .padding(24.dp)
+fun CampusTimeSummaryCard(segment: CampusTimeSegmentInfo) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest.copy(alpha = 0.94f)),
+        shape = RoundedCornerShape(24.dp)
     ) {
-        // Handle bar — 点击可折叠
-        Box(
-            modifier = Modifier.fillMaxWidth().clickable { onCollapse() }.padding(vertical = 8.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(Icons.Outlined.KeyboardArrowDown, "收起", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp)) {
-                Text(hotspot.safetyTag, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
-            }
-            Box(modifier = Modifier.background(SurfaceContainerHigh, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp)) {
-                Text(selectedTime, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        
-        // Title
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
-            Column {
-                Text(hotspot.areaTitle, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                Text(hotspot.summary, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.padding(top = 4.dp))
-            }
-            Column(horizontalAlignment = Alignment.End) {
-                Box(modifier = Modifier.background(MaterialTheme.colorScheme.tertiaryContainer, CircleShape).padding(horizontal = 12.dp, vertical = 4.dp)) {
-                    Text(hotspot.status, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onTertiaryContainer)
+        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
+                    Text(segment.icon, fontSize = 22.sp)
                 }
-                Text("依据近期片区观察整理", fontSize = 10.sp, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 4.dp))
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(segment.title, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+                    Text(segment.summary, fontSize = 13.sp, lineHeight = 19.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
-        }
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        // Approach Guide & Time Advice & DND Alert
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            // "Do Not Disturb" Alert
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f))
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f))
                     .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.Top
             ) {
-                Icon(Icons.Outlined.DoNotDisturbOn, contentDescription = "Do Not Disturb", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
-                    Text("$selectedTime 时段请优先观察状态，不追逐、不围堵、不强行喂食。", fontSize = 12.sp, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
-            }
-            
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .background(SurfaceContainerLow, RoundedCornerShape(12.dp))
-                        .padding(16.dp)
-                ) {
-                    Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(MaterialTheme.colorScheme.primary))
-                    Text("安全建议 · $selectedTime", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
-                    Text(guideText, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, lineHeight = 18.sp)
-                }
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .background(SurfaceContainerLow, RoundedCornerShape(12.dp))
-                        .padding(16.dp)
-                ) {
-                    Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(MaterialTheme.colorScheme.secondary))
-                    Text("时段建议", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
-                    Text(activeAdvice, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, lineHeight = 18.sp)
-                }
-            }
-        }
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        // Residents Header
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                "常驻猫咪",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.outline,
-                letterSpacing = 1.sp
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.clickable { navController?.navigate("catProfile") }
-            ) {
-                Text(
-                    "查看全部档案",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Icon(
-                    Icons.Outlined.ArrowForward,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(14.dp)
-                )
-            }
-        }
-
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            hotspot.residents.forEach { resident ->
-                CatChip(name = resident.name, imageRes = resident.imageRes, onClick = { navController?.navigate("catProfile") })
+                Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                Text(segment.notice, fontSize = 12.sp, lineHeight = 18.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
             }
         }
     }
 }
 
 @Composable
-fun CatChip(name: String, imageRes: Int, onClick: (() -> Unit)? = null) {
+fun CampusCatHabitCard(habit: CampusCatTimeHabit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest.copy(alpha = 0.9f)),
+        shape = RoundedCornerShape(20.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, habit.accent.copy(alpha = 0.22f))
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Box(modifier = Modifier.size(42.dp).clip(CircleShape).background(habit.accent.copy(alpha = 0.16f)), contentAlignment = Alignment.Center) {
+                Icon(Icons.Outlined.Pets, contentDescription = null, tint = habit.accent, modifier = Modifier.size(21.dp))
+            }
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text(habit.catName, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+                    Text(habit.areaHint, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = habit.accent)
+                }
+                Text(habit.habit, fontSize = 13.sp, lineHeight = 19.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Box(modifier = Modifier.background(habit.accent.copy(alpha = 0.1f), CircleShape).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                    Text(habit.safety, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = habit.accent)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CampusTimeSafetyCard(segment: CampusTimeSegmentInfo) {
     Row(
         modifier = Modifier
-            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), CircleShape)
-            .background(SurfaceContainer, CircleShape)
-            .padding(4.dp)
-            .padding(end = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.58f))
+            .padding(14.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.Top
     ) {
-        Image(
-            painter = painterResource(id = imageRes),
-            contentDescription = name,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.size(32.dp).clip(CircleShape)
-        )
-        Text(name, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+        Icon(Icons.Outlined.DoNotDisturbOn, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("${segment.name}安全边界", fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.error)
+            Text("只展示时间段习性和片区级倾向，不展示实时点位、路线或精确坐标。", fontSize = 12.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.error)
+        }
     }
 }

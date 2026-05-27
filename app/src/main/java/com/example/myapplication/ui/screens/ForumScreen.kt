@@ -55,9 +55,7 @@ fun ForumScreen(viewModel: MainViewModel? = null) {
                 .verticalScroll(scrollState)
                 .padding(horizontal = 24.dp)
         ) {
-            Spacer(modifier = Modifier.height(88.dp))
-            SchoolSwitcherRow()
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(112.dp))
             CategoryChipsRow(selectedLabel = selectedCategory, onSelected = { selectedCategory = it })
             Spacer(modifier = Modifier.height(12.dp))
             SafePostingNotice()

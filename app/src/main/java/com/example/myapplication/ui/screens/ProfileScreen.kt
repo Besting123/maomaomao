@@ -16,8 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -49,8 +47,8 @@ fun ProfileScreen(viewModel: MainViewModel? = null) {
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(32.dp)
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Spacer(modifier = Modifier.height(80.dp))
             ProfileHeroCard()
@@ -64,7 +62,7 @@ fun ProfileScreen(viewModel: MainViewModel? = null) {
             FollowedCatsSection()
             CompanionTimelineSection(records = uiState?.companionRecords.orEmpty())
             ProfileSettingsSection(onOpenPanel = { activePanel = it })
-            Spacer(modifier = Modifier.height(120.dp))
+            Spacer(modifier = Modifier.height(96.dp))
         }
         ProfileTopBar(
             onOpenNotifications = { activePanel = ProfilePanel.Notifications }
@@ -119,7 +117,7 @@ fun ProfileTopBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Spacer(modifier = Modifier.size(40.dp))
-        Text("善意账本", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        Text("我的", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         IconButton(onClick = onOpenNotifications, modifier = Modifier.size(40.dp)) {
             Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = MaterialTheme.colorScheme.primary)
         }
@@ -134,12 +132,12 @@ fun ProfileHeroCard() {
         shape = RoundedCornerShape(topStart = 32.dp, topEnd = 16.dp, bottomEnd = 32.dp, bottomStart = 24.dp)
     ) {
         Row(
-            modifier = Modifier.padding(32.dp),
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
+            modifier = Modifier.padding(22.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(contentAlignment = Alignment.BottomEnd) {
-                Box(modifier = Modifier.size(96.dp).clip(CircleShape).border(4.dp, SurfaceContainerLowest, CircleShape)) {
+                Box(modifier = Modifier.size(82.dp).clip(CircleShape).border(4.dp, SurfaceContainerLowest, CircleShape)) {
                     Image(
                         painter = painterResource(R.drawable.img_net_a15565a0f2),
                         contentDescription = "User Avatar",
@@ -156,14 +154,14 @@ fun ProfileHeroCard() {
                     Text("LV.5", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Color.White, letterSpacing = 1.sp)
                 }
             }
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("路过图书馆的小王", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = (-0.5).sp)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("路过图书馆的小王", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface, letterSpacing = (-0.5).sp)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Box(modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer, CircleShape).padding(horizontal = 12.dp, vertical = 4.dp)) {
-                        Text("北京交通大学", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSecondaryContainer, fontWeight = FontWeight.SemiBold)
+                        Text("北京交通大学", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSecondaryContainer, fontWeight = FontWeight.SemiBold, maxLines = 1)
                     }
-                    Box(modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), CircleShape).background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f), CircleShape).padding(horizontal = 12.dp, vertical = 4.dp)) {
-                        Text("校园观察者", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                    Box(modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), CircleShape).background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f), CircleShape).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                        Text("观察者", fontSize = 11.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold, maxLines = 1)
                     }
                 }
                 Text("长期记录安全观察、学习与补水提醒，不公开精确点位。", fontSize = 12.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -248,39 +246,10 @@ fun GoodwillStatsSection(signInDays: Int, completedCoursesCount: Int, reportCoun
             Icon(Icons.Outlined.Home, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
             Text("长期陪伴账本", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         }
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            // Stat 1
-            StatBentoCard(
-                modifier = Modifier.weight(1f),
-                icon = Icons.Outlined.CheckCircle,
-                iconColor = MaterialTheme.colorScheme.tertiary,
-                value = signInDays.toString(),
-                label = "连续守护天数"
-            )
-            // Stat 2
-            StatBentoCard(
-                modifier = Modifier.weight(1f),
-                icon = Icons.Outlined.MenuBook,
-                iconColor = MaterialTheme.colorScheme.primary,
-                value = completedCoursesCount.toString(),
-                label = "安全课程完成"
-            )
-        }
-        // Highlighted stat
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)))
-                .padding(24.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Icon(Icons.Outlined.Info, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
-                Text(reportCount.toString(), fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
-                Text("安全观察报告数", fontSize = 12.sp, color = Color.White.copy(alpha = 0.9f))
-                Text("只记录片区与状态，保护猫咪活动边界", fontSize = 11.sp, color = Color.White.copy(alpha = 0.78f), textAlign = TextAlign.Center)
-            }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            StatBentoCard(modifier = Modifier.weight(1f), icon = Icons.Outlined.CheckCircle, iconColor = MaterialTheme.colorScheme.tertiary, value = signInDays.toString(), label = "连续守护")
+            StatBentoCard(modifier = Modifier.weight(1f), icon = Icons.Outlined.MenuBook, iconColor = MaterialTheme.colorScheme.primary, value = completedCoursesCount.toString(), label = "完成课程")
+            StatBentoCard(modifier = Modifier.weight(1f), icon = Icons.Outlined.Info, iconColor = MaterialTheme.colorScheme.secondary, value = reportCount.toString(), label = "观察报告")
         }
     }
 }
@@ -293,22 +262,22 @@ fun KnowledgeBadgesSection(completedCoursesCount: Int) {
             Text("知识勋章", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            BadgeCard(icon = "🌱", name = "安全观察员", color = MaterialTheme.colorScheme.primaryContainer, onColor = MaterialTheme.colorScheme.onPrimaryContainer)
-            BadgeCard(icon = if (completedCoursesCount >= 3) "💧" else "🔒", name = "补水守护者", color = if (completedCoursesCount >= 3) MaterialTheme.colorScheme.secondaryContainer else SurfaceContainerHigh, onColor = if (completedCoursesCount >= 3) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.outline)
-            BadgeCard(icon = if (completedCoursesCount >= 6) "🧭" else "🔒", name = "边界识别", color = SurfaceContainerHigh, onColor = MaterialTheme.colorScheme.outline)
+            BadgeCard(modifier = Modifier.weight(1f), icon = "🌱", name = "安全观察员", color = MaterialTheme.colorScheme.primaryContainer, onColor = MaterialTheme.colorScheme.onPrimaryContainer)
+            BadgeCard(modifier = Modifier.weight(1f), icon = if (completedCoursesCount >= 3) "💧" else "🔒", name = "补水守护者", color = if (completedCoursesCount >= 3) MaterialTheme.colorScheme.secondaryContainer else SurfaceContainerHigh, onColor = if (completedCoursesCount >= 3) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.outline)
+            BadgeCard(modifier = Modifier.weight(1f), icon = if (completedCoursesCount >= 6) "🧭" else "🔒", name = "边界识别", color = SurfaceContainerHigh, onColor = MaterialTheme.colorScheme.outline)
         }
     }
 }
 
 @Composable
-fun BadgeCard(icon: String, name: String, color: Color, onColor: Color) {
+fun BadgeCard(modifier: Modifier = Modifier, icon: String, name: String, color: Color, onColor: Color) {
     Column(
-        modifier = Modifier.background(color, RoundedCornerShape(12.dp)).padding(16.dp).width(80.dp),
+        modifier = modifier.background(color, RoundedCornerShape(12.dp)).padding(14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(icon, fontSize = 28.sp)
-        Text(name, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = onColor, textAlign = TextAlign.Center)
+        Text(icon, fontSize = 26.sp)
+        Text(name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = onColor, textAlign = TextAlign.Center, lineHeight = 15.sp)
     }
 }
 
@@ -316,13 +285,13 @@ fun BadgeCard(icon: String, name: String, color: Color, onColor: Color) {
 fun StatBentoCard(modifier: Modifier = Modifier, icon: ImageVector, iconColor: Color, value: String, label: String) {
     Card(modifier = modifier, colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest), shape = RoundedCornerShape(16.dp)) {
         Column(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Icon(icon, contentDescription = label, tint = iconColor, modifier = Modifier.size(28.dp))
-            Text(value, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
-            Text(label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+            Icon(icon, contentDescription = label, tint = iconColor, modifier = Modifier.size(22.dp))
+            Text(value, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+            Text(label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center, lineHeight = 14.sp)
         }
     }
 }
@@ -342,7 +311,7 @@ fun FollowedCatsSection() {
             Icon(Icons.Outlined.Favorite, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(20.dp))
             Text("关注的猫咪", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         }
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(end = 24.dp)) {
             items(cats) { cat ->
                 Card(
                     modifier = Modifier.width(132.dp).clickable { selectedCat = cat.name },
@@ -373,13 +342,13 @@ fun FollowedCatsSection() {
             item {
                 // Add more card
                 Card(
-                    modifier = Modifier.width(96.dp),
+                    modifier = Modifier.width(108.dp),
                     colors = CardDefaults.cardColors(containerColor = SurfaceContainerLow),
                     shape = RoundedCornerShape(16.dp),
                     border = BorderStroke(2.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
                 ) {
                     Column(
-                        modifier = Modifier.padding(vertical = 28.dp).fillMaxWidth(),
+                        modifier = Modifier.padding(vertical = 28.dp, horizontal = 8.dp).fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {

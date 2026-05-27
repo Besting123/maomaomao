@@ -226,7 +226,7 @@ fun HeroSection() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
-            .aspectRatio(16f / 9f)
+            .aspectRatio(4f / 3f)
             .clip(RoundedCornerShape(16.dp))
     ) {
         Image(

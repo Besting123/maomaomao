@@ -122,15 +122,15 @@ fun CatModel3DViewer(
             val engine = rememberEngine()
             val modelLoader = rememberModelLoader(engine)
             val environmentLoader = rememberEnvironmentLoader(engine)
-            val environment = remember(environmentLoader) {
-                environmentLoader.createHDREnvironment("environments/studio.hdr")
+            val environment = remember(environmentLoader, mode) {
+                environmentLoader.createHDREnvironment("environments/studio.hdr", createSkybox = false)
             }
             val modelInstance = rememberModelInstance(modelLoader, modelAssetPath)
 
             SceneView(
                 modifier = Modifier
                     .fillMaxSize()
-                    .graphicsLayer(alpha = if (mode == CatViewerMode.COMPANION) 0.78f else 1f)
+                    .graphicsLayer(alpha = 1f)
                     .pointerInput(Unit) {
                         detectTapGestures(onDoubleTap = {
                             hasInteracted = true
@@ -152,14 +152,15 @@ fun CatModel3DViewer(
                 engine = engine,
                 modelLoader = modelLoader,
                 environmentLoader = environmentLoader,
+                isOpaque = true,
                 environment = environment!!,
                 cameraManipulator = null
             ) {
                 modelInstance?.let { instance ->
                     ModelNode(
                         modelInstance = instance,
-                        scaleToUnits = if (mode == CatViewerMode.COMPANION) 0.46f else 0.98f,
-                        position = if (mode == CatViewerMode.COMPANION) Float3(0f, -0.18f, 0f) else Float3(0f, -0.06f, 0f),
+                        scaleToUnits = if (mode == CatViewerMode.COMPANION) 0.58f else 0.98f,
+                        position = if (mode == CatViewerMode.COMPANION) Float3(0f, -0.12f, 0f) else Float3(0f, -0.06f, 0f),
                         rotation = Float3(0f, rotationY.value, 0f),
                         autoAnimate = false,
                         animationName = animationName,
@@ -178,11 +179,7 @@ fun CatModel3DViewer(
             ModelMissingOverlay(modelAssetPath = modelAssetPath)
         }
 
-        if (mode == CatViewerMode.COMPANION) {
-            CompanionCatBedForeground()
-        } else {
-            AnimatedModelForeground(mode = mode)
-        }
+        AnimatedModelForeground(mode = mode)
         GestureHint(visible = hasModelAsset && !hasInteracted, mode = mode)
         if (mode == CatViewerMode.PROFILE) {
             ModelLabel(label = label, animationName = animationName)
@@ -219,89 +216,34 @@ private fun BoxScope.AnimatedModelBackdrop(mode: CatViewerMode) {
             )
     )
     if (mode == CatViewerMode.COMPANION) {
-        Box(modifier = Modifier.fillMaxSize().background(Color(0xFFFFE6C2).copy(alpha = 0.42f)))
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .offset(x = 26.dp, y = 24.dp)
-                .width(92.dp)
-                .height(126.dp)
-                .clip(RoundedCornerShape(46.dp))
-                .background(Color(0xFFFFC66D).copy(alpha = 0.24f))
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .offset(x = (-28).dp, y = 34.dp)
-                .size(58.dp)
-                .background(Color(0xFFFFF5D8).copy(alpha = 0.72f), CircleShape)
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .offset(y = (-6).dp)
-                .width(330.dp)
-                .height(116.dp)
-                .clip(RoundedCornerShape(58.dp))
-                .background(Color(0xFFD79248).copy(alpha = 0.24f))
-                .border(2.dp, Color(0xFFB56D2B).copy(alpha = 0.18f), RoundedCornerShape(58.dp))
-        )
+        FixedWarmRoomBackdrop()
     }
 }
 
 @Composable
-private fun BoxScope.CompanionCatBedForeground() {
+private fun BoxScope.FixedWarmRoomBackdrop() {
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFFFFE6C2).copy(alpha = 0.54f)))
     Box(
         modifier = Modifier
-            .align(Alignment.BottomCenter)
-            .offset(y = (-18).dp)
-            .width(318.dp)
-            .height(82.dp)
-            .shadow(18.dp, CircleShape, spotColor = Color(0xFF6D3E1D).copy(alpha = 0.22f))
-            .background(Color(0xFFB97834).copy(alpha = 0.34f), CircleShape)
-    )
-    Box(
-        modifier = Modifier
-            .align(Alignment.BottomCenter)
-            .offset(y = (-32).dp)
-            .width(292.dp)
-            .height(62.dp)
-            .border(2.dp, Color(0xFFFFF4DF).copy(alpha = 0.9f), CircleShape)
-            .background(Color(0xFFFFDDAA).copy(alpha = 0.72f), CircleShape)
-    )
-    Box(
-        modifier = Modifier
-            .align(Alignment.BottomCenter)
-            .offset(y = (-48).dp)
-            .width(224.dp)
-            .height(28.dp)
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color.White.copy(alpha = 0.68f),
-                        Color(0xFFE6A45D).copy(alpha = 0.34f),
-                        Color.Transparent
-                    )
-                ),
-                CircleShape
-            )
-    )
-    Row(
-        modifier = Modifier
-            .align(Alignment.BottomCenter)
-            .offset(y = (-80).dp),
-        horizontalArrangement = Arrangement.spacedBy(152.dp)
-    ) {
-        Box(modifier = Modifier.size(16.dp).background(Color(0xFFFFF3D8).copy(alpha = 0.92f), CircleShape))
-        Box(modifier = Modifier.size(16.dp).background(Color(0xFFFFF3D8).copy(alpha = 0.92f), CircleShape))
-    }
-    Box(
-        modifier = Modifier
-            .align(Alignment.BottomCenter)
+            .align(Alignment.TopCenter)
             .fillMaxWidth()
-            .height(70.dp)
-            .background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xFFFFC98F).copy(alpha = 0.22f))))
+            .height(170.dp)
+            .background(Brush.verticalGradient(listOf(Color(0xFFFFF6E8), Color(0xFFFFDFAE).copy(alpha = 0.72f))))
     )
+    Box(
+        modifier = Modifier
+            .align(Alignment.TopStart)
+            .offset(x = 24.dp, y = 28.dp)
+            .width(112.dp)
+            .height(118.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(Color(0xFFEAF7FF).copy(alpha = 0.88f))
+            .border(3.dp, Color.White.copy(alpha = 0.92f), RoundedCornerShape(18.dp))
+    ) {
+        Box(modifier = Modifier.align(Alignment.Center).width(3.dp).height(112.dp).background(Color.White.copy(alpha = 0.9f)))
+        Box(modifier = Modifier.align(Alignment.Center).width(104.dp).height(3.dp).background(Color.White.copy(alpha = 0.9f)))
+        Box(modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(34.dp).background(Color(0xFFFFD88C).copy(alpha = 0.22f)))
+    }
 }
 
 @Composable

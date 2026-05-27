@@ -228,7 +228,6 @@ fun CampusTopAppBar() {
                 Text("按时间了解猫咪习性", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-
     }
 }
 

@@ -59,7 +59,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.components.CatModel3DViewer
-import com.example.myapplication.ui.components.CatViewerMode
 import com.example.myapplication.ui.theme.SurfaceContainer
 import com.example.myapplication.ui.theme.SurfaceContainerLow
 import com.example.myapplication.ui.theme.SurfaceContainerLowest
@@ -338,9 +337,6 @@ fun CompanionHeroCard(
                 .fillMaxWidth()
                 .height(410.dp),
             modelAssetPath = "models/mao-xiaohei-rigged.glb",
-            label = "3D $catName 陪伴模型",
-            isFullScreen = false,
-            mode = CatViewerMode.COMPANION,
             animationName = selectedAction.animationName,
             onDoubleTap = onDoubleTap
         )

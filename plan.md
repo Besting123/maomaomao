@@ -21,7 +21,7 @@
 当前已实现的功能：
 
 - 进程内 `StateFlow` 状态管理，支持游戏化属性（等级/经验/饱食/心情/健康）；
-- **3D 猫咪模型**已接入（SceneView/Filament + `mao-lihua-animated.glb` + HDRI 环境光照），支持惯性旋转、双击互动和前端情境反馈；
+- **3D 猫咪模型**已接入（SceneView/Filament + `mao-xiaohei-rigged.glb` + HDRI 环境光照），已替换为带 `skins`/`skeleton` 的 rigged 验证资产，支持惯性旋转、双击互动和前端情境反馈；
 - **真实校园地图**已接入（osmdroid + 高德地图瓦片），聚焦北京交通大学本部，GCJ-02 坐标系，当前按展示要求保持地图面干净、无路线/无 marker 图标；
 - 陪伴界面已完成高保真重构（场景背景 → 3D 模型 → 地台/接触阴影 → 情境粒子 → 教学反馈 → 操作台）；
 - 硬编码任务、课程、猫咪、帖子数据；
@@ -44,7 +44,7 @@
 | 代币机制 | 签到、任务、答题可增加小鱼干；互动可扣除；HUD 显示代币余额 | 前端演示态 | 完整交易流水、兑换商店后续补充 |
 | 真实校园地图 | ✅ 已接入 osmdroid + 高德地图瓦片，聚焦 BJTU 本部，GCJ-02 坐标；已移除地图 marker/路线/范围限制 | **已完成** | 后续如需展示热点，优先放在底部信息卡而不是地图面图标 |
 | 猫咪档案 | 单猫档案 UI 完整，包含边界、心情、成长轨迹 | 前端演示态 | 数据参数化、多猫支持后置 |
-| 3D/动态猫咪 | ✅ SceneView/Filament 已接入，`mao-lihua-animated.glb` 可加载，HDRI PBR 光照、惯性旋转、双击互动与情境特效已完成；当前动画只是 root transform/前端叠层，不是真实骨骼动画 | **过渡完成** | 下一步替换或制作带 skeleton/skin/动画 clips 的可爱猫 GLB |
+| 3D/动态猫咪 | ✅ SceneView/Filament 已接入，已替换为带 `skins`/`skeleton` 的 `mao-xiaohei-rigged.glb` 验证资产，HDRI PBR 光照、惯性旋转、双击互动与情境特效已完成；包含 `Idle`/`Observe`/`Pet`/`Drink`/`Eat`/`Happy` 命名 clip | **基本完成** | 后续可用更高品质的最终美术资产替换同名 GLB |
 | 科学互动教育 | 新手学堂有课程卡、测验、进度 UI、弹窗反馈 | 前端演示态 | 真实学习数据后置 |
 | 关注的猫与陪伴记录 | 首页/我的/档案/陪伴页都有相关 UI | 前端演示态 | 持久化和真实用户数据后置 |
 | 论坛与组队 | 有组队、知识分享、求助、目击记录 UI | 前端演示态 | 先实现前端筛选、弹窗、报名状态和求助状态模拟 |
@@ -76,7 +76,7 @@
 
 “3D 建模特效”涉及模型资产、授权、动画、性能、APK 体积和 Compose 集成。应作为可行性验证，不应直接承诺完整 3D 系统。
 
-当前结论：`mao-lihua-animated.glb` 可用于课堂演示中的 3D 展示与情境反馈，但它并不是最终理想资产。现有动作来自根节点平移/旋转/缩放与 Compose 叠层，不能表述为真实关节或骨骼动画。
+当前结论：`mao-xiaohei-rigged.glb` 已作为带 `skins`/`skeleton` 的 rigged 验证资产接入，包含 `Idle`/`Observe`/`Pet`/`Drink`/`Eat`/`Happy` 命名 clip，可用于课堂演示中的 3D 展示与情境反馈，但仍非最终美术理想资产。前一版 `mao-lihua-animated.glb` 仅基于根节点平移/旋转/缩放与 Compose 叠层，并非真实关节或骨骼动画。
 
 可选路线：
 
@@ -163,7 +163,7 @@
 
 - 至少一只示范猫有可展示的 3D 互动形象；若宣称“真实动作”，必须具备骨骼/蒙皮动画。
 - 用户互动后能看到明确的视觉反馈。
-- Android Studio 可同步 SceneView 依赖，模型资源可从 `app/src/main/assets/models/mao-lihua-animated.glb` 加载。
+- Android Studio 可同步 SceneView 依赖，模型资源可从 `app/src/main/assets/models/mao-xiaohei-rigged.glb` 加载。
 
 ---
 
@@ -269,14 +269,14 @@
 - **UI 框架：** Jetpack Compose + Material 3
 - **导航：** Jetpack Navigation Compose (2.7.7)
 - **状态管理：** ViewModel + StateFlow（含游戏化属性：等级/经验/饱食/心情/健康）
-- **3D 渲染：** SceneView 4.0.1（Filament 引擎），加载 `assets/models/mao-lihua-animated.glb`，HDRI 环境光照 `assets/environments/studio.hdr`
+- **3D 渲染：** SceneView 4.0.1（Filament 引擎），加载 `assets/models/mao-xiaohei-rigged.glb`，HDRI 环境光照 `assets/environments/studio.hdr`
 - **校园地图：** osmdroid 6.1.20（原生 MapView），高德地图瓦片（`webrd0x.is.autonavi.com`），GCJ-02 坐标系
 - **当前数据：** ViewModel 内存模拟数据 + 静态样例资源
 
 ### 近期技术策略
 
 - **UI：** 继续使用 Compose 完成前端页面、动效、状态反馈。
-- **3D/动效：** ✅ 已完成 SceneView / Filament 接入和前端情境反馈；后续重点是替换/制作真正带骨骼动画的可爱 GLB。
+- **3D/动效：** ✅ 已完成 SceneView / Filament 接入和前端情境反馈；已替换为带 `skins`/`skeleton` 的 `mao-xiaohei-rigged.glb` 验证资产；后续重点是用更高品质的美术资产替换同名 GLB。
 - **地图：** ✅ 已接入 osmdroid + 高德瓦片，已移除地图面图标、路线和范围限制；后续重点是干净地图上的信息卡表达。
 - **数据：** 近期使用 mock/sample data 与 ViewModel 本地状态，后端后续补充。
 - **后端：** 暂不作为当前开发目标；只保留接口意识和数据结构可替换性。
@@ -325,9 +325,9 @@
 - [x] 应用名、基础品牌信息不再是默认模板。
 - [ ] 主要页面 UI 统一，具备完整作品感。
 - [x] 主要按钮点击后都有明确前端反馈。
-- [x] 至少一只猫具备 3D 展示与前端互动反馈。（SceneView + `mao-lihua-animated.glb` + HDRI 光照 + 惯性旋转 + 双击安抚）
+- [x] 至少一只猫具备 3D 展示与前端互动反馈。（SceneView + `mao-xiaohei-rigged.glb` + HDRI 光照 + 惯性旋转 + 双击安抚）
 - [x] 当前猫咪能与安抚、观察、补水、添粮等互动产生情境反馈。
-- [ ] 替换或制作真正带 skeleton/skin/动画 clips 的可爱猫 GLB。
+- [x] 替换或制作真正带 skeleton/skin/动画 clips 的可爱猫 GLB。（已生成 `mao-xiaohei-rigged.glb` 验证资产，含 `Idle`/`Observe`/`Pet`/`Drink`/`Eat`/`Happy` 命名 clip）
 - [x] 校园地图视觉能体现 BJTU 校园场景。
 - [x] 底部区域卡可展开，并展示猫咪信息、接近指南和安全标签。
 - [x] 首页 → 地图 → 猫咪档案 → 云陪伴形成完整演示路径。
@@ -338,8 +338,8 @@
 
 ## 10. 当前实现进度记录
 
-- ✅ **3D 模型已完成接入**：`mao-lihua-animated.glb` 已放入 `assets/models/`，SceneView 4.0.1 加载，HDRI `studio.hdr` 环境光照，`ModelNode` 当前按陪伴页/档案页分别缩放和下移。
-- ✅ **3D 前端交互已实现**：`Animatable` + `exponentialDecay` 惯性旋转，双击触发安抚动作回调；动作切换使用当前 GLB 的命名 root-transform 动画和 Compose 叠层特效。
+- ✅ **3D 模型已完成接入**：`mao-xiaohei-rigged.glb` 已放入 `assets/models/`，SceneView 4.0.1 加载，HDRI `studio.hdr` 环境光照，`ModelNode` 当前按陪伴页/档案页分别缩放和下移；已从 `mao-lihua-animated.glb`（前端叠层动画）升级为带 `skins`/`skeleton` 的 rigged 验证资产。
+- ✅ **3D 前端交互已实现**：`Animatable` + `exponentialDecay` 惯性旋转，双击触发安抚动作回调；动作切换使用 `mao-xiaohei-rigged.glb` 的 `Idle`/`Observe`/`Pet`/`Drink`/`Eat`/`Happy` 命名 clip 与 Compose 叠层特效。
 - ✅ **陪伴界面高保真重构**：CompanionScreen 重写为“模型舞台 + 地台阴影 + 动作特效 + 教学反馈 + 状态 HUD + 操作台”的展示结构。
 - ✅ **游戏化状态系统**：MainViewModel 新增 `petLevel/petExp/hungerValue/happinessValue/healthValue`，互动时动态更新，经验满自动升级。
 - ✅ **校园地图接入真实地图**：CampusScreen 从 Canvas 假地图迁移到 osmdroid 原生 MapView + 高德地图瓦片，GCJ-02 坐标聚焦 BJTU 本部。

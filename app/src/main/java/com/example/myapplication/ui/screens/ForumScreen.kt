@@ -58,8 +58,6 @@ fun ForumScreen(viewModel: MainViewModel? = null) {
             Spacer(modifier = Modifier.height(112.dp))
             CategoryChipsRow(selectedLabel = selectedCategory, onSelected = { selectedCategory = it })
             Spacer(modifier = Modifier.height(12.dp))
-            SafePostingNotice()
-            Spacer(modifier = Modifier.height(20.dp))
 
             PublishedPostsSection(
                 posts = uiState?.publishedForumPosts.orEmpty().filter { selectedCategory == "全部" || it.category == selectedCategory },

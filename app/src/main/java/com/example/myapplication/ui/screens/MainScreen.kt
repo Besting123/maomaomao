@@ -65,7 +65,9 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
             ) {
                 composable(BottomNavItem.Home.route) { HomeScreen(navController = navController, viewModel = viewModel) }
                 composable(BottomNavItem.Campus.route) { CampusScreen(navController = navController) }
-                composable(BottomNavItem.Companion.route) { Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) }
+                composable(BottomNavItem.Companion.route) {
+                    CompanionScreen(navController = navController, viewModel = viewModel)
+                }
                 composable(BottomNavItem.Forum.route) { ForumScreen(viewModel = viewModel) }
                 composable(BottomNavItem.Profile.route) { ProfileScreen(viewModel = viewModel) }
                 composable("catProfile") {
@@ -78,15 +80,6 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                     EducationScreen(onBackClick = { navController.popBackStack() }, viewModel = viewModel)
                 }
             }
-            CompanionScreen(
-                navController = navController,
-                viewModel = viewModel,
-                modifier = if (currentRoute == BottomNavItem.Companion.route) {
-                    Modifier.fillMaxSize()
-                } else {
-                    Modifier.size(1.dp).offset(x = (-10000).dp)
-                }
-            )
         }
     }
 }

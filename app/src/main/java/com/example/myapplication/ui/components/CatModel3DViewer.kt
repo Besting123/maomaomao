@@ -67,7 +67,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun CatModel3DViewer(
     modifier: Modifier = Modifier,
-    modelAssetPath: String = "models/mao-xiaohei-rigged.glb",
+    modelAssetPath: String = "models/kitty.glb",
     environmentAssetPath: String = "environments/lythwood_lounge_1k.hdr",
     animationName: String = "Idle",
     animationLoop: Boolean = true,

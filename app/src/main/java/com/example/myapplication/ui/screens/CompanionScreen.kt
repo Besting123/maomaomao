@@ -336,7 +336,7 @@ fun CompanionHeroCard(
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
                 .height(410.dp),
-            modelAssetPath = "models/mao-xiaohei-rigged.glb",
+            modelAssetPath = "models/kitty.glb",
             animationName = selectedAction.animationName,
             onDoubleTap = onDoubleTap
         )

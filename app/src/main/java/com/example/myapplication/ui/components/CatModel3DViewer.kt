@@ -23,10 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import android.view.TextureView
-import android.view.ViewGroup
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,7 +38,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -60,8 +56,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Renders the rigged companion cat (mao-xiaohei-rigged.glb) inside a transparent
- * SceneView card. Single mode: COMPANION (warm cozy lounge). Drag to rotate,
+ * Renders the companion cat model inside a neutral SceneView card. Drag to rotate,
  * double-tap to trigger the host's onDoubleTap.
  */
 @Composable
@@ -113,14 +108,14 @@ fun CatModel3DViewer(
             val modelLoader = rememberModelLoader(engine)
             val environmentLoader = rememberEnvironmentLoader(engine)
             val view = rememberView(engine).apply {
-                blendMode = com.google.android.filament.View.BlendMode.TRANSLUCENT
+                blendMode = com.google.android.filament.View.BlendMode.OPAQUE
                 isPostProcessingEnabled = false
             }
             val renderer = rememberRenderer(engine).apply {
                 clearOptions = clearOptions.apply {
                     clear = true
                     discard = true
-                    clearColor = floatArrayOf(0f, 0f, 0f, 0f)
+                    clearColor = floatArrayOf(0.96f, 0.94f, 0.90f, 1f)
                 }
             }
             val environment = remember(environmentLoader, environmentAssetPath) {
@@ -129,24 +124,6 @@ fun CatModel3DViewer(
             val modelInstance = rememberModelInstance(modelLoader, modelAssetPath)
 
             if (environment != null) {
-                val rootView = LocalView.current
-                DisposableEffect(rootView, sceneReady) {
-                    fun forceTransparent(v: android.view.View) {
-                        if (v is TextureView) {
-                            v.isOpaque = false
-                        } else if (v is ViewGroup) {
-                            for (i in 0 until v.childCount) forceTransparent(v.getChildAt(i))
-                        }
-                    }
-                    val runnable = object : Runnable {
-                        override fun run() {
-                            forceTransparent(rootView)
-                            rootView.postDelayed(this, 200)
-                        }
-                    }
-                    rootView.post(runnable)
-                    onDispose { rootView.removeCallbacks(runnable) }
-                }
                 SceneView(
                     modifier = Modifier
                         .fillMaxSize()
@@ -174,7 +151,7 @@ fun CatModel3DViewer(
                     view = view,
                     renderer = renderer,
                     surfaceType = SurfaceType.TextureSurface,
-                    isOpaque = false,
+                    isOpaque = true,
                     environment = environment,
                     cameraManipulator = null
                 ) {
@@ -208,14 +185,14 @@ fun CatModel3DViewer(
 
 @Composable
 private fun BoxScope.ViewerBackdrop() {
-    val gradient = listOf(Color(0xFFFFF1D8), Color(0xFFFFD9A2), Color(0xFFFFEFD8))
+    val gradient = listOf(Color(0xFFF8F6F1), Color(0xFFEDE8DE), Color(0xFFF4F1EA))
     Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(gradient)))
     Box(
         modifier = Modifier
             .align(Alignment.Center)
             .offset(y = 16.dp)
             .size(310.dp)
-            .background(Brush.radialGradient(listOf(Color(0xFFFFF7E8), Color(0x22D28A45), Color.Transparent)), CircleShape)
+            .background(Brush.radialGradient(listOf(Color(0xFFFFFFFF), Color(0x223F4A5A), Color.Transparent)), CircleShape)
     )
     Box(
         modifier = Modifier
@@ -234,7 +211,7 @@ private fun BoxScope.ViewerBackdrop() {
             .width(230.dp)
             .height(42.dp)
             .clip(RoundedCornerShape(22.dp))
-            .background(Color(0xFFFFD9A8))
+            .background(Color(0xFFD8D2C6))
     )
 }
 

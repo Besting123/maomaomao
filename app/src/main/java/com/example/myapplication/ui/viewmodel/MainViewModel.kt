@@ -82,10 +82,10 @@ data class MainAppState(
             )
         ),
         ForumPostState(
-            id = "sample-xiaohei-observe",
+            id = "sample-yunduo-observe",
             category = "目击记录",
-            title = "小黑傍晚在教学区边缘短暂停留",
-            content = "18 点左右远距离看到小黑经过教学区边缘，步态正常，没有明显应激。建议继续保持远观，不要多人围过去。",
+            title = "云朵傍晚在教学区边缘短暂停留",
+            content = "18 点左右远距离看到云朵经过教学区边缘，步态正常，没有明显应激。建议继续保持远观，不要多人围过去。",
             author = "校园观察者",
             time = "18:10",
             comments = listOf(
@@ -100,7 +100,7 @@ data class MainAppState(
         ForumCommentState("喵伴志愿者", "已记录为片区级动态，不会公开精确位置。", "10:18"),
         ForumCommentState("图书馆路过同学", "刚刚经过，没有围观，奶牛还在安静晒太阳。", "10:25")
     ),
-    val followedCatNames: Set<String> = setOf("大橘", "小黑", "奶油"),
+    val followedCatNames: Set<String> = setOf("大橘", "云朵", "奶油"),
     val selectedProfileCatName: String = "大橘",
     val joinedWeekendShelterEvent: Boolean = false,
     val rewardExchangeRecords: List<RewardExchangeRecord> = emptyList(),

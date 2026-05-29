@@ -121,10 +121,10 @@ fun CompanionScreen(navController: NavController? = null, viewModel: MainViewMod
         )
     }
     var selectedAction by remember { mutableStateOf(actions.first()) }
-    var selectedCatName by remember { mutableStateOf("小黑") }
+    var selectedCatName by remember { mutableStateOf("云朵") }
     var showCatPicker by remember { mutableStateOf(false) }
-    val selectableCats = remember { listOf("小黑", "大橘", "奶油") }
-    var catFeedback by remember { mutableStateOf("小黑在休息区慢慢放松，适合先观察，再决定是否补水或安抚。") }
+    val selectableCats = remember { listOf("云朵", "大橘", "奶油") }
+    var catFeedback by remember { mutableStateOf("云朵在休息区慢慢放松，适合先观察，再决定是否补水或安抚。") }
 
     fun handleAction(action: CompanionActionUi) {
         val actionSucceeded = viewModel?.interactWithCat(action.label, selectedCatName, 5) ?: true

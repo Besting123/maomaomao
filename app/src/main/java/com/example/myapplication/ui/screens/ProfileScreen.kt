@@ -303,7 +303,7 @@ fun FollowedCatsSection() {
     var selectedCat by remember { mutableStateOf("大橘") }
     val cats = listOf(
         FollowedCat("大橘", R.drawable.img_net_2af44102d5, "稳定远观", "固定片区记录中"),
-        FollowedCat("小黑", R.drawable.img_net_5bd5bb21ca, "补水优先", "云陪伴主对象"),
+        FollowedCat("云朵", R.drawable.img_net_5bd5bb21ca, "补水优先", "云陪伴主对象"),
         FollowedCat("奶油", R.drawable.img_net_6cd1d93759, "请勿打扰", "午后多在休息")
     )
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {

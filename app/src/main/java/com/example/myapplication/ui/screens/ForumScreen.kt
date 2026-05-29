@@ -2,14 +2,15 @@ package com.example.myapplication.ui.screens
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.outlined.Group
-import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -33,20 +34,19 @@ import com.example.myapplication.ui.viewmodel.ForumPostState
 import com.example.myapplication.ui.viewmodel.MainViewModel
 
 @Composable
-fun ForumScreen(viewModel: MainViewModel? = null) {
+fun ForumScreen(
+    viewModel: MainViewModel? = null,
+    onOpenSightingComments: () -> Unit = {},
+    onOpenPostDetail: (String) -> Unit = {}
+) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     val uiState by viewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(null) }
     var showPostDialog by remember { mutableStateOf(false) }
-    var showSightingDetail by remember { mutableStateOf(false) }
-    var showSightingComments by remember { mutableStateOf(false) }
-    var selectedCategory by remember { mutableStateOf("全部") }
+    var selectedRecognition by remember { mutableStateOf("本校") }
+    var selectedCategory by remember { mutableStateOf("目击记录") }
     var showSearchDialog by remember { mutableStateOf(false) }
     var showForumNotifications by remember { mutableStateOf(false) }
-    var selectedUserPostId by remember { mutableStateOf<String?>(null) }
-    var selectedUserPostCommentsId by remember { mutableStateOf<String?>(null) }
-    val selectedUserPost = uiState?.publishedForumPosts?.firstOrNull { it.id == selectedUserPostId }
-    val selectedUserPostForComments = uiState?.publishedForumPosts?.firstOrNull { it.id == selectedUserPostCommentsId }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(
@@ -56,15 +56,17 @@ fun ForumScreen(viewModel: MainViewModel? = null) {
                 .padding(horizontal = 24.dp)
         ) {
             Spacer(modifier = Modifier.height(112.dp))
+            ForumRecognitionRow(selectedLabel = selectedRecognition, onSelected = { selectedRecognition = it })
+            Spacer(modifier = Modifier.height(10.dp))
             CategoryChipsRow(selectedLabel = selectedCategory, onSelected = { selectedCategory = it })
             Spacer(modifier = Modifier.height(12.dp))
 
             PublishedPostsSection(
                 posts = uiState?.publishedForumPosts.orEmpty().filter { selectedCategory == "全部" || it.category == selectedCategory },
-                onOpenPost = { selectedUserPostId = it.id },
+                onOpenPost = { onOpenPostDetail(it.id) },
                 onLikePost = { viewModel?.toggleForumPostLike(it.id) },
                 onCollectPost = { viewModel?.toggleForumPostCollection(it.id) },
-                onOpenComments = { selectedUserPostCommentsId = it.id }
+                onOpenComments = { onOpenPostDetail(it.id) }
             )
 
             if (selectedCategory == "全部" || selectedCategory == "组队活动") {
@@ -93,8 +95,8 @@ fun ForumScreen(viewModel: MainViewModel? = null) {
                     liked = uiState?.sightingLiked == true,
                     commentCount = uiState?.sightingComments?.size ?: 3,
                     onToggleLike = { viewModel?.toggleSightingLike() },
-                    onOpenDetail = { showSightingDetail = true },
-                    onOpenComments = { showSightingComments = true },
+                    onOpenDetail = onOpenSightingComments,
+                    onOpenComments = onOpenSightingComments,
                     onShare = {
                         sharePlainText(
                             context = context,
@@ -149,8 +151,8 @@ fun ForumScreen(viewModel: MainViewModel? = null) {
                 posts = uiState?.publishedForumPosts.orEmpty(),
                 onDismiss = { showSearchDialog = false },
                 onOpenPost = {
-                    selectedUserPostId = it.id
                     showSearchDialog = false
+                    onOpenPostDetail(it.id)
                 }
             )
         }
@@ -160,57 +162,6 @@ fun ForumScreen(viewModel: MainViewModel? = null) {
                 commentCount = uiState?.sightingComments?.size ?: 0,
                 hasJoinedEmergencyQueue = uiState?.hasJoinedEmergencyQueue == true,
                 onDismiss = { showForumNotifications = false }
-            )
-        }
-        if (showSightingDetail) {
-            SightingDetailDialog(
-                onDismiss = { showSightingDetail = false },
-                onOpenComments = {
-                    showSightingDetail = false
-                    showSightingComments = true
-                },
-                onShare = {
-                    sharePlainText(
-                        context = context,
-                        chooserTitle = "分享目击详情",
-                        subject = "喵伴云养目击详情",
-                        body = "奶牛刚刚在综合体育场南侧片区出现，状态稳定。建议只记录片区动态，避免聚集和投喂。"
-                    )
-                }
-            )
-        }
-        if (showSightingComments) {
-            CommentsDialog(
-                title = "目击记录评论",
-                comments = uiState?.sightingComments.orEmpty(),
-                onDismiss = { showSightingComments = false },
-                onSubmitComment = { viewModel?.addSightingComment(it) }
-            )
-        }
-        selectedUserPost?.let { post ->
-            UserPostDetailDialog(
-                post = post,
-                onDismiss = { selectedUserPostId = null },
-                onOpenComments = {
-                    selectedUserPostId = null
-                    selectedUserPostCommentsId = post.id
-                },
-                onShare = {
-                    sharePlainText(
-                        context = context,
-                        chooserTitle = "分享社区帖子",
-                        subject = post.title,
-                        body = "${post.title}\n\n${post.content}\n\n来自喵伴云养 · ${post.category}"
-                    )
-                }
-            )
-        }
-        selectedUserPostForComments?.let { post ->
-            CommentsDialog(
-                title = "${post.title} · 评论",
-                comments = post.comments,
-                onDismiss = { selectedUserPostCommentsId = null },
-                onSubmitComment = { viewModel?.addForumPostComment(post.id, it) }
             )
         }
     }
@@ -253,23 +204,24 @@ fun ForumTopAppBar(onSearchClick: () -> Unit, onNotificationsClick: () -> Unit) 
 }
 
 @Composable
-fun SchoolSwitcherRow() {
-    var selected by remember { mutableStateOf(0) }
+fun ForumRecognitionRow(selectedLabel: String, onSelected: (String) -> Unit) {
     val tabs = listOf("本校", "周边学校", "社区内容流")
     LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        items(tabs.indices.toList()) { index ->
+        items(tabs) { tab ->
+            val selected = selectedLabel == tab
             Box(
                 modifier = Modifier
                     .clip(CircleShape)
-                    .background(if (selected == index) MaterialTheme.colorScheme.primary else SurfaceContainerHigh)
-                    .clickable { selected = index }
-                    .padding(horizontal = 20.dp, vertical = 9.dp)
+                    .background(if (selected) MaterialTheme.colorScheme.primary else SurfaceContainerHighest)
+                    .clickable { onSelected(tab) }
+                    .padding(horizontal = 20.dp, vertical = 11.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = tabs[index],
-                    fontWeight = if (selected == index) FontWeight.SemiBold else FontWeight.Medium,
-                    color = if (selected == index) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 14.sp
+                    text = tab,
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                    color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 13.sp
                 )
             }
         }
@@ -280,14 +232,14 @@ fun SchoolSwitcherRow() {
 fun CategoryChipsRow(selectedLabel: String, onSelected: (String) -> Unit) {
     data class Chip(val icon: androidx.compose.ui.graphics.vector.ImageVector, val label: String)
     val chips = listOf(
-        Chip(Icons.Outlined.Home, "全部"),
         Chip(Icons.Outlined.Search, "目击记录"),
         Chip(Icons.Outlined.Group, "组队活动"),
-        Chip(Icons.Outlined.MenuBook, "知识分享"),
+        Chip(Icons.AutoMirrored.Outlined.MenuBook, "知识分享"),
         Chip(Icons.Outlined.Info, "求助信息"),
         Chip(Icons.Outlined.Star, "经验分享"),
         Chip(Icons.Outlined.Home, "猫咪日记"),
-        Chip(Icons.Outlined.Place, "片区记录")
+        Chip(Icons.Outlined.Place, "片区记录"),
+        Chip(Icons.Outlined.Home, "全部")
     )
     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         items(chips) { chip ->
@@ -299,7 +251,7 @@ fun CategoryChipsRow(selectedLabel: String, onSelected: (String) -> Unit) {
                         if (selected) MaterialTheme.colorScheme.secondaryContainer else SurfaceContainerHighest
                     )
                     .clickable { onSelected(chip.label) }
-                    .padding(horizontal = 14.dp, vertical = 7.dp),
+                    .padding(horizontal = 15.dp, vertical = 9.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
@@ -374,27 +326,34 @@ fun PublishedPostCard(
     onOpenComments: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable { onOpenPost() },
+        modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.18f))
     ) {
         Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp)) {
-                    Text(post.category, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onOpenPost() },
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Box(modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                        Text(post.category, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    }
+                    Text(post.time, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Text(post.time, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(post.title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text(post.content, fontSize = 13.sp, lineHeight = 20.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Text(post.title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-            Text(post.content, fontSize = 13.sp, lineHeight = 20.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row(horizontalArrangement = Arrangement.spacedBy(22.dp), verticalAlignment = Alignment.CenterVertically) {
                 Row(modifier = Modifier.clickable { onLikePost() }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Icon(if (post.liked) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder, contentDescription = "点赞", tint = if (post.liked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                     Text(if (post.liked) "1" else "0", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Row(modifier = Modifier.clickable { onOpenComments() }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Icon(Icons.Outlined.Send, contentDescription = "评论", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                    Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = "评论", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                     Text(post.comments.size.toString(), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Spacer(modifier = Modifier.weight(1f))
@@ -440,7 +399,7 @@ fun ForumSearchDialog(posts: List<ForumPostState>, onDismiss: () -> Unit, onOpen
                                     Text(post.title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                                     Text(post.category, fontSize = 11.sp, color = MaterialTheme.colorScheme.primary)
                                 }
-                                Icon(Icons.Outlined.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.outline)
+                                Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.outline)
                             }
                         }
                     }
@@ -458,7 +417,7 @@ fun ForumNotificationsDialog(postCount: Int, commentCount: Int, hasJoinedEmergen
         title = { Text("共护提醒", fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                CommentNoticeRow(Icons.Outlined.Send, "目击评论", "奶牛目击记录已有 $commentCount 条安全观察评论。")
+                CommentNoticeRow(Icons.AutoMirrored.Outlined.Send, "目击评论", "奶牛目击记录已有 $commentCount 条安全观察评论。")
                 CommentNoticeRow(Icons.Outlined.Edit, "共护内容流", "本次会话中已有 $postCount 条片区记录和示例对象。")
                 CommentNoticeRow(Icons.Outlined.Warning, "求助响应", if (hasJoinedEmergencyQueue) "你已加入医疗求助协助队列。" else "教三片区仍有医疗求助可响应。")
             }
@@ -567,43 +526,50 @@ fun SightingForumCard(
     onShare: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable { onOpenDetail() },
+        modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = SurfaceContainerLow),
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(modifier = Modifier.size(32.dp).clip(CircleShape).background(SurfaceContainerHighest), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Outlined.Favorite, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-                }
-                Column {
-                    Text("目击：奶牛在操场出没", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                    Text("刚刚 · 综合体育场南侧片区", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-            Box(modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(RoundedCornerShape(12.dp))) {
-                Image(painter = painterResource(R.drawable.img_net_9755ae2cc8), contentDescription = "Cat Sighting", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(12.dp)
-                        .background(Color.White.copy(alpha = 0.7f), CircleShape)
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
-                        Text("奶牛 (Tuxedo)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onOpenDetail() },
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(modifier = Modifier.size(32.dp).clip(CircleShape).background(SurfaceContainerHighest), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Outlined.Favorite, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                    }
+                    Column {
+                        Text("目击：奶牛在操场出没", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                        Text("刚刚 · 综合体育场南侧片区", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
+                Box(modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(RoundedCornerShape(12.dp))) {
+                    Image(painter = painterResource(R.drawable.img_net_9755ae2cc8), contentDescription = "Cat Sighting", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(12.dp)
+                            .background(Color.White.copy(alpha = 0.7f), CircleShape)
+                            .padding(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
+                            Text("奶牛 (Tuxedo)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                }
+                Text("奶牛今天看起来心情不错，在南侧片区晒太阳。建议只做远观记录，不围观、不补充零食。", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 22.sp)
             }
-            Text("奶牛今天看起来心情不错，在南侧片区晒太阳。建议只做远观记录，不围观、不补充零食。", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 22.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                 Row(modifier = Modifier.clickable { onToggleLike() }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Icon(if (liked) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder, contentDescription = "Like", tint = if (liked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                     Text(if (liked) "25" else "24", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Row(modifier = Modifier.clickable { onOpenComments() }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Icon(Icons.Outlined.Send, contentDescription = "Comment", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                    Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = "Comment", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                     Text(commentCount.toString(), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Spacer(modifier = Modifier.weight(1f))
@@ -716,7 +682,7 @@ fun SightingDetailDialog(
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     AssistChip(onClick = onShare, label = { Text("分享") }, leadingIcon = { Icon(Icons.Outlined.Share, contentDescription = null, modifier = Modifier.size(16.dp)) })
-                    AssistChip(onClick = onOpenComments, label = { Text("评论") }, leadingIcon = { Icon(Icons.Outlined.Send, contentDescription = null, modifier = Modifier.size(16.dp)) })
+                    AssistChip(onClick = onOpenComments, label = { Text("评论") }, leadingIcon = { Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = null, modifier = Modifier.size(16.dp)) })
                 }
             }
         },
@@ -750,7 +716,7 @@ fun UserPostDetailDialog(
                 Text(post.content, fontSize = 14.sp, lineHeight = 22.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     AssistChip(onClick = onShare, label = { Text("分享") }, leadingIcon = { Icon(Icons.Outlined.Share, contentDescription = null, modifier = Modifier.size(16.dp)) })
-                    AssistChip(onClick = onOpenComments, label = { Text("${post.comments.size} 条评论") }, leadingIcon = { Icon(Icons.Outlined.Send, contentDescription = null, modifier = Modifier.size(16.dp)) })
+                    AssistChip(onClick = onOpenComments, label = { Text("${post.comments.size} 条评论") }, leadingIcon = { Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = null, modifier = Modifier.size(16.dp)) })
                 }
             }
         },
@@ -761,6 +727,292 @@ fun UserPostDetailDialog(
             TextButton(onClick = onDismiss) { Text("关闭") }
         }
     )
+}
+
+@Composable
+fun ForumPostDetailScreen(
+    post: ForumPostState?,
+    onBackClick: () -> Unit,
+    onSubmitComment: (String) -> Unit
+) {
+    var draft by remember { mutableStateOf("") }
+    val canSubmit = draft.trim().isNotEmpty() && post != null
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.96f))
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            IconButton(onClick = onBackClick) {
+                Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, contentDescription = "返回", tint = MaterialTheme.colorScheme.primary)
+            }
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("帖子详情", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+                Text(post?.let { "${it.category} · ${it.author} · ${it.time}" } ?: "帖子内容暂不可用", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+
+        if (post == null) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(modifier = Modifier.size(48.dp).clip(CircleShape).background(SurfaceContainerHighest), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Text("帖子不存在或已被移除", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Button(onClick = onBackClick, shape = CircleShape) { Text("返回论坛") }
+                }
+            }
+            return@Column
+        }
+
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
+                    shape = RoundedCornerShape(24.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.16f))
+                ) {
+                    Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Box(modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape).padding(horizontal = 12.dp, vertical = 6.dp)) {
+                                Text(post.category, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                                Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(15.dp))
+                                Text("片区级内容", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.secondary)
+                            }
+                        }
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(post.title, fontSize = 21.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface, lineHeight = 28.sp)
+                            Text("${post.author} · ${post.time}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Text(post.content, fontSize = 15.sp, lineHeight = 24.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.56f))
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(18.dp))
+                            Text("为保护校园猫咪，帖子详情仅展示片区与状态，不公开精确坐标、路线或实时追踪。", fontSize = 12.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                                Icon(if (post.liked) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder, contentDescription = null, tint = if (post.liked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                                Text(if (post.liked) "1" else "0", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                                Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                                Text("${post.comments.size} 条评论", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+                            }
+                            if (post.collected) {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                                    Icon(Icons.Outlined.Star, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(18.dp))
+                                    Text("已收藏", fontSize = 12.sp, color = MaterialTheme.colorScheme.tertiary)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                    Text("评论内容", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("${post.comments.size} 条", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+
+            if (post.comments.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(SurfaceContainerLow)
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("还没有评论，写下第一条友善提醒吧。", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                    }
+                }
+            } else {
+                items(post.comments) { comment ->
+                    CommentItem(comment = comment)
+                }
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(SurfaceContainerLowest)
+                .navigationBarsPadding()
+                .imePadding()
+                .padding(horizontal = 24.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            OutlinedTextField(
+                value = draft,
+                onValueChange = { draft = it },
+                label = { Text("写评论") },
+                placeholder = { Text("补充观察、提醒保持距离、记录状态变化…") },
+                minLines = 2,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Button(
+                onClick = {
+                    onSubmitComment(draft)
+                    draft = ""
+                },
+                enabled = canSubmit,
+                shape = CircleShape,
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text("发送")
+            }
+        }
+    }
+}
+
+@Composable
+fun ForumCommentsScreen(
+    title: String,
+    subtitle: String,
+    body: String?,
+    comments: List<ForumCommentState>,
+    onBackClick: () -> Unit,
+    onSubmitComment: (String) -> Unit
+) {
+    var draft by remember { mutableStateOf("") }
+    val canSubmit = draft.trim().isNotEmpty()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.96f))
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            IconButton(onClick = onBackClick) {
+                Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, contentDescription = "返回", tint = MaterialTheme.colorScheme.primary)
+            }
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(title, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+                Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            if (!body.isNullOrBlank()) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(SurfaceContainerLow)
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text("原帖内容", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Text(body, fontSize = 13.sp, lineHeight = 21.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+
+            item {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                    Text("评论内容", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("${comments.size} 条", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+
+            if (comments.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(SurfaceContainerLow)
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("还没有评论，写下第一条友善提醒吧。", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                    }
+                }
+            } else {
+                items(comments) { comment ->
+                    CommentItem(comment = comment)
+                }
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(SurfaceContainerLowest)
+                .navigationBarsPadding()
+                .imePadding()
+                .padding(horizontal = 24.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            OutlinedTextField(
+                value = draft,
+                onValueChange = { draft = it },
+                label = { Text("写评论") },
+                placeholder = { Text("补充观察、提醒保持距离、记录状态变化…") },
+                minLines = 2,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Button(
+                onClick = {
+                    onSubmitComment(draft)
+                    draft = ""
+                },
+                enabled = canSubmit,
+                shape = CircleShape,
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text("发送")
+            }
+        }
+    }
 }
 
 @Composable
@@ -948,7 +1200,7 @@ fun KnowledgeShareCard() {
         Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(modifier = Modifier.size(32.dp).clip(CircleShape).background(MaterialTheme.colorScheme.tertiaryContainer), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Outlined.MenuBook, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(16.dp))
+                    Icon(Icons.AutoMirrored.Outlined.MenuBook, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(16.dp))
                 }
                 Column {
                 Text("科普：秋季猫咪易发疾病及安全观察", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)

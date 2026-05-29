@@ -359,7 +359,7 @@ fun TodaysActivitySection(onOpenAll: () -> Unit) {
                 imageResId = com.example.myapplication.R.drawable.img_net_27ce5092c2
             )
             ActivityCard(
-                name = "小黑",
+                name = "云朵",
                 location = "补水正常",
                 desc = "已连续两天保持正常的补水习惯，身体状况优良。",
                 borderColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
@@ -485,7 +485,7 @@ fun CoreFunctionsBento(navController: NavController? = null, onOpenCatProfilePic
 private fun HomeCatProfilePickerDialog(selectedCatName: String, onSelect: (String) -> Unit, onDismiss: () -> Unit) {
     val cats = listOf(
         "大橘" to "慢热型橘猫 · 适合稳定远观",
-        "小黑" to "云陪伴主角 · 适合观察和补水",
+        "云朵" to "云陪伴主角 · 适合观察和补水",
         "奶油" to "教学区常见 · 状态稳定"
     )
     AlertDialog(
@@ -622,7 +622,7 @@ private fun HomePanelDialog(panel: HomePanel, onDismiss: () -> Unit, navControll
                     }
                     HomePanel.ActivityList -> {
                         HomeInfoRow(Icons.Outlined.LocationOn, "奶油 · 教学区附近", "远距离观察到，状态稳定，无需靠近。")
-                        HomeInfoRow(Icons.Outlined.CheckCircle, "小黑 · 补水正常", "连续两天补水点状态良好，建议继续巡查。")
+                        HomeInfoRow(Icons.Outlined.CheckCircle, "云朵 · 补水正常", "连续两天补水点状态良好，建议继续巡查。")
                         HomeInfoRow(Icons.Outlined.Pets, "三花 · 图书馆片区", "午后常在安静角落休息，请降低音量。")
                     }
                     HomePanel.Story -> {
@@ -631,7 +631,7 @@ private fun HomePanelDialog(panel: HomePanel, onDismiss: () -> Unit, navControll
                     }
                     HomePanel.FollowedCats -> {
                         HomeInfoRow(Icons.Outlined.Pets, "橘子", "慢热型橘猫，适合稳定远观，不适合突然靠近。")
-                        HomeInfoRow(Icons.Outlined.Pets, "小黑", "云陪伴主角，适合用观察和补水作为长期陪伴对象。")
+                        HomeInfoRow(Icons.Outlined.Pets, "云朵", "云陪伴主角，适合用观察和补水作为长期陪伴对象。")
                         HomeInfoRow(Icons.Outlined.Pets, "奶油", "教学区附近远观记录较多，状态稳定，继续保持距离。")
                     }
                 }
@@ -755,7 +755,7 @@ fun HomeFollowedCatsSection(onOpenAll: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             FollowedCatAvatar("橘子", com.example.myapplication.R.drawable.img_net_ec43d2eca7, onClick = onOpenAll)
-            FollowedCatAvatar("小黑", com.example.myapplication.R.drawable.img_net_c9e15cf0b7, onClick = onOpenAll)
+            FollowedCatAvatar("云朵", com.example.myapplication.R.drawable.img_net_c9e15cf0b7, onClick = onOpenAll)
             FollowedCatAvatar("奶油", com.example.myapplication.R.drawable.img_net_27ce5092c2, onClick = onOpenAll)
             
             Box(

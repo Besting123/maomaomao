@@ -95,17 +95,17 @@ private data class CatProfileUi(
 )
 
 private fun catProfileFor(catName: String): CatProfileUi = when (catName) {
-    "小黑" -> CatProfileUi(
-        name = "小黑",
+    "云朵" -> CatProfileUi(
+        name = "云朵",
         codeLine = "编号: SC-2023-011 · 教学区边缘常驻",
-        tags = listOf("小黑", "安静型", "适合远观"),
+        tags = listOf("云朵", "安静型", "适合远观"),
         imageRes = R.drawable.img_net_8c081179f2,
-        personality = "小黑习惯在教学区边缘慢慢移动，遇到人多时会主动拉开距离。它更适合固定时段的远观记录和补水提醒，不适合突然靠近或多人围观。",
+        personality = "云朵习惯在教学区边缘慢慢移动，遇到人多时会主动拉开距离。它更适合固定时段的远观记录和补水提醒，不适合突然靠近或多人围观。",
         memoryQuote = "它从树影里绕出来，又很快回到安静的角落。",
         memoryAuthor = "— 2023.11.08 · 教学区观察员",
-        healthText = "如发现小黑步态异常、长时间躲藏或精神下降，请联系校园流浪猫志愿者团队。日常记录只保留片区，不公开精确停留点。",
-        theaterFirst = "每天傍晚，小黑常沿教学区边缘短暂停留。保持距离时，它会放慢脚步；靠得太近时，它会直接退回树影里。",
-        theaterSecond = "小黑对补水点很敏感。水碗干净时会停留更久，因此比起零食，稳定清水更适合它。"
+        healthText = "如发现云朵步态异常、长时间躲藏或精神下降，请联系校园流浪猫志愿者团队。日常记录只保留片区，不公开精确停留点。",
+        theaterFirst = "每天傍晚，云朵常沿教学区边缘短暂停留。保持距离时，它会放慢脚步；靠得太近时，它会直接退回树影里。",
+        theaterSecond = "云朵对补水点很敏感。水碗干净时会停留更久，因此比起零食，稳定清水更适合它。"
     )
     "奶油" -> CatProfileUi(
         name = "奶油",

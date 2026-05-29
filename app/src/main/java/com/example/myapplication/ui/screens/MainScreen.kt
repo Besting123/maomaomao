@@ -20,6 +20,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,11 +41,23 @@ import com.example.myapplication.ui.navigation.BottomNavItem
 import com.example.myapplication.ui.viewmodel.MainViewModel
 
 @Composable
-fun MainScreen(viewModel: MainViewModel = viewModel()) {
+fun MainScreen(viewModel: MainViewModel = viewModel(), launcherOpenVersion: Int = 0) {
     val navController = rememberNavController()
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    LaunchedEffect(launcherOpenVersion) {
+        if (launcherOpenVersion > 0) {
+            navController.navigate(BottomNavItem.Home.route) {
+                popUpTo(BottomNavItem.Home.route) {
+                    inclusive = false
+                    saveState = false
+                }
+                launchSingleTop = true
+                restoreState = false
+            }
+        }
+    }
     val showBottomBar = currentRoute in listOf(
         BottomNavItem.Home.route, BottomNavItem.Campus.route,
         BottomNavItem.Companion.route, BottomNavItem.Forum.route, BottomNavItem.Profile.route
@@ -64,12 +78,43 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                 modifier = Modifier.fillMaxSize()
             ) {
                 composable(BottomNavItem.Home.route) { HomeScreen(navController = navController, viewModel = viewModel) }
-                composable(BottomNavItem.Campus.route) { CampusScreen(navController = navController) }
+                composable(BottomNavItem.Campus.route) { CampusScreen(navController = navController, viewModel = viewModel) }
                 composable(BottomNavItem.Companion.route) {
                     CompanionScreen(navController = navController, viewModel = viewModel)
                 }
-                composable(BottomNavItem.Forum.route) { ForumScreen(viewModel = viewModel) }
+                composable(BottomNavItem.Forum.route) {
+                    ForumScreen(
+                        viewModel = viewModel,
+                        onOpenSightingComments = { navController.navigate("forumSightingComments") },
+                        onOpenPostDetail = { postId -> navController.navigate("forumPostDetail/$postId") }
+                    )
+                }
                 composable(BottomNavItem.Profile.route) { ProfileScreen(viewModel = viewModel) }
+                composable("forumSightingComments") {
+                    val uiState by viewModel.uiState.collectAsState()
+                    ForumCommentsScreen(
+                        title = "目击记录评论",
+                        subtitle = "综合体育场南侧片区 · 安全观察讨论",
+                        body = "奶牛今天看起来心情不错，在南侧片区晒太阳。请继续保持远观，只补充片区级状态和安全提醒。",
+                        comments = uiState.sightingComments,
+                        onBackClick = { navController.popBackStack() },
+                        onSubmitComment = { viewModel.addSightingComment(it) }
+                    )
+                }
+                composable("forumPostDetail/{postId}") { backStackEntry ->
+                    val uiState by viewModel.uiState.collectAsState()
+                    val postId = backStackEntry.arguments?.getString("postId")
+                    val post = uiState.publishedForumPosts.firstOrNull { it.id == postId }
+                    ForumPostDetailScreen(
+                        post = post,
+                        onBackClick = { navController.popBackStack() },
+                        onSubmitComment = { content ->
+                            if (post != null) {
+                                viewModel.addForumPostComment(post.id, content)
+                            }
+                        }
+                    )
+                }
                 composable("catProfile") {
                     CatProfileScreen(onBackClick = { navController.popBackStack() }, viewModel = viewModel)
                 }

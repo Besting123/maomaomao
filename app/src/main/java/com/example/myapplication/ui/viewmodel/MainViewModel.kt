@@ -43,6 +43,7 @@ data class ForumPostState(
     val content: String,
     val author: String,
     val time: String,
+    val source: String = "本校",
     val liked: Boolean = false,
     val collected: Boolean = false,
     val comments: List<ForumCommentState> = emptyList()
@@ -71,6 +72,7 @@ data class MainAppState(
     val publishedForumPosts: List<ForumPostState> = listOf(
         ForumPostState(
             id = "sample-water-point",
+            source = "本校",
             category = "片区记录",
             title = "图书馆北门补水点已清理",
             content = "今天中午路过时看到水碗有落叶，已经清理并补充了清水。这个点位只记录为图书馆北侧片区，不建议公开精确坐标。",
@@ -78,18 +80,52 @@ data class MainAppState(
             time = "12:20",
             comments = listOf(
                 ForumCommentState("喵伴志愿者", "收到，晚间巡查时会复核水碗状态。", "12:32"),
-                ForumCommentState("北门观察员", "刚刚远观过，没有猫咪聚集，片区安静。", "12:48")
+                ForumCommentState("北门观察员", "刚刚远观过，没有猫咪聚集，片区安静。", "12:48"),
+                ForumCommentState("后勤同学", "水碗旁边落叶比较多，明天上午可以再带个小夹子。", "13:05"),
+                ForumCommentState("喵伴记录员", "已同步到本校补水点巡查清单。", "13:12")
             )
         ),
         ForumPostState(
             id = "sample-yunduo-observe",
+            source = "本校",
             category = "目击记录",
             title = "云朵傍晚在教学区边缘短暂停留",
             content = "18 点左右远距离看到云朵经过教学区边缘，步态正常，没有明显应激。建议继续保持远观，不要多人围过去。",
             author = "校园观察者",
             time = "18:10",
             comments = listOf(
-                ForumCommentState("我", "已加入今日观察记录，优先提醒大家保持距离。", "18:16")
+                ForumCommentState("我", "已加入今日观察记录，优先提醒大家保持距离。", "18:16"),
+                ForumCommentState("东区值守", "18:40 远观仍然稳定，已经离开教学区边缘。", "18:44"),
+                ForumCommentState("云朵熟人", "她最近常走这条边缘路线，大家不要蹲点等她。", "18:52"),
+                ForumCommentState("喵伴志愿者", "记录收到，会合并到今晚的片区状态里。", "19:03")
+            )
+        ),
+        ForumPostState(
+            id = "sample-nearby-food-bowl",
+            source = "周边学校",
+            category = "知识分享",
+            title = "邻校共享：雨天补水点怎么临时防滑",
+            content = "隔壁校区志愿者这周试了防滑垫和重底水碗组合，雨天水碗不容易移位。建议先小范围试用，避免把点位做得太显眼。",
+            author = "邻校共护组",
+            time = "09:40",
+            comments = listOf(
+                ForumCommentState("本校后勤联络", "这个方案适合图书馆北侧片区，我们可以先试一处。", "09:58"),
+                ForumCommentState("材料组", "防滑垫需要选无异味材质，避免猫咪排斥。", "10:06"),
+                ForumCommentState("邻校共护组", "我们用的是可水洗硅胶垫，清理成本还可以。", "10:18")
+            )
+        ),
+        ForumPostState(
+            id = "sample-community-adoption",
+            source = "社区内容流",
+            category = "经验分享",
+            title = "社区经验：临时寄养前的信息确认清单",
+            content = "社区志愿者建议确认猫咪健康状态、隔离空间、紧急联系人和回访频率。校园转介时也可以按这套清单做基础沟通。",
+            author = "社区志愿者阿禾",
+            time = "昨天",
+            comments = listOf(
+                ForumCommentState("喵伴志愿者", "这份清单很实用，我们可以整理成新手学堂内容。", "08:20"),
+                ForumCommentState("领养跟进员", "建议加上窗户纱窗检查，很多新手会漏掉。", "08:34"),
+                ForumCommentState("社区志愿者阿禾", "可以，我晚点补一版更完整的。", "08:49")
             )
         )
     ),
@@ -98,7 +134,10 @@ data class MainAppState(
     val sightingComments: List<ForumCommentState> = listOf(
         ForumCommentState("北门观察员", "看起来状态不错，建议保持远距离观察就好。", "10:12"),
         ForumCommentState("喵伴志愿者", "已记录为片区级动态，不会公开精确位置。", "10:18"),
-        ForumCommentState("图书馆路过同学", "刚刚经过，没有围观，奶牛还在安静晒太阳。", "10:25")
+        ForumCommentState("图书馆路过同学", "刚刚经过，没有围观，奶牛还在安静晒太阳。", "10:25"),
+        ForumCommentState("体育场值守", "附近人流变多了，建议只远远看一眼就离开。", "10:31"),
+        ForumCommentState("喵伴记录员", "已把状态更新为稳定，午后再做一次片区复核。", "10:43"),
+        ForumCommentState("新手同学", "收到提醒，不会投喂，也不会靠太近。", "10:56")
     ),
     val followedCatNames: Set<String> = setOf("大橘", "云朵", "奶油"),
     val selectedProfileCatName: String = "大橘",
@@ -228,6 +267,7 @@ class MainViewModel : ViewModel() {
 
         val post = ForumPostState(
             id = Date().time.toString(),
+            source = "本校",
             category = category,
             title = trimmedTitle,
             content = trimmedContent,

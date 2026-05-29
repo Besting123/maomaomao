@@ -47,6 +47,11 @@ fun ForumScreen(
     var selectedCategory by remember { mutableStateOf("目击记录") }
     var showSearchDialog by remember { mutableStateOf(false) }
     var showForumNotifications by remember { mutableStateOf(false) }
+    val visiblePosts = uiState?.publishedForumPosts.orEmpty()
+        .filter { it.source == selectedRecognition }
+        .filter { selectedCategory == "全部" || it.category == selectedCategory }
+    val showLocalCards = selectedRecognition == "本校"
+    val hasLocalCardContent = showLocalCards && selectedCategory in listOf("全部", "组队活动", "知识分享", "求助信息", "目击记录", "猫咪日记", "片区记录")
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(
@@ -56,20 +61,26 @@ fun ForumScreen(
                 .padding(horizontal = 24.dp)
         ) {
             Spacer(modifier = Modifier.height(112.dp))
-            ForumRecognitionRow(selectedLabel = selectedRecognition, onSelected = { selectedRecognition = it })
+            ForumRecognitionRow(
+                selectedLabel = selectedRecognition,
+                onSelected = {
+                    selectedRecognition = it
+                    selectedCategory = "全部"
+                }
+            )
             Spacer(modifier = Modifier.height(10.dp))
             CategoryChipsRow(selectedLabel = selectedCategory, onSelected = { selectedCategory = it })
             Spacer(modifier = Modifier.height(12.dp))
 
             PublishedPostsSection(
-                posts = uiState?.publishedForumPosts.orEmpty().filter { selectedCategory == "全部" || it.category == selectedCategory },
+                posts = visiblePosts,
                 onOpenPost = { onOpenPostDetail(it.id) },
                 onLikePost = { viewModel?.toggleForumPostLike(it.id) },
                 onCollectPost = { viewModel?.toggleForumPostCollection(it.id) },
                 onOpenComments = { onOpenPostDetail(it.id) }
             )
 
-            if (selectedCategory == "全部" || selectedCategory == "组队活动") {
+            if (showLocalCards && (selectedCategory == "全部" || selectedCategory == "组队活动")) {
                 TeamEventCard(
                     joined = uiState?.joinedWeekendShelterEvent == true,
                     onToggleJoin = { viewModel?.toggleWeekendShelterEvent() }
@@ -77,12 +88,12 @@ fun ForumScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            if (selectedCategory == "全部" || selectedCategory == "知识分享") {
+            if (showLocalCards && (selectedCategory == "全部" || selectedCategory == "知识分享")) {
                 KnowledgeShareCard()
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            if (selectedCategory == "全部" || selectedCategory == "求助信息") {
+            if (showLocalCards && (selectedCategory == "全部" || selectedCategory == "求助信息")) {
                 EmergencyForumCard(
                     responded = uiState?.hasJoinedEmergencyQueue == true,
                     onJoin = { viewModel?.joinEmergencyQueue() }
@@ -90,7 +101,7 @@ fun ForumScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            if (selectedCategory == "全部" || selectedCategory == "目击记录") {
+            if (showLocalCards && (selectedCategory == "全部" || selectedCategory == "目击记录")) {
                 SightingForumCard(
                     liked = uiState?.sightingLiked == true,
                     commentCount = uiState?.sightingComments?.size ?: 3,
@@ -109,7 +120,7 @@ fun ForumScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            if (selectedCategory == "全部" || selectedCategory == "猫咪日记" || selectedCategory == "片区记录") {
+            if (showLocalCards && (selectedCategory == "全部" || selectedCategory == "猫咪日记" || selectedCategory == "片区记录")) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     if (selectedCategory == "全部" || selectedCategory == "猫咪日记") {
                         DiaryPolaroidCard(modifier = Modifier.weight(1f))
@@ -118,6 +129,10 @@ fun ForumScreen(
                         MapPostCard(modifier = Modifier.weight(1f))
                     }
                 }
+            }
+
+            if (visiblePosts.isEmpty() && !hasLocalCardContent) {
+                ForumEmptyState(source = selectedRecognition, category = selectedCategory)
             }
 
             Spacer(modifier = Modifier.height(120.dp))
@@ -189,7 +204,6 @@ fun ForumTopAppBar(onSearchClick: () -> Unit, onNotificationsClick: () -> Unit) 
             }
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text("共护", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
-                Text("片区记录 · 不公开精确位置", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -318,6 +332,37 @@ fun PublishedPostsSection(
 }
 
 @Composable
+fun ForumEmptyState(source: String, category: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(22.dp))
+            .background(SurfaceContainerLow)
+            .padding(horizontal = 20.dp, vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Outlined.Search, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+        }
+        Text("暂无匹配内容", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+        Text(
+            "$source · $category 还没有新的共护动态，可以切换分类或发布一条记录。",
+            fontSize = 12.sp,
+            lineHeight = 18.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
+    }
+}
+
+@Composable
 fun PublishedPostCard(
     post: ForumPostState,
     onOpenPost: () -> Unit,
@@ -339,8 +384,13 @@ fun PublishedPostCard(
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp)) {
-                        Text(post.category, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Box(modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                            Text(post.category, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        }
+                        Box(modifier = Modifier.background(SurfaceContainerHigh, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                            Text(post.source, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
                     }
                     Text(post.time, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -789,13 +839,18 @@ fun ForumPostDetailScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
-                    shape = RoundedCornerShape(24.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.16f))
+                    shape = RoundedCornerShape(28.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.18f))
                 ) {
                     Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Box(modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape).padding(horizontal = 12.dp, vertical = 6.dp)) {
-                                Text(post.category, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Box(modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape).padding(horizontal = 12.dp, vertical = 6.dp)) {
+                                    Text(post.category, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                                }
+                                Box(modifier = Modifier.background(SurfaceContainerHigh, CircleShape).padding(horizontal = 12.dp, vertical = 6.dp)) {
+                                    Text(post.source, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
                             }
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                                 Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(15.dp))
@@ -840,10 +895,20 @@ fun ForumPostDetailScreen(
             }
 
             item {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
-                    Text("评论内容", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                    Text("${post.comments.size} 条", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Box(modifier = Modifier.size(30.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
+                            Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                        }
+                        Text("评论讨论", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+                    }
+                    Box(modifier = Modifier.background(SurfaceContainerHigh, CircleShape).padding(horizontal = 12.dp, vertical = 6.dp)) {
+                        Text("${post.comments.size} 条", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
             }
 
@@ -862,7 +927,7 @@ fun ForumPostDetailScreen(
                 }
             } else {
                 items(post.comments) { comment ->
-                    CommentItem(comment = comment)
+                    CommentCard(comment = comment)
                 }
             }
         }
@@ -870,30 +935,47 @@ fun ForumPostDetailScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(SurfaceContainerLowest)
+                .background(MaterialTheme.colorScheme.background)
                 .navigationBarsPadding()
                 .imePadding()
                 .padding(horizontal = 24.dp, vertical = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedTextField(
-                value = draft,
-                onValueChange = { draft = it },
-                label = { Text("写评论") },
-                placeholder = { Text("补充观察、提醒保持距离、记录状态变化…") },
-                minLines = 2,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Button(
-                onClick = {
-                    onSubmitComment(draft)
-                    draft = ""
-                },
-                enabled = canSubmit,
-                shape = CircleShape,
-                modifier = Modifier.align(Alignment.End)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(SurfaceContainerLowest)
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f), RoundedCornerShape(24.dp))
+                    .padding(start = 16.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("发送")
+                OutlinedTextField(
+                    value = draft,
+                    onValueChange = { draft = it },
+                    placeholder = { Text("写下友善提醒或状态补充…") },
+                    minLines = 1,
+                    maxLines = 3,
+                    modifier = Modifier.weight(1f),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
+                    )
+                )
+                Button(
+                    onClick = {
+                        onSubmitComment(draft)
+                        draft = ""
+                    },
+                    enabled = canSubmit,
+                    shape = CircleShape,
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    Text("发送")
+                }
             }
         }
     }
@@ -978,7 +1060,7 @@ fun ForumCommentsScreen(
                 }
             } else {
                 items(comments) { comment ->
-                    CommentItem(comment = comment)
+                    CommentCard(comment = comment)
                 }
             }
         }
@@ -1087,6 +1169,37 @@ fun CommentItem(comment: ForumCommentState) {
                 Text(comment.time, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Text(comment.content, fontSize = 13.sp, lineHeight = 19.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+fun CommentCard(comment: ForumCommentState) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(SurfaceContainerLowest)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.28f), RoundedCornerShape(20.dp))
+            .padding(14.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(comment.author.take(1), fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+        }
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(comment.author, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text(comment.time, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Text(comment.content, fontSize = 13.sp, lineHeight = 20.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
